@@ -282,7 +282,7 @@
   </action>
   <action name="actionCreate_new_config">
    <property name="text">
-    <string>Create new config</string>
+    <string>Save config</string>
    </property>
   </action>
   <action name="actionOpen_annotation">
