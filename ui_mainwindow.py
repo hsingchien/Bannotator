@@ -59,6 +59,8 @@ class Ui_MainWindow(object):
 
         self.curframe_spinBox = QSpinBox(self.frame)
         self.curframe_spinBox.setObjectName(u"curframe_spinBox")
+        self.curframe_spinBox.setMinimum(1)
+        self.curframe_spinBox.setMaximum(100)
 
         self.horizontalLayout_3.addWidget(self.curframe_spinBox)
 
@@ -88,6 +90,8 @@ class Ui_MainWindow(object):
 
         self.speed_doubleSpinBox = QDoubleSpinBox(self.frame)
         self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
+        self.speed_doubleSpinBox.setSingleStep(0.500000000000000)
+        self.speed_doubleSpinBox.setValue(1.000000000000000)
 
         self.horizontalLayout_3.addWidget(self.speed_doubleSpinBox)
 
@@ -128,6 +132,8 @@ class Ui_MainWindow(object):
 
         self.video_scrollbar = QScrollBar(self.centralwidget)
         self.video_scrollbar.setObjectName(u"video_scrollbar")
+        self.video_scrollbar.setMinimum(1)
+        self.video_scrollbar.setMaximum(100)
         self.video_scrollbar.setPageStep(10)
         self.video_scrollbar.setOrientation(Qt.Horizontal)
 
@@ -207,6 +213,18 @@ class Ui_MainWindow(object):
         self.control_widget.addWidget(self.control_panel)
         self.stat_panel = QWidget()
         self.stat_panel.setObjectName(u"stat_panel")
+        self.horizontalLayout_4 = QHBoxLayout(self.stat_panel)
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.play_button = QPushButton(self.stat_panel)
+        self.play_button.setObjectName(u"play_button")
+
+        self.horizontalLayout_4.addWidget(self.play_button)
+
+        self.pause_button = QPushButton(self.stat_panel)
+        self.pause_button.setObjectName(u"pause_button")
+
+        self.horizontalLayout_4.addWidget(self.pause_button)
+
         self.control_widget.addWidget(self.stat_panel)
 
         self.control_layout.addWidget(self.control_widget)
@@ -250,7 +268,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.tabWidget.setCurrentIndex(0)
-        self.control_widget.setCurrentIndex(0)
+        self.control_widget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -275,6 +293,8 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.epoch_tab), QCoreApplication.translate("MainWindow", u"Epochs", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
+        self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
+        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))

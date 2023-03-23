@@ -1,0 +1,9 @@
+*.avi
+*.mat
+__pycache__/
+dist/
+build/
+*.spec
+cscreener.egg-info/
+*.csv
+*test*

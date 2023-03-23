@@ -34,7 +34,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="curframe_spinBox"/>
+          <widget class="QSpinBox" name="curframe_spinBox">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer_2">
@@ -87,7 +94,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QDoubleSpinBox" name="speed_doubleSpinBox"/>
+          <widget class="QDoubleSpinBox" name="speed_doubleSpinBox">
+           <property name="singleStep">
+            <double>0.500000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
          </item>
          <item>
           <spacer name="horizontalSpacer_3">
@@ -136,6 +150,12 @@
       </item>
       <item>
        <widget class="QScrollBar" name="video_scrollbar">
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
         <property name="pageStep">
          <number>10</number>
         </property>
@@ -218,10 +238,27 @@
          <number>3</number>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="control_panel"/>
-        <widget class="QWidget" name="stat_panel"/>
+        <widget class="QWidget" name="stat_panel">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QPushButton" name="play_button">
+            <property name="text">
+             <string>Play</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pause_button">
+            <property name="text">
+             <string>Pause</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
      </layout>
