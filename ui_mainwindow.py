@@ -16,12 +16,14 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QDoubleSpinBox, QFrame, QGraphicsView,
+from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsView, QGridLayout,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QMainWindow, QMenu, QMenuBar, QPushButton,
-    QScrollBar, QSizePolicy, QSpacerItem, QSpinBox,
-    QStackedWidget, QStatusBar, QTabWidget, QTableView,
-    QVBoxLayout, QWidget)
+    QScrollBar, QSizePolicy, QSpinBox, QStackedWidget,
+    QStatusBar, QTabWidget, QTableView, QVBoxLayout,
+    QWidget)
+
+from widgets import PlaySpeedSpinBox
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -46,85 +48,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.verticalLayout_4 = QVBoxLayout()
         self.verticalLayout_4.setObjectName(u"verticalLayout_4")
-        self.frame = QFrame(self.centralwidget)
-        self.frame.setObjectName(u"frame")
-        self.frame.setFrameShape(QFrame.StyledPanel)
-        self.frame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_3 = QHBoxLayout(self.frame)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label_2 = QLabel(self.frame)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout_3.addWidget(self.label_2)
-
-        self.curframe_spinBox = QSpinBox(self.frame)
-        self.curframe_spinBox.setObjectName(u"curframe_spinBox")
-        self.curframe_spinBox.setMinimum(1)
-        self.curframe_spinBox.setMaximum(100)
-
-        self.horizontalLayout_3.addWidget(self.curframe_spinBox)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_2)
-
-        self.label = QLabel(self.frame)
-        self.label.setObjectName(u"label")
-
-        self.horizontalLayout_3.addWidget(self.label)
-
-        self.framewindow_lineEdit = QLineEdit(self.frame)
-        self.framewindow_lineEdit.setObjectName(u"framewindow_lineEdit")
-        self.framewindow_lineEdit.setMaxLength(6)
-
-        self.horizontalLayout_3.addWidget(self.framewindow_lineEdit)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer)
-
-        self.label_3 = QLabel(self.frame)
-        self.label_3.setObjectName(u"label_3")
-
-        self.horizontalLayout_3.addWidget(self.label_3)
-
-        self.speed_doubleSpinBox = QDoubleSpinBox(self.frame)
-        self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
-        self.speed_doubleSpinBox.setSingleStep(0.500000000000000)
-        self.speed_doubleSpinBox.setValue(1.000000000000000)
-
-        self.horizontalLayout_3.addWidget(self.speed_doubleSpinBox)
-
-        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer_3)
-
-        self.label_4 = QLabel(self.frame)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setTextFormat(Qt.PlainText)
-        self.label_4.setScaledContents(False)
-        self.label_4.setTextInteractionFlags(Qt.NoTextInteraction)
-
-        self.horizontalLayout_3.addWidget(self.label_4)
-
-        self.time_label = QLabel(self.frame)
-        self.time_label.setObjectName(u"time_label")
-        self.time_label.setTextFormat(Qt.PlainText)
-
-        self.horizontalLayout_3.addWidget(self.time_label)
-
-        self.horizontalLayout_3.setStretch(0, 1)
-        self.horizontalLayout_3.setStretch(1, 1)
-        self.horizontalLayout_3.setStretch(3, 1)
-        self.horizontalLayout_3.setStretch(4, 1)
-        self.horizontalLayout_3.setStretch(5, 4)
-        self.horizontalLayout_3.setStretch(6, 1)
-        self.horizontalLayout_3.setStretch(7, 1)
-        self.horizontalLayout_3.setStretch(9, 1)
-        self.horizontalLayout_3.setStretch(10, 1)
-
-        self.verticalLayout_4.addWidget(self.frame)
-
         self.vid1_view = QGraphicsView(self.centralwidget)
         self.vid1_view.setObjectName(u"vid1_view")
 
@@ -144,10 +67,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.track_view)
 
-        self.verticalLayout_4.setStretch(0, 1)
-        self.verticalLayout_4.setStretch(1, 16)
-        self.verticalLayout_4.setStretch(2, 2)
-        self.verticalLayout_4.setStretch(3, 6)
+        self.verticalLayout_4.setStretch(0, 16)
+        self.verticalLayout_4.setStretch(1, 2)
+        self.verticalLayout_4.setStretch(2, 6)
 
         self.horizontalLayout_2.addLayout(self.verticalLayout_4)
 
@@ -213,17 +135,102 @@ class Ui_MainWindow(object):
         self.control_widget.addWidget(self.control_panel)
         self.stat_panel = QWidget()
         self.stat_panel.setObjectName(u"stat_panel")
-        self.horizontalLayout_4 = QHBoxLayout(self.stat_panel)
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_8 = QHBoxLayout(self.stat_panel)
+        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.gridLayout = QGridLayout()
+        self.gridLayout.setObjectName(u"gridLayout")
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.play_button = QPushButton(self.stat_panel)
         self.play_button.setObjectName(u"play_button")
 
-        self.horizontalLayout_4.addWidget(self.play_button)
+        self.horizontalLayout_7.addWidget(self.play_button)
 
         self.pause_button = QPushButton(self.stat_panel)
         self.pause_button.setObjectName(u"pause_button")
 
-        self.horizontalLayout_4.addWidget(self.pause_button)
+        self.horizontalLayout_7.addWidget(self.pause_button)
+
+
+        self.gridLayout.addLayout(self.horizontalLayout_7, 2, 1, 1, 1)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.label_2 = QLabel(self.stat_panel)
+        self.label_2.setObjectName(u"label_2")
+
+        self.horizontalLayout_4.addWidget(self.label_2)
+
+        self.curframe_spinBox = QSpinBox(self.stat_panel)
+        self.curframe_spinBox.setObjectName(u"curframe_spinBox")
+        self.curframe_spinBox.setMinimum(1)
+        self.curframe_spinBox.setMaximum(100)
+
+        self.horizontalLayout_4.addWidget(self.curframe_spinBox)
+
+
+        self.gridLayout.addLayout(self.horizontalLayout_4, 0, 0, 1, 1)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.label_4 = QLabel(self.stat_panel)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setTextFormat(Qt.PlainText)
+        self.label_4.setScaledContents(False)
+        self.label_4.setAlignment(Qt.AlignCenter)
+        self.label_4.setTextInteractionFlags(Qt.NoTextInteraction)
+
+        self.horizontalLayout_3.addWidget(self.label_4)
+
+        self.time_label = QLabel(self.stat_panel)
+        self.time_label.setObjectName(u"time_label")
+        self.time_label.setTextFormat(Qt.MarkdownText)
+        self.time_label.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_3.addWidget(self.time_label)
+
+
+        self.gridLayout.addLayout(self.horizontalLayout_3, 0, 1, 2, 1)
+
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.label = QLabel(self.stat_panel)
+        self.label.setObjectName(u"label")
+
+        self.horizontalLayout_6.addWidget(self.label)
+
+        self.framewindow_lineEdit = QLineEdit(self.stat_panel)
+        self.framewindow_lineEdit.setObjectName(u"framewindow_lineEdit")
+        self.framewindow_lineEdit.setMaxLength(6)
+
+        self.horizontalLayout_6.addWidget(self.framewindow_lineEdit)
+
+
+        self.gridLayout.addLayout(self.horizontalLayout_6, 2, 0, 1, 1)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.label_3 = QLabel(self.stat_panel)
+        self.label_3.setObjectName(u"label_3")
+
+        self.horizontalLayout_5.addWidget(self.label_3)
+
+        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.stat_panel)
+        self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
+        self.speed_doubleSpinBox.setMinimum(-10.000000000000000)
+        self.speed_doubleSpinBox.setMaximum(10.000000000000000)
+        self.speed_doubleSpinBox.setSingleStep(0.100000000000000)
+        self.speed_doubleSpinBox.setValue(1.000000000000000)
+
+        self.horizontalLayout_5.addWidget(self.speed_doubleSpinBox)
+
+
+        self.gridLayout.addLayout(self.horizontalLayout_5, 1, 0, 1, 1)
+
+        self.gridLayout.setColumnStretch(0, 2)
+        self.gridLayout.setColumnStretch(1, 3)
+
+        self.horizontalLayout_8.addLayout(self.gridLayout)
 
         self.control_widget.addWidget(self.stat_panel)
 
@@ -282,12 +289,6 @@ class Ui_MainWindow(object):
         self.actionOpen_annotation.setText(QCoreApplication.translate("MainWindow", u"Open annotation", None))
         self.actionSave_annotation.setText(QCoreApplication.translate("MainWindow", u"Save annotation", None))
         self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Frame Window", None))
-        self.framewindow_lineEdit.setText(QCoreApplication.translate("MainWindow", u"500", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
-        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
@@ -295,6 +296,12 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
         self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
+        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Frame Window", None))
+        self.framewindow_lineEdit.setText(QCoreApplication.translate("MainWindow", u"500", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
