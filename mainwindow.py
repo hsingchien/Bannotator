@@ -41,9 +41,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Connect state change
         self.state.connect(
-            "current_frame", [self.go_to_frame]
-        )  # , lambda: self.update_gui(["video_ui"])]
-        # )
+            "current_frame", [self.go_to_frame, lambda: self.update_gui(["video_ui"])]
+        )
+
         # self.state.connect("video", )
 
     def update_gui(self, topics):
@@ -80,16 +80,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video_item.setPixmap(frame_pixmap)
 
     def play_video_update_frame(self):
-        next_frame = self.state["current_frame"] + 1 * np.sign(self.state["play_speed"])
+        if abs(self.state["play_speed"] - 0.00) > 2.0001:
+            next_frame = self.state["current_frame"] + 1 * np.round(
+                self.state["play_speed"]
+            )
+        elif abs(self.state["play_speed"] - 0.00) > 0.0001:
+            next_frame = self.state["current_frame"] + 1 * np.sign(
+                self.state["play_speed"]
+            )
+
         if next_frame < self.state["video"].num_frame() and next_frame > -1:
             self.state["current_frame"] = next_frame
             return True
-        else:
+        elif next_frame >= self.state["video"].num_frame():
+            self.state["current_frame"] = self.state["video"].num_frame() - 1
             self.timer.stop()
+        elif next_frame <= 0:
+            self.state["current_frame"] = 0
+            self.timer.stop()
+        else:
             return False
 
     def play_video(self):
-        if abs(self.state["play_speed"] - 0.00) > 0.01:
+        if abs(self.state["play_speed"] - 0.00) > 2.0001:
+            # If playspeed faster than 2.0, then play at original FPS
+            self.timer.start(self.state["FPS"])
+        elif abs(self.state["play_speed"] - 0.00) > 0.0001:
+            # If playspeed slower than 2.0, play at multiplied FPS
             self.timer.start(1000 / (self.state["FPS"] * abs(self.state["play_speed"])))
         else:
             self.timer.stop()
