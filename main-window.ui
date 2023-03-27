@@ -44,9 +44,9 @@
     <item>
      <layout class="QVBoxLayout" name="control_layout" stretch="3,1">
       <item>
-       <widget class="QTabWidget" name="tabWidget">
+       <widget class="QTabWidget" name="annotation_tabs">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="behav_tab">
          <attribute name="title">
@@ -54,21 +54,25 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <item>
-           <widget class="QTableView" name="tableView"/>
+           <widget class="GenericTableView" name="behavior_table">
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+           </widget>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
              <widget class="QPushButton" name="pushButton_2">
               <property name="text">
-               <string>Add</string>
+               <string>Add behavior</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="pushButton">
               <property name="text">
-               <string>Delete</string>
+               <string>Delete behavior</string>
               </property>
              </widget>
             </item>
@@ -82,7 +86,25 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QTableView" name="tableView_2"/>
+           <widget class="GenericTableView" name="stream_table"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <item>
+             <widget class="QPushButton" name="pushButton_4">
+              <property name="text">
+               <string>Add stream</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_3">
+              <property name="text">
+               <string>Delete stream</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </widget>
@@ -92,7 +114,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
-           <widget class="QTableView" name="tableView_3"/>
+           <widget class="GenericTableView" name="stats_table"/>
           </item>
          </layout>
         </widget>
@@ -328,6 +350,11 @@
    <class>PlaySpeedSpinBox</class>
    <extends>QDoubleSpinBox</extends>
    <header>widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>GenericTableView</class>
+   <extends>QTableView</extends>
+   <header>dataview</header>
   </customwidget>
  </customwidgets>
  <resources/>

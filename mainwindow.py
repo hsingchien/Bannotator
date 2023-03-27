@@ -9,6 +9,8 @@ from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QTimer
 from state import GuiState
 from video import BehavVideo
+from data import Annotation
+from dataview import BehaviorTableModel, StreamTableModel
 import numpy as np
 import pyqtgraph as pg
 
@@ -20,6 +22,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Initialize states
         self.state = GuiState()
         self.state["video"] = None
+        self.state["annot"] = None
         self.state["FPS"] = None
         self.state["current_frame"] = None
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
@@ -38,7 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.curframe_spinBox.valueChanged.connect(self.set_frame)
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
-
+        self.actionOpen_annotation.triggered.connect(self.open_annotation)
         # Connect state change
         self.state.connect(
             "current_frame", [self.go_to_frame, lambda: self.update_gui(["video_ui"])]
@@ -73,6 +76,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video_scrollbar.setMaximum(bvideo.num_frame())
         self.curframe_spinBox.setMinimum(1)
         self.curframe_spinBox.setMaximum(bvideo.num_frame())
+
+    def open_annotation(self):
+        fileDialog = QFileDialog()
+        fileDialog.setFileMode(QFileDialog.ExistingFile)
+        anno_path, _ = fileDialog.getOpenFileName(
+            self, caption="Open annotation file", filter="Text files (*.txt)"
+        )
+        if not anno_path:
+            return False
+        annotation = Annotation({})
+        annotation.read_from_file(anno_path)
+        self.state["annot"] = annotation
+        behavior_tablemodel = BehaviorTableModel(annotation.get_behaviors(), self.state)
+        self.behavior_table.setModel(behavior_tablemodel)
+        stream_tablemodel = StreamTableModel(annotation, self.state)
+        self.stream_table.setModel(stream_tablemodel)
+        return True
 
     def go_to_frame(self, frameN):
         video = self.state["video"]

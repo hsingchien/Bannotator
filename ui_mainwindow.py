@@ -20,9 +20,9 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsView, QGridLayout,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
     QMainWindow, QMenu, QMenuBar, QPushButton,
     QScrollBar, QSizePolicy, QSpinBox, QStackedWidget,
-    QStatusBar, QTabWidget, QTableView, QVBoxLayout,
-    QWidget)
+    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
+from dataview import GenericTableView
 from widgets import PlaySpeedSpinBox
 
 class Ui_MainWindow(object):
@@ -75,16 +75,17 @@ class Ui_MainWindow(object):
 
         self.control_layout = QVBoxLayout()
         self.control_layout.setObjectName(u"control_layout")
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
+        self.annotation_tabs = QTabWidget(self.centralwidget)
+        self.annotation_tabs.setObjectName(u"annotation_tabs")
         self.behav_tab = QWidget()
         self.behav_tab.setObjectName(u"behav_tab")
         self.verticalLayout_2 = QVBoxLayout(self.behav_tab)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.tableView = QTableView(self.behav_tab)
-        self.tableView.setObjectName(u"tableView")
+        self.behavior_table = GenericTableView(self.behav_tab)
+        self.behavior_table.setObjectName(u"behavior_table")
+        self.behavior_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        self.verticalLayout_2.addWidget(self.tableView)
+        self.verticalLayout_2.addWidget(self.behavior_table)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -101,29 +102,44 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.tabWidget.addTab(self.behav_tab, "")
+        self.annotation_tabs.addTab(self.behav_tab, "")
         self.epoch_tab = QWidget()
         self.epoch_tab.setObjectName(u"epoch_tab")
         self.verticalLayout = QVBoxLayout(self.epoch_tab)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.tableView_2 = QTableView(self.epoch_tab)
-        self.tableView_2.setObjectName(u"tableView_2")
+        self.stream_table = GenericTableView(self.epoch_tab)
+        self.stream_table.setObjectName(u"stream_table")
 
-        self.verticalLayout.addWidget(self.tableView_2)
+        self.verticalLayout.addWidget(self.stream_table)
 
-        self.tabWidget.addTab(self.epoch_tab, "")
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.pushButton_4 = QPushButton(self.epoch_tab)
+        self.pushButton_4.setObjectName(u"pushButton_4")
+
+        self.horizontalLayout_9.addWidget(self.pushButton_4)
+
+        self.pushButton_3 = QPushButton(self.epoch_tab)
+        self.pushButton_3.setObjectName(u"pushButton_3")
+
+        self.horizontalLayout_9.addWidget(self.pushButton_3)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout_9)
+
+        self.annotation_tabs.addTab(self.epoch_tab, "")
         self.stats_tab = QWidget()
         self.stats_tab.setObjectName(u"stats_tab")
         self.verticalLayout_3 = QVBoxLayout(self.stats_tab)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
-        self.tableView_3 = QTableView(self.stats_tab)
-        self.tableView_3.setObjectName(u"tableView_3")
+        self.stats_table = GenericTableView(self.stats_tab)
+        self.stats_table.setObjectName(u"stats_table")
 
-        self.verticalLayout_3.addWidget(self.tableView_3)
+        self.verticalLayout_3.addWidget(self.stats_table)
 
-        self.tabWidget.addTab(self.stats_tab, "")
+        self.annotation_tabs.addTab(self.stats_tab, "")
 
-        self.control_layout.addWidget(self.tabWidget)
+        self.control_layout.addWidget(self.annotation_tabs)
 
         self.control_widget = QStackedWidget(self.centralwidget)
         self.control_widget.setObjectName(u"control_widget")
@@ -274,7 +290,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.annotation_tabs.setCurrentIndex(1)
         self.control_widget.setCurrentIndex(1)
 
 
@@ -289,11 +305,13 @@ class Ui_MainWindow(object):
         self.actionOpen_annotation.setText(QCoreApplication.translate("MainWindow", u"Open annotation", None))
         self.actionSave_annotation.setText(QCoreApplication.translate("MainWindow", u"Save annotation", None))
         self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.epoch_tab), QCoreApplication.translate("MainWindow", u"Epochs", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
+        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
+        self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
+        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Add stream", None))
+        self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Delete stream", None))
+        self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.epoch_tab), QCoreApplication.translate("MainWindow", u"Epochs", None))
+        self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
         self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
