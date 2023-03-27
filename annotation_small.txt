@@ -31,3 +31,11 @@ S2: start    end     type
      721     723    sniff_face
      724     855    other
      856     883    approach
+
+S3: start    end     type
+-----------------------------
+       1     375    human_interfere
+     376     448    other
+     449     459    general-sniffing
+     460     855    other
+     856     883    approach

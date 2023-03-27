@@ -53,6 +53,9 @@ class BehaviorTableModel(QAbstractTableModel):
         # Color background for color column
         if role == Qt.BackgroundRole and key == "color":
             return QtGui.QBrush(getattr(data_item, "color"))
+        if role == Qt.DisplayRole and key == "color":
+            color_obj = getattr(data_item, "color")
+            return color_obj.name()
         return None
 
     def flags(self, index: QModelIndex):
@@ -145,7 +148,7 @@ class StreamTableModel(QAbstractTableModel):
                 col_str = self.properties[idx % 3]
                 # use title case if key is lowercase
                 if idx % 3 == 1:
-                    col_str = "Stream " + str(streamIDs[idx // 3]) + "\n" + col_str
+                    col_str = "S-" + str(streamIDs[idx // 3]) + "\n" + col_str
                 else:
                     col_str = "\n" + col_str
                 # otherwise leave case as is
@@ -197,6 +200,7 @@ class StreamHeaderView(QHeaderView):
 
     def paintSection(self, painter, rect, logicalIndex):
         if logicalIndex % 3 == 0 and logicalIndex // 3 > 0:
+            # Color line at 3,6,9....
             painter.save()
             painter.setPen(QtGui.QPen(QtGui.QColor("black"), 2, Qt.SolidLine))
             painter.drawLine(rect.left(), rect.top(), rect.left(), rect.bottom())
@@ -218,6 +222,10 @@ class StreamHeaderView(QHeaderView):
             )
         painter.restore()
         painter.end()
+
+    def resizeEvent(self, event) -> None:
+        self.line_pos.clear()
+        return super().resizeEvent(event)
 
 
 class StreamTableView(QTableView):

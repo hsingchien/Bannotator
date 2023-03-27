@@ -2,6 +2,7 @@ from PySide6.QtGui import QColor
 from PySide6 import QtCore
 from typing import List, Dict
 import re
+import numpy as np
 
 
 class Epoch(object):
@@ -16,16 +17,28 @@ class Epoch(object):
         self.behavior = behavior
         self.stream = stream
         # [start, end] is the inclusive index range
-        self.start = start
-        self.end = end
+        self._start = start
+        self._end = end
+
+    @property
+    def start(self):
+        return self._start
+
+    @start.setter
+    def start(self, new_start: int = None):
+        self._start = new_start
+
+    @property
+    def end(self):
+        return self._end
+
+    @end.setter
+    def end(self, new_end: int = None):
+        self._end = new_end
 
     @property
     def name(self):
         return self.behavior.name
-
-    @name.setter
-    def name(self, new_name):
-        self.behavior.name = new_name
 
     def __str__(self) -> str:
         return (
@@ -88,7 +101,7 @@ class Behavior(object):
     ):
         self._name = name
         self.keybind = keybind
-        self.ID = ID
+        self._ID = ID
         self.color = color
         self.epochs = epochs
         self.stream = stream
@@ -100,6 +113,14 @@ class Behavior(object):
     @name.setter
     def name(self, new_name):
         self._name = new_name
+
+    @property
+    def ID(self):
+        return self._ID
+
+    @ID.setter
+    def ID(self, new_ID: int = None):
+        self._ID = new_ID
 
     def __str__(self) -> str:
         return f"stream: {self.stream}, {self.name}, ID: {self.ID}, keybind: {self.keybind}"
@@ -145,6 +166,11 @@ class Stream(object):
         self.ID = ID
         self.epochs = epochs
         self.behaviors = behaviors
+        self._length = self.get_length()
+
+    @property
+    def length(self):
+        return self._length
 
     def sort_epoch(self):
         self.epochs = sorted(self.epochs, reverse=False)
@@ -167,6 +193,20 @@ class Stream(object):
                 name=behav_name, keybind=keybind, ID=i, stream=self
             )
 
+    def get_stream_vect(self):
+        # Returns 1 x stream length vector with each entry being behavior ID
+        vec = np.zeros(self.length)
+        for epoch in self.epochs:
+            start = epoch.start - 1
+            end = epoch.end
+            vec[start:end] = epoch.get_behavior().ID
+        return vec
+
+    def assign_color(self, color_dict):
+        for i in self.behaviors.keys():
+            behav = self.behaviors[i]
+            behav.set_color(color_dict[behav.name])
+
     def construct_epochs_from_sequence(self, sequence):
         for i, annot in enumerate(sequence):
             start, end, behav_name = annot.split()
@@ -184,13 +224,25 @@ class Stream(object):
     def get_epochs(self):
         return self.epochs
 
+    def get_length(self):
+        if self.epochs:
+            self.sort_epoch()
+            last_epoch = self.epochs[len(self.epochs) - 1]
+            return last_epoch.end
+        else:
+            return 0
+
 
 class Annotation(QtCore.QObject):
     construct_from_file = QtCore.Signal(str)
+    content_changed = QtCore.Signal()
 
     def __init__(self, streams: Dict = {}):
         super().__init__()
+        # Use dict to organize streams
         self._streams = streams
+        # Behvior-color dict
+        self.behav_color = dict()
 
     @property
     def streams(self):
@@ -269,3 +321,16 @@ class Annotation(QtCore.QObject):
         for i in self.streams.keys():
             epoch_lens.append(len(self.streams[i].get_epochs()))
         return epoch_lens
+
+    def assign_behavior_color(self):
+        behaviors = self.get_behaviors()
+        behavior_names = [i.name for i in behaviors]
+        for i, behav in enumerate(behavior_names):
+            hue = int(255 * i / len(behavior_names))
+            saturation = 200
+            value = 255
+            self.behav_color[behav] = QColor.fromHsv(hue, saturation, value)
+        # Assign colors to the behavior objects for all the streams
+        for i in self.streams.keys():
+            stream = self.streams[i]
+            stream.assign_color(self.behav_color)

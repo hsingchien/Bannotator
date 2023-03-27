@@ -90,6 +90,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         annotation.read_from_file(anno_path)
+        annotation.assign_behavior_color()
         self.state["annot"] = annotation
         behavior_tablemodel = BehaviorTableModel(annotation.get_behaviors(), self.state)
         self.behavior_table.setModel(behavior_tablemodel)
