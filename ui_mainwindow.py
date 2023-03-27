@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsView, QGridLayout,
     QScrollBar, QSizePolicy, QSpinBox, QStackedWidget,
     QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
-from dataview import GenericTableView
+from dataview import (GenericTableView, StreamTableView)
 from widgets import PlaySpeedSpinBox
 
 class Ui_MainWindow(object):
@@ -107,7 +107,7 @@ class Ui_MainWindow(object):
         self.epoch_tab.setObjectName(u"epoch_tab")
         self.verticalLayout = QVBoxLayout(self.epoch_tab)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.stream_table = GenericTableView(self.epoch_tab)
+        self.stream_table = StreamTableView(self.epoch_tab)
         self.stream_table.setObjectName(u"stream_table")
 
         self.verticalLayout.addWidget(self.stream_table)

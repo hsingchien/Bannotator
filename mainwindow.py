@@ -86,6 +86,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not anno_path:
             return False
         annotation = Annotation({})
+        annotation.construct_from_file.connect(
+            lambda x: self.statusbar.showMessage(x, 5000)
+        )
         annotation.read_from_file(anno_path)
         self.state["annot"] = annotation
         behavior_tablemodel = BehaviorTableModel(annotation.get_behaviors(), self.state)

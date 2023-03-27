@@ -114,7 +114,6 @@ class StreamTableModel(QAbstractTableModel):
         streamIDs = list(self.annotation.streams.keys())
         key = self.properties[index.column() % 3]
         stream = self.annotation.streams[streamIDs[index.column() // 3]]
-        print(streamIDs[index.column() // 3])
         epoch_list = stream.get_epochs()
 
         idx = index.row()
@@ -139,13 +138,16 @@ class StreamTableModel(QAbstractTableModel):
         return flags
 
     def headerData(self, idx: int, orientation: Qt.Orientation, role=Qt.DisplayRole):
-        # Display first row
+        # Horizontal header
+        streamIDs = list(self.annotation.streams.keys())
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
                 col_str = self.properties[idx % 3]
                 # use title case if key is lowercase
-                if col_str == col_str.lower():
-                    return col_str.title()
+                if idx % 3 == 1:
+                    col_str = "Stream " + str(streamIDs[idx // 3]) + "\n" + col_str
+                else:
+                    col_str = "\n" + col_str
                 # otherwise leave case as is
                 return col_str
             elif orientation == Qt.Vertical:
@@ -156,24 +158,20 @@ class StreamTableModel(QAbstractTableModel):
 
         return None
 
-    def get_item_index(self, target, prop):
-        # Return row number of the target item
-        for i, item in enumerate(self.item_list):
-            if item[prop] is target:
-                return i
-        return None
+    # def get_item_index(self, target_stream, prop):
+    #     # Return row number of the target item
+    #     for i, item in enumerate(self.item_list):
+    #         if item[prop] is target:
+    #             return i
+    #     return None
 
 
 class GenericTableView(QTableView):
-    def __init__(self, state: GuiState = None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setHorizontalHeader()
-        self.state = state
-
-    def setHorizontalHeader(self):
-        header_view = QHeaderView(Qt.Horizontal)
+        header_view = QHeaderView(Qt.Horizontal, self)
         header_view.setSectionResizeMode(QHeaderView.Stretch)
         header_view.setSectionsClickable(False)
         super().setHorizontalHeader(header_view)
@@ -182,12 +180,63 @@ class GenericTableView(QTableView):
         idx = self.currentIndex()
         return self.model().item_list[idx.row()]
 
-    def setstate(self, state: GuiState):
-        self.state = state
-
     def repaint_table(self):
         # Repaint the whole table
         self.model().dataChanged.emit(
             self.model().index(0, 0),
             self.model().index(self.model().rowCount(), self.model().columnCount()),
         )
+
+
+class StreamHeaderView(QHeaderView):
+    def __init__(self, orientation, parent):
+        super().__init__(orientation, parent)
+        self.setSectionResizeMode(QHeaderView.Stretch)
+        self.setSectionsClickable(False)
+        self.line_pos = set()
+
+    def paintSection(self, painter, rect, logicalIndex):
+        if logicalIndex % 3 == 0 and logicalIndex // 3 > 0:
+            painter.save()
+            painter.setPen(QtGui.QPen(QtGui.QColor("black"), 2, Qt.SolidLine))
+            painter.drawLine(rect.left(), rect.top(), rect.left(), rect.bottom())
+            painter.restore()
+            self.line_pos.add(rect.left())
+        super().paintSection(painter, rect, logicalIndex)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self.viewport())
+        painter.save()
+        painter.setPen(QtGui.QPen(QtGui.QColor("black"), 2, Qt.SolidLine))
+        for lpos in self.line_pos:
+            painter.drawLine(
+                lpos,
+                self.rect().top(),
+                lpos,
+                self.rect().bottom(),  # self.sectionViewportPosition(0)
+            )
+        painter.restore()
+        painter.end()
+
+
+class StreamTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        header_view = StreamHeaderView(Qt.Horizontal, self)
+        self.setHorizontalHeader(header_view)
+
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self.viewport())
+
+        solid_pen = QtGui.QPen(Qt.SolidLine)
+        solid_pen.setWidth(2)
+        painter.setPen(solid_pen)
+        try:
+            for column in range(3, self.model().columnCount(), 3):
+                column_left = self.columnViewportPosition(column)
+                painter.drawLine(column_left, 0, column_left, self.viewport().height())
+        except Exception:
+            pass
+        painter.end()

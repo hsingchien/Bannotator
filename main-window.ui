@@ -86,7 +86,7 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="GenericTableView" name="stream_table"/>
+           <widget class="StreamTableView" name="stream_table"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -353,6 +353,11 @@
   </customwidget>
   <customwidget>
    <class>GenericTableView</class>
+   <extends>QTableView</extends>
+   <header>dataview</header>
+  </customwidget>
+  <customwidget>
+   <class>StreamTableView</class>
    <extends>QTableView</extends>
    <header>dataview</header>
   </customwidget>
