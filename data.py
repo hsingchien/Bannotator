@@ -210,8 +210,7 @@ class Stream(object):
         return vec
 
     def assign_color(self, color_dict):
-        for i in self.behaviors.keys():
-            behav = self.behaviors[i]
+        for _, behav in self.behaviors.items():
             behav.set_color(color_dict[behav.name])
 
     def construct_epochs_from_sequence(self, sequence):
@@ -227,7 +226,7 @@ class Stream(object):
         self._length = self.get_length()
 
     def get_behaviors(self):
-        return [self.behaviors[i] for i in self.behaviors.keys()]
+        return [behavior for _, behavior in self.behaviors.items()]
 
     def get_epochs(self):
         return self.epochs
@@ -301,8 +300,7 @@ class Annotation(QtCore.QObject):
 
     def construct_streams(self, config, annots):
         try:
-            for stream_id in annots.keys():
-                annotation_sequence = annots[stream_id]
+            for stream_id, annotation_sequence in annots.items():
                 # Create behaviors for the stream
                 self._streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
                 self._streams[stream_id].construct_behavior_from_config(config)
@@ -326,8 +324,8 @@ class Annotation(QtCore.QObject):
 
     def num_epochs(self):
         epoch_lens = []
-        for i in self.streams.keys():
-            epoch_lens.append(len(self.streams[i].get_epochs()))
+        for _, stream in self.streams.items():
+            epoch_lens.append(len(stream.get_epochs()))
         return epoch_lens
 
     def assign_behavior_color(self):
@@ -339,8 +337,7 @@ class Annotation(QtCore.QObject):
             value = 255
             self.behav_color[behav] = QColor.fromHsv(hue, saturation, value)
         # Assign colors to the behavior objects for all the streams
-        for i in self.streams.keys():
-            stream = self.streams[i]
+        for _, stream in self.streams.items():
             stream.assign_color(self.behav_color)
 
     def get_stream_vects(self):
