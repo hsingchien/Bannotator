@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QDoubleSpinBox, QLineEdit, QWidget
+from PySide6.QtWidgets import QDoubleSpinBox, QLineEdit, QWidget, QScrollBar
 from PySide6.QtGui import QIntValidator, QPainter
+from PySide6.QtCore import Signal, Slot
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget
 from typing import Dict
@@ -42,8 +43,19 @@ class IntLineEdit(QLineEdit):
     def __init__(self, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         validator = QIntValidator(self)
-        validator.setBottom(50)
+        validator.setBottom(1)
         self.setValidator(validator)
+
+    def set_validator_top(self, int):
+        validator = self.validator()
+        validator.setTop(int)
+        return True
+
+
+class VideoScrollBar(QScrollBar):
+    @Slot(int)
+    def changePageStep(self, pagestep):
+        self.setPageStep(int(pagestep))
 
 
 class TrackPlotView(GraphicsLayoutWidget):
@@ -80,3 +92,4 @@ class TrackBar(QWidget):
             painter.setBrush(color)
             painter.setPen(color)
             painter.drawRect(i * bar_width, 0, bar_width, bar_height)
+        painter.end()

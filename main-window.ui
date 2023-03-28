@@ -21,7 +21,7 @@
        <widget class="QGraphicsView" name="vid1_view"/>
       </item>
       <item>
-       <widget class="QScrollBar" name="video_scrollbar">
+       <widget class="VideoScrollBar" name="video_scrollbar">
         <property name="minimum">
          <number>1</number>
         </property>
@@ -277,7 +277,7 @@
                   <number>1</number>
                  </property>
                  <property name="maximum">
-                  <number>100</number>
+                  <number>1000</number>
                  </property>
                 </widget>
                </item>
@@ -424,8 +424,68 @@
    <class>IntLineEdit</class>
    <extends>QLineEdit</extends>
    <header>widgets</header>
+   <slots>
+    <signal>valueChanged(int)</signal>
+   </slots>
+  </customwidget>
+  <customwidget>
+   <class>VideoScrollBar</class>
+   <extends>QScrollBar</extends>
+   <header>widgets</header>
+   <slots>
+    <slot>changePageStep(QString)</slot>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>curframe_spinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>video_scrollbar</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1082</x>
+     <y>600</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>587</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>video_scrollbar</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>curframe_spinBox</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>471</x>
+     <y>587</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1082</x>
+     <y>600</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>trackwindow_lineEdit</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>video_scrollbar</receiver>
+   <slot>changePageStep(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1081</x>
+     <y>703</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>587</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

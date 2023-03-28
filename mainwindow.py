@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["video"] = None
         self.state["annot"] = None
         self.state["FPS"] = None
-        self.state["current_frame"] = None
+        self.state["current_frame"] = self.curframe_spinBox.value()
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
         self.state["track_window"] = int(self.trackwindow_lineEdit.text())
         self.state["tracks"] = dict()
@@ -54,26 +54,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
         # Connect state change
         self.state.connect(
-            "current_frame", [self.go_to_frame, lambda: self.update_gui(["video_ui"])]
+            "current_frame",
+            [self.go_to_frame, lambda: self.update_gui(["video_ui", "tracks"])],
         )
         self.state.connect(
             "track_window",
-            [self.update_tracks, lambda: self.update_gui(["track_plot"])],
+            [lambda: self.update_gui(["tracks"])],
         )
         self.state.connect("annot", self.plot_tracks)
+        self.state.connect("video", lambda: self.update_gui(["gui"]))
 
     def update_gui(self, topics):
         if "video_ui" in topics:
             self.video_scrollbar.setValue(self.state["current_frame"] + 1)
             self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
+        if "tracks" in topics:
+            try:
+                self.update_tracks()
+            except Exception:
+                pass
+        if "gui" in topics:
+            self.trackwindow_lineEdit.set_validator_top(self.state["video"].num_frame())
 
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
         self.state["current_frame"] = frameN - 1
 
     def set_track_window(self, value):
-        self.video_scrollbar.setPageStep(value)
-        self.state["track_window"] = value
+        self.state["track_window"] = int(value)
 
     def open_video(self):
         fileDialog = QFileDialog()
@@ -173,12 +181,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def plot_tracks(self):
         annot = self.state["annot"]
         streams = annot.get_streams()
+        current_frame = self.state["current_frame"]
+        track_window = self.state["track_window"]
+        track_start = current_frame - int(1 / 2 * track_window)
+        track_end = current_frame + int(1 / 2 * track_window)
         for _, stream in streams.items():
             stream_vect = stream.get_stream_vect()
             color_dict = stream.get_color_dict()
-            track = TrackBar(data=stream_vect, color_dict=color_dict)
+            this_start = track_start
+            this_end = track_end
+            if this_start < 0:
+                this_start = 0
+                this_end = this_start + track_window
+            if this_end >= stream_vect.size:
+                this_end = stream_vect.size
+                this_start = this_end - track_window
+            window_vect = stream_vect[this_start:this_end]
+            track = TrackBar(data=window_vect, color_dict=color_dict)
             self.state["tracks"][stream.ID] = track
             self.track_layout.addWidget(track)
 
     def update_tracks(self):
-        pass
+        annot = self.state["annot"]
+        streams = annot.get_streams()
+        current_frame = self.state["current_frame"]
+        track_window = self.state["track_window"]
+        track_start = current_frame - int(1 / 2 * track_window)
+        track_end = current_frame + int(1 / 2 * track_window)
+        for _, stream in streams.items():
+            stream_vect = stream.get_stream_vect()
+            this_start = track_start
+            this_end = track_end
+            if this_start < 0:
+                this_start = 0
+                this_end = this_start + track_window
+            if this_end >= stream_vect.size:
+                this_end = stream_vect.size
+                this_start = this_end - track_window
+            window_vect = stream_vect[this_start:this_end]
+            self.state["tracks"][stream.ID].set_data(window_vect)
+        return True

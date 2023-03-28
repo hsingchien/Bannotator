@@ -19,11 +19,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
     QGridLayout, QHBoxLayout, QHeaderView, QLabel,
     QMainWindow, QMenu, QMenuBar, QPushButton,
-    QScrollBar, QSizePolicy, QSpinBox, QStackedWidget,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QSizePolicy, QSpinBox, QStackedWidget, QStatusBar,
+    QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
-from widgets import (IntLineEdit, PlaySpeedSpinBox)
+from widgets import (IntLineEdit, PlaySpeedSpinBox, VideoScrollBar)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -53,7 +53,7 @@ class Ui_MainWindow(object):
 
         self.display_layout.addWidget(self.vid1_view)
 
-        self.video_scrollbar = QScrollBar(self.centralwidget)
+        self.video_scrollbar = VideoScrollBar(self.centralwidget)
         self.video_scrollbar.setObjectName(u"video_scrollbar")
         self.video_scrollbar.setMinimum(1)
         self.video_scrollbar.setMaximum(1000)
@@ -101,12 +101,17 @@ class Ui_MainWindow(object):
         self.menuFile.setObjectName(u"menuFile")
         self.menuHelp = QMenu(self.menubar)
         self.menuHelp.setObjectName(u"menuHelp")
+        self.menuWindows = QMenu(self.menubar)
+        self.menuWindows.setObjectName(u"menuWindows")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
         self.dockWidget = QDockWidget(MainWindow)
         self.dockWidget.setObjectName(u"dockWidget")
+        self.dockWidget.setFloating(False)
+        self.dockWidget.setFeatures(QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
+        self.dockWidget.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         self.dockWidgetContents = QWidget()
         self.dockWidgetContents.setObjectName(u"dockWidgetContents")
         self.horizontalLayout_11 = QHBoxLayout(self.dockWidgetContents)
@@ -115,6 +120,9 @@ class Ui_MainWindow(object):
         self.control_layout.setObjectName(u"control_layout")
         self.annotation_tabs = QTabWidget(self.dockWidgetContents)
         self.annotation_tabs.setObjectName(u"annotation_tabs")
+        self.annotation_tabs.setAcceptDrops(False)
+        self.annotation_tabs.setTabShape(QTabWidget.Rounded)
+        self.annotation_tabs.setMovable(True)
         self.behav_tab = QWidget()
         self.behav_tab.setObjectName(u"behav_tab")
         self.verticalLayout_2 = QVBoxLayout(self.behav_tab)
@@ -221,7 +229,7 @@ class Ui_MainWindow(object):
         self.curframe_spinBox = QSpinBox(self.control_panel)
         self.curframe_spinBox.setObjectName(u"curframe_spinBox")
         self.curframe_spinBox.setMinimum(1)
-        self.curframe_spinBox.setMaximum(100)
+        self.curframe_spinBox.setMaximum(1000)
 
         self.horizontalLayout_4.addWidget(self.curframe_spinBox)
 
@@ -304,6 +312,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuVideo.menuAction())
         self.menubar.addAction(self.menuAnnotation.menuAction())
+        self.menubar.addAction(self.menuWindows.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuVideo.addAction(self.actionOpen_video)
         self.menuAnnotation.addAction(self.actionOpen_annotation)
@@ -314,6 +323,9 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
+        self.curframe_spinBox.valueChanged.connect(self.video_scrollbar.setValue)
+        self.video_scrollbar.valueChanged.connect(self.curframe_spinBox.setValue)
+        self.trackwindow_lineEdit.textChanged.connect(self.video_scrollbar.changePageStep)
 
         self.annotation_tabs.setCurrentIndex(0)
         self.control_widget.setCurrentIndex(1)
@@ -334,6 +346,7 @@ class Ui_MainWindow(object):
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
+        self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
