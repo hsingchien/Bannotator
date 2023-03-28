@@ -17,13 +17,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsView, QGridLayout,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QScrollBar, QSizePolicy, QSpinBox, QStackedWidget,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QHBoxLayout, QHeaderView, QLabel, QMainWindow,
+    QMenu, QMenuBar, QPushButton, QScrollBar,
+    QSizePolicy, QSpinBox, QStackedWidget, QStatusBar,
+    QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import (GenericTableView, StreamTableView)
-from widgets import PlaySpeedSpinBox
+from widgets import (IntLineEdit, PlaySpeedSpinBox, TrackPlotView)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -56,13 +56,13 @@ class Ui_MainWindow(object):
         self.video_scrollbar = QScrollBar(self.centralwidget)
         self.video_scrollbar.setObjectName(u"video_scrollbar")
         self.video_scrollbar.setMinimum(1)
-        self.video_scrollbar.setMaximum(100)
-        self.video_scrollbar.setPageStep(10)
+        self.video_scrollbar.setMaximum(1000)
+        self.video_scrollbar.setPageStep(500)
         self.video_scrollbar.setOrientation(Qt.Horizontal)
 
         self.verticalLayout_4.addWidget(self.video_scrollbar)
 
-        self.track_view = QGraphicsView(self.centralwidget)
+        self.track_view = TrackPlotView(self.centralwidget)
         self.track_view.setObjectName(u"track_view")
 
         self.verticalLayout_4.addWidget(self.track_view)
@@ -215,11 +215,11 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_6.addWidget(self.label)
 
-        self.framewindow_lineEdit = QLineEdit(self.stat_panel)
-        self.framewindow_lineEdit.setObjectName(u"framewindow_lineEdit")
-        self.framewindow_lineEdit.setMaxLength(6)
+        self.trackwindow_lineEdit = IntLineEdit(self.stat_panel)
+        self.trackwindow_lineEdit.setObjectName(u"trackwindow_lineEdit")
+        self.trackwindow_lineEdit.setMaxLength(6)
 
-        self.horizontalLayout_6.addWidget(self.framewindow_lineEdit)
+        self.horizontalLayout_6.addWidget(self.trackwindow_lineEdit)
 
 
         self.gridLayout.addLayout(self.horizontalLayout_6, 2, 0, 1, 1)
@@ -317,8 +317,8 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Frame Window", None))
-        self.framewindow_lineEdit.setText(QCoreApplication.translate("MainWindow", u"500", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
+        self.trackwindow_lineEdit.setText(QCoreApplication.translate("MainWindow", u"500", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))

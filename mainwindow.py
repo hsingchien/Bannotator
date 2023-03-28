@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QGraphicsPixmapItem,
 )
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QTimer, Qt
 from state import GuiState
 from video import BehavVideo
 from data import Annotation
@@ -26,6 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["FPS"] = None
         self.state["current_frame"] = None
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
+        self.state["track_window"] = int(self.trackwindow_lineEdit.text())
         # Set up UI
         self.bvscene = QGraphicsScene()
         self.vid1_view.setScene(self.bvscene)
@@ -34,11 +35,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.play_video_update_frame)
 
-        # Set up pushbuttons and spinboxes
+        # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.speed_doubleSpinBox.valueChanged.connect(self.set_play_speed)
         self.video_scrollbar.valueChanged.connect(self.set_frame)
         self.curframe_spinBox.valueChanged.connect(self.set_frame)
+        self.trackwindow_lineEdit.textChanged.connect(self.set_track_window)
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
@@ -46,8 +48,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state.connect(
             "current_frame", [self.go_to_frame, lambda: self.update_gui(["video_ui"])]
         )
-
-        # self.state.connect("video", )
+        self.state.connect(
+            "track_window",
+            [self.update_tracks, lambda: self.update_gui(["track_plot"])],
+        )
+        self.state.connect("annot", self.plot_tracks)
 
     def update_gui(self, topics):
         if "video_ui" in topics:
@@ -57,6 +62,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
         self.state["current_frame"] = frameN - 1
+
+    def set_track_window(self, value):
+        self.video_scrollbar.setPageStep(value)
+        self.state["track_window"] = value
 
     def open_video(self):
         fileDialog = QFileDialog()
@@ -85,6 +94,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if not anno_path:
             return False
+        # Create annotation object
         annotation = Annotation({})
         annotation.construct_from_file.connect(
             lambda x: self.statusbar.showMessage(x, 5000)
@@ -141,3 +151,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.play_video()
         else:
             return True
+
+    def plot_tracks(self):
+        annot = self.state["annot"]
+        streams = annot.get_streams()
+        plot_axis = self.track_view.addPlot()
+        plot_axis.setRange(
+            xRange=(1, annot.get_length()),
+            yRange=(0, 1),
+            padding=0,
+            disableAutoRange=True,
+        )
+        plot_axis.showAxes(False)
+        y_ = 0
+        for _, stream in streams.items():
+            epochs = stream.get_epochs()
+            for epoch in epochs:
+                x_start = epoch.start
+                x_end = epoch.end
+                plot_item = pg.PlotDataItem([x_start, x_end], [y_, y_])
+                pen = pg.mkPen({"color": epoch.color.name(), "width": 10})
+                pen.setCapStyle(Qt.SquareCap)
+                pen.setJoinStyle(Qt.MiterJoin)
+                plot_item.setPen(pen)
+                plot_axis.addItem(plot_item)
+            y_ += 0.2
+
+    def update_tracks(self):
+        pass

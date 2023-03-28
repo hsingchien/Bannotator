@@ -1,5 +1,7 @@
-from PySide6.QtWidgets import QDoubleSpinBox
+from PySide6.QtWidgets import QDoubleSpinBox, QLineEdit
+from PySide6.QtGui import QIntValidator
 import numpy as np
+from pyqtgraph import GraphicsLayoutWidget
 
 
 class PlaySpeedSpinBox(QDoubleSpinBox):
@@ -33,3 +35,16 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps * self.step_ratio)
         else:
             return super().stepBy(steps)
+
+
+class IntLineEdit(QLineEdit):
+    def __init__(self, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        validator = QIntValidator(self)
+        validator.setBottom(50)
+        self.setValidator(validator)
+
+
+class TrackPlotView(GraphicsLayoutWidget):
+    def __init__(self, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)

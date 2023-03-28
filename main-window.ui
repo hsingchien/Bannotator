@@ -26,10 +26,10 @@
          <number>1</number>
         </property>
         <property name="maximum">
-         <number>100</number>
+         <number>1000</number>
         </property>
         <property name="pageStep">
-         <number>10</number>
+         <number>500</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -37,7 +37,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QGraphicsView" name="track_view"/>
+       <widget class="TrackPlotView" name="track_view"/>
       </item>
      </layout>
     </item>
@@ -219,12 +219,12 @@
               <item>
                <widget class="QLabel" name="label">
                 <property name="text">
-                 <string>Frame Window</string>
+                 <string>Track Window</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="framewindow_lineEdit">
+               <widget class="IntLineEdit" name="trackwindow_lineEdit">
                 <property name="text">
                  <string>500</string>
                 </property>
@@ -360,6 +360,16 @@
    <class>StreamTableView</class>
    <extends>QTableView</extends>
    <header>dataview</header>
+  </customwidget>
+  <customwidget>
+   <class>IntLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>TrackPlotView</class>
+   <extends>QGraphicsView</extends>
+   <header>widgets</header>
   </customwidget>
  </customwidgets>
  <resources/>

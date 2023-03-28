@@ -40,6 +40,10 @@ class Epoch(object):
     def name(self):
         return self.behavior.name
 
+    @property
+    def color(self):
+        return self.behavior.get_color()
+
     def __str__(self) -> str:
         return (
             f"Stream {self.streamID} - {self.behavior.name}: {self.start} - {self.end}"
@@ -145,6 +149,9 @@ class Behavior(object):
         self.color = new_color
         return True
 
+    def get_color(self):
+        return self.color
+
     def num_epochs(self):
         return len(self.epochs)
 
@@ -217,6 +224,7 @@ class Stream(object):
             )
             self.epochs.append(epoch)
             self.behaviors[behav_name].append_epoch(epoch)
+        self._length = self.get_length()
 
     def get_behaviors(self):
         return [self.behaviors[i] for i in self.behaviors.keys()]
@@ -334,3 +342,18 @@ class Annotation(QtCore.QObject):
         for i in self.streams.keys():
             stream = self.streams[i]
             stream.assign_color(self.behav_color)
+
+    def get_stream_vects(self):
+        vec_dict = dict()
+        for i in self.streams.keys():
+            vec_dict[i] = self.streams[i].get_stream_vect()
+        return vec_dict
+
+    def get_streams(self):
+        return self.streams
+
+    def get_length(self):
+        length = 0
+        for _, i in self.streams.items():
+            length = max(i.length, length)
+        return length
