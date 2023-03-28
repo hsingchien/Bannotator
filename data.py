@@ -81,6 +81,7 @@ class Epoch(object):
             return False
         if new_behavior is not self.behavior:
             self.behavior = new_behavior
+            return True
 
     def set_start_end(self, start: int = None, end: int = None):
         if not (start or end):
@@ -106,7 +107,7 @@ class Behavior(object):
         self._name = name
         self.keybind = keybind
         self._ID = ID
-        self.color = color
+        self._color = color
         self.epochs = epochs
         self.stream = stream
 
@@ -126,9 +127,12 @@ class Behavior(object):
     def ID(self, new_ID: int = None):
         self._ID = new_ID
 
+    @property
+    def color(self):
+        return self._color.name()
+
     def __str__(self) -> str:
-        return f"stream: {self.stream}, {self.name}, ID: {self.ID}, keybind: {self.keybind}"
-        # # color: {self.color.name()}"
+        return f"stream: {self.stream}, {self.name}, ID: {self.ID}, keybind: {self.keybind}, color: {self.color}"
 
     def get_name(self):
         return self.name
@@ -146,11 +150,11 @@ class Behavior(object):
         return True
 
     def set_color(self, new_color: QColor = None):
-        self.color = new_color
+        self._color = new_color
         return True
 
     def get_color(self):
-        return self.color
+        return self._color
 
     def num_epochs(self):
         return len(self.epochs)
@@ -170,7 +174,7 @@ class Behavior(object):
 class Stream(object):
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
-        self.ID = ID
+        self._ID = ID
         self.epochs = epochs
         self.behaviors = behaviors
         self._length = self.get_length()
@@ -178,6 +182,10 @@ class Stream(object):
     @property
     def length(self):
         return self._length
+    
+    @property
+    def ID(self):
+        return self._ID
 
     def sort_epoch(self):
         self.epochs = sorted(self.epochs, reverse=False)
@@ -253,17 +261,9 @@ class Annotation(QtCore.QObject):
     def __init__(self, streams: Dict = {}):
         super().__init__()
         # Use dict to organize streams
-        self._streams = streams
+        self.streams = streams
         # Behvior-color dict
         self.behav_color = dict()
-
-    @property
-    def streams(self):
-        return self._streams
-
-    @streams.setter
-    def streams(self, new_streams):
-        self._streams = new_streams
 
     def read_from_file(self, txt_path):
         config = []
@@ -308,11 +308,9 @@ class Annotation(QtCore.QObject):
         try:
             for stream_id, annotation_sequence in annots.items():
                 # Create behaviors for the stream
-                self._streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
-                self._streams[stream_id].construct_behavior_from_config(config)
-                self._streams[stream_id].construct_epochs_from_sequence(
-                    annotation_sequence
-                )
+                self.streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
+                self.streams[stream_id].construct_behavior_from_config(config)
+                self.streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
             return True
         except Exception:
             return False

@@ -12,7 +12,7 @@ from PySide6.QtCore import QTimer, Qt
 from state import GuiState
 from video import BehavVideo
 from data import Annotation
-from dataview import BehaviorTableModel, StreamTableModel
+from dataview import BehaviorTableModel, StreamTableModel, GenericTableView
 from widgets import TrackBar
 import numpy as np
 import pyqtgraph as pg
@@ -31,6 +31,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
         self.state["track_window"] = int(self.trackwindow_lineEdit.text())
         self.state["tracks"] = dict()
+        # Key = ID, item = TrackBar widget
+        self.state["stream_tables"] = dict()
+        # Key = ID, item = stream table model
+
         # Set up UI
         self.bvscene = QGraphicsScene()
         self.vid1_view.setScene(self.bvscene)
@@ -106,10 +110,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         annotation.read_from_file(anno_path)
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
-        behavior_tablemodel = BehaviorTableModel(annotation.get_behaviors(), self.state)
+        # Set up table views
+        behavior_tablemodel = BehaviorTableModel(
+            annotation.get_behaviors(), ["ID", "name", "keybind", "color"], self.state
+        )
         self.behavior_table.setModel(behavior_tablemodel)
-        stream_tablemodel = StreamTableModel(annotation, self.state)
-        self.stream_table.setModel(stream_tablemodel)
+        streams = annotation.get_streams()
+        for ID, stream in streams.items():
+            stream_table = StreamTableModel(
+                stream=stream, properties=["name", "start", "end"], state=self.state
+            )
+            stream_table_view = GenericTableView()
+            stream_table_view.setModel(stream_table)
+            self.state["stream_tables"][ID] = stream_table_view
+            self.stream_table_layout.addWidget(stream_table_view)
         return True
 
     def go_to_frame(self, frameN):

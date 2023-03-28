@@ -16,13 +16,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsView, QGridLayout,
-    QHBoxLayout, QHeaderView, QLabel, QMainWindow,
-    QMenu, QMenuBar, QPushButton, QScrollBar,
-    QSizePolicy, QSpinBox, QStackedWidget, QStatusBar,
-    QTabWidget, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
+    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QScrollBar, QSizePolicy, QSpinBox, QStackedWidget,
+    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
-from dataview import (GenericTableView, StreamTableView)
+from dataview import GenericTableView
 from widgets import (IntLineEdit, PlaySpeedSpinBox)
 
 class Ui_MainWindow(object):
@@ -88,9 +88,32 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addLayout(self.display_layout)
 
+        self.horizontalLayout_2.setStretch(0, 2)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QMenuBar(MainWindow)
+        self.menubar.setObjectName(u"menubar")
+        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
+        self.menuVideo = QMenu(self.menubar)
+        self.menuVideo.setObjectName(u"menuVideo")
+        self.menuAnnotation = QMenu(self.menubar)
+        self.menuAnnotation.setObjectName(u"menuAnnotation")
+        self.menuFile = QMenu(self.menubar)
+        self.menuFile.setObjectName(u"menuFile")
+        self.menuHelp = QMenu(self.menubar)
+        self.menuHelp.setObjectName(u"menuHelp")
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QStatusBar(MainWindow)
+        self.statusbar.setObjectName(u"statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        self.dockWidget = QDockWidget(MainWindow)
+        self.dockWidget.setObjectName(u"dockWidget")
+        self.dockWidgetContents = QWidget()
+        self.dockWidgetContents.setObjectName(u"dockWidgetContents")
+        self.horizontalLayout_11 = QHBoxLayout(self.dockWidgetContents)
+        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
         self.control_layout = QVBoxLayout()
         self.control_layout.setObjectName(u"control_layout")
-        self.annotation_tabs = QTabWidget(self.centralwidget)
+        self.annotation_tabs = QTabWidget(self.dockWidgetContents)
         self.annotation_tabs.setObjectName(u"annotation_tabs")
         self.behav_tab = QWidget()
         self.behav_tab.setObjectName(u"behav_tab")
@@ -122,10 +145,11 @@ class Ui_MainWindow(object):
         self.epoch_tab.setObjectName(u"epoch_tab")
         self.verticalLayout = QVBoxLayout(self.epoch_tab)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.stream_table = StreamTableView(self.epoch_tab)
-        self.stream_table.setObjectName(u"stream_table")
+        self.stream_table_layout = QHBoxLayout()
+        self.stream_table_layout.setSpacing(1)
+        self.stream_table_layout.setObjectName(u"stream_table_layout")
 
-        self.verticalLayout.addWidget(self.stream_table)
+        self.verticalLayout.addLayout(self.stream_table_layout)
 
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
@@ -142,6 +166,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addLayout(self.horizontalLayout_9)
 
+        self.verticalLayout.setStretch(0, 8)
         self.annotation_tabs.addTab(self.epoch_tab, "")
         self.stats_tab = QWidget()
         self.stats_tab.setObjectName(u"stats_tab")
@@ -156,28 +181,29 @@ class Ui_MainWindow(object):
 
         self.control_layout.addWidget(self.annotation_tabs)
 
-        self.control_widget = QStackedWidget(self.centralwidget)
+        self.control_widget = QStackedWidget(self.dockWidgetContents)
         self.control_widget.setObjectName(u"control_widget")
+        self.control_widget.setAutoFillBackground(False)
         self.control_widget.setFrameShape(QFrame.NoFrame)
         self.control_widget.setFrameShadow(QFrame.Plain)
         self.control_widget.setLineWidth(3)
-        self.control_panel = QWidget()
-        self.control_panel.setObjectName(u"control_panel")
-        self.control_widget.addWidget(self.control_panel)
         self.stat_panel = QWidget()
         self.stat_panel.setObjectName(u"stat_panel")
-        self.horizontalLayout_8 = QHBoxLayout(self.stat_panel)
+        self.control_widget.addWidget(self.stat_panel)
+        self.control_panel = QWidget()
+        self.control_panel.setObjectName(u"control_panel")
+        self.horizontalLayout_8 = QHBoxLayout(self.control_panel)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
         self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.play_button = QPushButton(self.stat_panel)
+        self.play_button = QPushButton(self.control_panel)
         self.play_button.setObjectName(u"play_button")
 
         self.horizontalLayout_7.addWidget(self.play_button)
 
-        self.pause_button = QPushButton(self.stat_panel)
+        self.pause_button = QPushButton(self.control_panel)
         self.pause_button.setObjectName(u"pause_button")
 
         self.horizontalLayout_7.addWidget(self.pause_button)
@@ -187,12 +213,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_4 = QHBoxLayout()
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_2 = QLabel(self.stat_panel)
+        self.label_2 = QLabel(self.control_panel)
         self.label_2.setObjectName(u"label_2")
 
         self.horizontalLayout_4.addWidget(self.label_2)
 
-        self.curframe_spinBox = QSpinBox(self.stat_panel)
+        self.curframe_spinBox = QSpinBox(self.control_panel)
         self.curframe_spinBox.setObjectName(u"curframe_spinBox")
         self.curframe_spinBox.setMinimum(1)
         self.curframe_spinBox.setMaximum(100)
@@ -204,7 +230,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label_4 = QLabel(self.stat_panel)
+        self.label_4 = QLabel(self.control_panel)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setTextFormat(Qt.PlainText)
         self.label_4.setScaledContents(False)
@@ -213,7 +239,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addWidget(self.label_4)
 
-        self.time_label = QLabel(self.stat_panel)
+        self.time_label = QLabel(self.control_panel)
         self.time_label.setObjectName(u"time_label")
         self.time_label.setTextFormat(Qt.MarkdownText)
         self.time_label.setAlignment(Qt.AlignCenter)
@@ -225,12 +251,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.label = QLabel(self.stat_panel)
+        self.label = QLabel(self.control_panel)
         self.label.setObjectName(u"label")
 
         self.horizontalLayout_6.addWidget(self.label)
 
-        self.trackwindow_lineEdit = IntLineEdit(self.stat_panel)
+        self.trackwindow_lineEdit = IntLineEdit(self.control_panel)
         self.trackwindow_lineEdit.setObjectName(u"trackwindow_lineEdit")
         self.trackwindow_lineEdit.setMaxLength(6)
 
@@ -241,12 +267,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.label_3 = QLabel(self.stat_panel)
+        self.label_3 = QLabel(self.control_panel)
         self.label_3.setObjectName(u"label_3")
 
         self.horizontalLayout_5.addWidget(self.label_3)
 
-        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.stat_panel)
+        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.control_panel)
         self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
         self.speed_doubleSpinBox.setMinimum(-10.000000000000000)
         self.speed_doubleSpinBox.setMaximum(10.000000000000000)
@@ -263,33 +289,17 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_8.addLayout(self.gridLayout)
 
-        self.control_widget.addWidget(self.stat_panel)
+        self.control_widget.addWidget(self.control_panel)
 
         self.control_layout.addWidget(self.control_widget)
 
         self.control_layout.setStretch(0, 3)
         self.control_layout.setStretch(1, 1)
 
-        self.horizontalLayout_2.addLayout(self.control_layout)
+        self.horizontalLayout_11.addLayout(self.control_layout)
 
-        self.horizontalLayout_2.setStretch(0, 2)
-        self.horizontalLayout_2.setStretch(1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
-        self.menuVideo = QMenu(self.menubar)
-        self.menuVideo.setObjectName(u"menuVideo")
-        self.menuAnnotation = QMenu(self.menubar)
-        self.menuAnnotation.setObjectName(u"menuAnnotation")
-        self.menuFile = QMenu(self.menubar)
-        self.menuFile.setObjectName(u"menuFile")
-        self.menuHelp = QMenu(self.menubar)
-        self.menuHelp.setObjectName(u"menuHelp")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QStatusBar(MainWindow)
-        self.statusbar.setObjectName(u"statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        self.dockWidget.setWidget(self.dockWidgetContents)
+        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.dockWidget)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuVideo.menuAction())
@@ -306,7 +316,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.annotation_tabs.setCurrentIndex(0)
-        self.control_widget.setCurrentIndex(0)
+        self.control_widget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -320,6 +330,10 @@ class Ui_MainWindow(object):
         self.actionOpen_annotation.setText(QCoreApplication.translate("MainWindow", u"Open annotation", None))
         self.actionSave_annotation.setText(QCoreApplication.translate("MainWindow", u"Save annotation", None))
         self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
+        self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
+        self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
+        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
+        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
@@ -335,9 +349,5 @@ class Ui_MainWindow(object):
         self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
         self.trackwindow_lineEdit.setText(QCoreApplication.translate("MainWindow", u"500", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
-        self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
-        self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
-        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
-        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
     # retranslateUi
 

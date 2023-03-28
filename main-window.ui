@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2">
     <item>
      <layout class="QVBoxLayout" name="display_layout" stretch="16,2,4">
       <item>
@@ -65,235 +65,6 @@
       </item>
      </layout>
     </item>
-    <item>
-     <layout class="QVBoxLayout" name="control_layout" stretch="3,1">
-      <item>
-       <widget class="QTabWidget" name="annotation_tabs">
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="behav_tab">
-         <attribute name="title">
-          <string>Behaviors</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="GenericTableView" name="behavior_table">
-            <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAsNeeded</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout">
-            <item>
-             <widget class="QPushButton" name="pushButton_2">
-              <property name="text">
-               <string>Add behavior</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton">
-              <property name="text">
-               <string>Delete behavior</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="epoch_tab">
-         <attribute name="title">
-          <string>Epochs</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="StreamTableView" name="stream_table"/>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_9">
-            <item>
-             <widget class="QPushButton" name="pushButton_4">
-              <property name="text">
-               <string>Add stream</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_3">
-              <property name="text">
-               <string>Delete stream</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-        <widget class="QWidget" name="stats_tab">
-         <attribute name="title">
-          <string>Stats</string>
-         </attribute>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
-          <item>
-           <widget class="GenericTableView" name="stats_table"/>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <widget class="QStackedWidget" name="control_widget">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Plain</enum>
-        </property>
-        <property name="lineWidth">
-         <number>3</number>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="control_panel"/>
-        <widget class="QWidget" name="stat_panel">
-         <layout class="QHBoxLayout" name="horizontalLayout_8">
-          <item>
-           <layout class="QGridLayout" name="gridLayout" columnstretch="2,3" columnminimumwidth="0,0">
-            <item row="2" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <item>
-               <widget class="QPushButton" name="play_button">
-                <property name="text">
-                 <string>Play</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pause_button">
-                <property name="text">
-                 <string>Pause</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="0" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <item>
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>Current Frame</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="curframe_spinBox">
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="0" column="1" rowspan="2">
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>Time</string>
-                </property>
-                <property name="textFormat">
-                 <enum>Qt::PlainText</enum>
-                </property>
-                <property name="scaledContents">
-                 <bool>false</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="textInteractionFlags">
-                 <set>Qt::NoTextInteraction</set>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="time_label">
-                <property name="text">
-                 <string>00:00</string>
-                </property>
-                <property name="textFormat">
-                 <enum>Qt::MarkdownText</enum>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="2" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_6">
-              <item>
-               <widget class="QLabel" name="label">
-                <property name="text">
-                 <string>Track Window</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="IntLineEdit" name="trackwindow_lineEdit">
-                <property name="text">
-                 <string>500</string>
-                </property>
-                <property name="maxLength">
-                 <number>6</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="1" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_5">
-              <item>
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Speed</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="PlaySpeedSpinBox" name="speed_doubleSpinBox">
-                <property name="minimum">
-                 <double>-10.000000000000000</double>
-                </property>
-                <property name="maximum">
-                 <double>10.000000000000000</double>
-                </property>
-                <property name="singleStep">
-                 <double>0.100000000000000</double>
-                </property>
-                <property name="value">
-                 <double>1.000000000000000</double>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </widget>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -332,12 +103,281 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuWindows">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuVideo"/>
    <addaction name="menuAnnotation"/>
+   <addaction name="menuWindows"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QHBoxLayout" name="horizontalLayout_11">
+     <item>
+      <layout class="QVBoxLayout" name="control_layout" stretch="3,1">
+       <item>
+        <widget class="QTabWidget" name="annotation_tabs">
+         <property name="acceptDrops">
+          <bool>false</bool>
+         </property>
+         <property name="tabShape">
+          <enum>QTabWidget::Rounded</enum>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <property name="movable">
+          <bool>true</bool>
+         </property>
+         <widget class="QWidget" name="behav_tab">
+          <attribute name="title">
+           <string>Behaviors</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="GenericTableView" name="behavior_table">
+             <property name="horizontalScrollBarPolicy">
+              <enum>Qt::ScrollBarAsNeeded</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>Add behavior</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Delete behavior</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="epoch_tab">
+          <attribute name="title">
+           <string>Epochs</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout" stretch="8,0">
+           <item>
+            <layout class="QHBoxLayout" name="stream_table_layout">
+             <property name="spacing">
+              <number>1</number>
+             </property>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="QPushButton" name="pushButton_4">
+               <property name="text">
+                <string>Add stream</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_3">
+               <property name="text">
+                <string>Delete stream</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="stats_tab">
+          <attribute name="title">
+           <string>Stats</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="GenericTableView" name="stats_table"/>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QStackedWidget" name="control_widget">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Plain</enum>
+         </property>
+         <property name="lineWidth">
+          <number>3</number>
+         </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <widget class="QWidget" name="stat_panel"/>
+         <widget class="QWidget" name="control_panel">
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <layout class="QGridLayout" name="gridLayout" columnstretch="2,3" columnminimumwidth="0,0">
+             <item row="2" column="1">
+              <layout class="QHBoxLayout" name="horizontalLayout_7">
+               <item>
+                <widget class="QPushButton" name="play_button">
+                 <property name="text">
+                  <string>Play</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pause_button">
+                 <property name="text">
+                  <string>Pause</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="0" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_4">
+               <item>
+                <widget class="QLabel" name="label_2">
+                 <property name="text">
+                  <string>Current Frame</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="curframe_spinBox">
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="0" column="1" rowspan="2">
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <item>
+                <widget class="QLabel" name="label_4">
+                 <property name="text">
+                  <string>Time</string>
+                 </property>
+                 <property name="textFormat">
+                  <enum>Qt::PlainText</enum>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>false</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                 <property name="textInteractionFlags">
+                  <set>Qt::NoTextInteraction</set>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="time_label">
+                 <property name="text">
+                  <string>00:00</string>
+                 </property>
+                 <property name="textFormat">
+                  <enum>Qt::MarkdownText</enum>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="2" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <item>
+                <widget class="QLabel" name="label">
+                 <property name="text">
+                  <string>Track Window</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="IntLineEdit" name="trackwindow_lineEdit">
+                 <property name="text">
+                  <string>500</string>
+                 </property>
+                 <property name="maxLength">
+                  <number>6</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="1" column="0">
+              <layout class="QHBoxLayout" name="horizontalLayout_5">
+               <item>
+                <widget class="QLabel" name="label_3">
+                 <property name="text">
+                  <string>Speed</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="PlaySpeedSpinBox" name="speed_doubleSpinBox">
+                 <property name="minimum">
+                  <double>-10.000000000000000</double>
+                 </property>
+                 <property name="maximum">
+                  <double>10.000000000000000</double>
+                 </property>
+                 <property name="singleStep">
+                  <double>0.100000000000000</double>
+                 </property>
+                 <property name="value">
+                  <double>1.000000000000000</double>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionOpen_video">
    <property name="text">
     <string>Open video</string>
@@ -377,11 +417,6 @@
   </customwidget>
   <customwidget>
    <class>GenericTableView</class>
-   <extends>QTableView</extends>
-   <header>dataview</header>
-  </customwidget>
-  <customwidget>
-   <class>StreamTableView</class>
    <extends>QTableView</extends>
    <header>dataview</header>
   </customwidget>
