@@ -38,24 +38,10 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
         else:
             return super().stepBy(steps)
 
-
-class IntLineEdit(QLineEdit):
-    def __init__(self, *arg, **kwarg):
-        super().__init__(*arg, **kwarg)
-        validator = QIntValidator(self)
-        validator.setBottom(1)
-        self.setValidator(validator)
-
-    def set_validator_top(self, int):
-        validator = self.validator()
-        validator.setTop(int)
-        return True
-
-
 class VideoScrollBar(QScrollBar):
     @Slot(int)
     def changePageStep(self, pagestep):
-        self.setPageStep(int(pagestep))
+        self.setPageStep(pagestep)
 
 
 class TrackPlotView(GraphicsLayoutWidget):

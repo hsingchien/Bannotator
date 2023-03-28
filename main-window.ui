@@ -14,6 +14,12 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>1</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2">
     <item>
      <layout class="QVBoxLayout" name="display_layout" stretch="16,2,4">
@@ -116,6 +122,12 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="floating">
     <bool>false</bool>
    </property>
@@ -129,6 +141,12 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
     <layout class="QHBoxLayout" name="horizontalLayout_11">
      <item>
       <layout class="QVBoxLayout" name="control_layout" stretch="3,1">
@@ -153,8 +171,14 @@
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="GenericTableView" name="behavior_table">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="horizontalScrollBarPolicy">
-              <enum>Qt::ScrollBarAsNeeded</enum>
+              <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
             </widget>
            </item>
@@ -329,12 +353,15 @@
                 </widget>
                </item>
                <item>
-                <widget class="IntLineEdit" name="trackwindow_lineEdit">
-                 <property name="text">
-                  <string>500</string>
+                <widget class="QSpinBox" name="track_window_spinbox">
+                 <property name="minimum">
+                  <number>1</number>
                  </property>
-                 <property name="maxLength">
-                  <number>6</number>
+                 <property name="maximum">
+                  <number>1000</number>
+                 </property>
+                 <property name="value">
+                  <number>500</number>
                  </property>
                 </widget>
                </item>
@@ -421,19 +448,11 @@
    <header>dataview</header>
   </customwidget>
   <customwidget>
-   <class>IntLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>widgets</header>
-   <slots>
-    <signal>valueChanged(int)</signal>
-   </slots>
-  </customwidget>
-  <customwidget>
    <class>VideoScrollBar</class>
    <extends>QScrollBar</extends>
    <header>widgets</header>
    <slots>
-    <slot>changePageStep(QString)</slot>
+    <slot>changePageStep(int)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -446,8 +465,8 @@
    <slot>setValue(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1082</x>
-     <y>600</y>
+     <x>1180</x>
+     <y>611</y>
     </hint>
     <hint type="destinationlabel">
      <x>471</x>
@@ -466,23 +485,23 @@
      <y>587</y>
     </hint>
     <hint type="destinationlabel">
-     <x>1082</x>
-     <y>600</y>
+     <x>1180</x>
+     <y>611</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>trackwindow_lineEdit</sender>
-   <signal>textChanged(QString)</signal>
+   <sender>track_window_spinbox</sender>
+   <signal>valueChanged(int)</signal>
    <receiver>video_scrollbar</receiver>
-   <slot>changePageStep(QString)</slot>
+   <slot>changePageStep(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1081</x>
+     <x>1157</x>
      <y>703</y>
     </hint>
     <hint type="destinationlabel">
-     <x>471</x>
+     <x>514</x>
      <y>587</y>
     </hint>
    </hints>

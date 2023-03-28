@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
     QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
-from widgets import (IntLineEdit, PlaySpeedSpinBox, VideoScrollBar)
+from widgets import (PlaySpeedSpinBox, VideoScrollBar)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -44,6 +44,11 @@ class Ui_MainWindow(object):
         self.actionAbout.setObjectName(u"actionAbout")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
+        sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        self.centralwidget.setSizePolicy(sizePolicy)
         self.horizontalLayout_2 = QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.display_layout = QVBoxLayout()
@@ -64,11 +69,11 @@ class Ui_MainWindow(object):
 
         self.track_frame = QFrame(self.centralwidget)
         self.track_frame.setObjectName(u"track_frame")
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.track_frame.sizePolicy().hasHeightForWidth())
-        self.track_frame.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.track_frame.sizePolicy().hasHeightForWidth())
+        self.track_frame.setSizePolicy(sizePolicy1)
         self.track_frame.setMinimumSize(QSize(0, 0))
         self.track_frame.setFrameShape(QFrame.StyledPanel)
         self.track_frame.setFrameShadow(QFrame.Raised)
@@ -109,11 +114,21 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.dockWidget = QDockWidget(MainWindow)
         self.dockWidget.setObjectName(u"dockWidget")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.dockWidget.sizePolicy().hasHeightForWidth())
+        self.dockWidget.setSizePolicy(sizePolicy2)
         self.dockWidget.setFloating(False)
         self.dockWidget.setFeatures(QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
         self.dockWidget.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         self.dockWidgetContents = QWidget()
         self.dockWidgetContents.setObjectName(u"dockWidgetContents")
+        sizePolicy3 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.dockWidgetContents.sizePolicy().hasHeightForWidth())
+        self.dockWidgetContents.setSizePolicy(sizePolicy3)
         self.horizontalLayout_11 = QHBoxLayout(self.dockWidgetContents)
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
         self.control_layout = QVBoxLayout()
@@ -264,11 +279,13 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_6.addWidget(self.label)
 
-        self.trackwindow_lineEdit = IntLineEdit(self.control_panel)
-        self.trackwindow_lineEdit.setObjectName(u"trackwindow_lineEdit")
-        self.trackwindow_lineEdit.setMaxLength(6)
+        self.track_window_spinbox = QSpinBox(self.control_panel)
+        self.track_window_spinbox.setObjectName(u"track_window_spinbox")
+        self.track_window_spinbox.setMinimum(1)
+        self.track_window_spinbox.setMaximum(1000)
+        self.track_window_spinbox.setValue(500)
 
-        self.horizontalLayout_6.addWidget(self.trackwindow_lineEdit)
+        self.horizontalLayout_6.addWidget(self.track_window_spinbox)
 
 
         self.gridLayout.addLayout(self.horizontalLayout_6, 2, 0, 1, 1)
@@ -325,7 +342,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         self.curframe_spinBox.valueChanged.connect(self.video_scrollbar.setValue)
         self.video_scrollbar.valueChanged.connect(self.curframe_spinBox.setValue)
-        self.trackwindow_lineEdit.textChanged.connect(self.video_scrollbar.changePageStep)
+        self.track_window_spinbox.valueChanged.connect(self.video_scrollbar.changePageStep)
 
         self.annotation_tabs.setCurrentIndex(0)
         self.control_widget.setCurrentIndex(1)
@@ -360,7 +377,6 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
-        self.trackwindow_lineEdit.setText(QCoreApplication.translate("MainWindow", u"500", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
     # retranslateUi
 

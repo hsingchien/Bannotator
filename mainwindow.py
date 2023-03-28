@@ -27,9 +27,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["video"] = None
         self.state["annot"] = None
         self.state["FPS"] = None
-        self.state["current_frame"] = self.curframe_spinBox.value()
+        self.state["current_frame"] = self.curframe_spinBox.value() - 1
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
-        self.state["track_window"] = int(self.trackwindow_lineEdit.text())
+        self.state["track_window"] = self.track_window_spinbox.value()
         self.state["tracks"] = dict()
         # Key = ID, item = TrackBar widget
         self.state["stream_tables"] = dict()
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.speed_doubleSpinBox.valueChanged.connect(self.set_play_speed)
         self.video_scrollbar.valueChanged.connect(self.set_frame)
         self.curframe_spinBox.valueChanged.connect(self.set_frame)
-        self.trackwindow_lineEdit.textChanged.connect(self.set_track_window)
+        self.track_window_spinbox.valueChanged.connect(self.set_track_window)
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
@@ -62,7 +62,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             [lambda: self.update_gui(["tracks"])],
         )
         self.state.connect("annot", self.plot_tracks)
-        self.state.connect("video", lambda: self.update_gui(["gui"]))
+        self.state.connect(
+            "video",
+            [
+                lambda: self.go_to_frame(self.state["current_frame"]),
+                lambda: self.update_gui(["gui"]),
+            ],
+        )
+        self.state.connect("annot", [lambda: self.update_gui(["gui"])])
 
     def update_gui(self, topics):
         if "video_ui" in topics:
@@ -74,7 +81,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except Exception:
                 pass
         if "gui" in topics:
-            self.trackwindow_lineEdit.set_validator_top(self.state["video"].num_frame())
+            try:
+                annot_length = self.state["annot"].get_length()
+                self.video_scrollbar.setMaximum(annot_length)
+                self.curframe_spinBox.setMaximum(annot_length)
+                self.track_window_spinbox.setMaximum(annot_length)
+            except Exception:
+                self.video_scrollbar.setMaximum(self.state["video"].num_frame())
+                self.curframe_spinBox.setMaximum(self.state["video"].num_frame())
+                self.track_window_spinbox.setMaximum(self.state["video"].num_frame())
 
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
@@ -95,12 +110,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
         bvideo = BehavVideo(video_path, self)
         self.state["video"] = bvideo
-        self.state["current_frame"] = 0
         self.state["FPS"] = bvideo.frame_rate()
+        self.go_to_frame(self.state["current_frame"])
         self.video_scrollbar.setMinimum(1)
-        self.video_scrollbar.setMaximum(bvideo.num_frame())
         self.curframe_spinBox.setMinimum(1)
-        self.curframe_spinBox.setMaximum(bvideo.num_frame())
 
     def open_annotation(self):
         fileDialog = QFileDialog()
@@ -136,8 +149,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def go_to_frame(self, frameN):
         video = self.state["video"]
-        frame_pixmap = video.get_pixmap(frameN)
-        self.video_item.setPixmap(frame_pixmap)
+        if video:
+            frame_pixmap = video.get_pixmap(frameN)
+            self.video_item.setPixmap(frame_pixmap)
+            return True
+        else:
+            return False
 
     def play_video_update_frame(self):
         if abs(self.state["play_speed"] - 0.00) > 2.0001:
@@ -184,7 +201,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         current_frame = self.state["current_frame"]
         track_window = self.state["track_window"]
         track_start = current_frame - int(1 / 2 * track_window)
-        track_end = current_frame + int(1 / 2 * track_window)
+        track_end = current_frame + int(np.ceil(1 / 2 * track_window))
+        if track_end == track_start:
+            track_end = track_start + 1
         for _, stream in streams.items():
             stream_vect = stream.get_stream_vect()
             color_dict = stream.get_color_dict()
@@ -206,8 +225,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         streams = annot.get_streams()
         current_frame = self.state["current_frame"]
         track_window = self.state["track_window"]
+
         track_start = current_frame - int(1 / 2 * track_window)
-        track_end = current_frame + int(1 / 2 * track_window)
+        track_end = current_frame + int(np.ceil(1 / 2 * track_window).item())
+
         for _, stream in streams.items():
             stream_vect = stream.get_stream_vect()
             this_start = track_start
