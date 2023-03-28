@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,1">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="16,2,6">
+     <layout class="QVBoxLayout" name="display_layout" stretch="16,2,4">
       <item>
        <widget class="QGraphicsView" name="vid1_view"/>
       </item>
@@ -37,7 +37,31 @@
        </widget>
       </item>
       <item>
-       <widget class="TrackPlotView" name="track_view"/>
+       <widget class="QFrame" name="track_frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <layout class="QVBoxLayout" name="track_layout"/>
+         </item>
+        </layout>
+       </widget>
       </item>
      </layout>
     </item>
@@ -46,7 +70,7 @@
       <item>
        <widget class="QTabWidget" name="annotation_tabs">
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="behav_tab">
          <attribute name="title">
@@ -132,7 +156,7 @@
          <number>3</number>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="control_panel"/>
         <widget class="QWidget" name="stat_panel">
@@ -364,11 +388,6 @@
   <customwidget>
    <class>IntLineEdit</class>
    <extends>QLineEdit</extends>
-   <header>widgets</header>
-  </customwidget>
-  <customwidget>
-   <class>TrackPlotView</class>
-   <extends>QGraphicsView</extends>
    <header>widgets</header>
   </customwidget>
  </customwidgets>

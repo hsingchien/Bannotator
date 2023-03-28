@@ -213,6 +213,12 @@ class Stream(object):
         for _, behav in self.behaviors.items():
             behav.set_color(color_dict[behav.name])
 
+    def get_color_dict(self):
+        color_dict = dict()
+        for _, behav in self.behaviors.items():
+            color_dict[behav.ID] = behav.get_color()
+        return color_dict
+
     def construct_epochs_from_sequence(self, sequence):
         for i, annot in enumerate(sequence):
             start, end, behav_name = annot.split()

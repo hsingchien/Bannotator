@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGraphicsView, QGridLayout,
     QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import (GenericTableView, StreamTableView)
-from widgets import (IntLineEdit, PlaySpeedSpinBox, TrackPlotView)
+from widgets import (IntLineEdit, PlaySpeedSpinBox)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -46,12 +46,12 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.horizontalLayout_2 = QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.verticalLayout_4 = QVBoxLayout()
-        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.display_layout = QVBoxLayout()
+        self.display_layout.setObjectName(u"display_layout")
         self.vid1_view = QGraphicsView(self.centralwidget)
         self.vid1_view.setObjectName(u"vid1_view")
 
-        self.verticalLayout_4.addWidget(self.vid1_view)
+        self.display_layout.addWidget(self.vid1_view)
 
         self.video_scrollbar = QScrollBar(self.centralwidget)
         self.video_scrollbar.setObjectName(u"video_scrollbar")
@@ -60,18 +60,33 @@ class Ui_MainWindow(object):
         self.video_scrollbar.setPageStep(500)
         self.video_scrollbar.setOrientation(Qt.Horizontal)
 
-        self.verticalLayout_4.addWidget(self.video_scrollbar)
+        self.display_layout.addWidget(self.video_scrollbar)
 
-        self.track_view = TrackPlotView(self.centralwidget)
-        self.track_view.setObjectName(u"track_view")
+        self.track_frame = QFrame(self.centralwidget)
+        self.track_frame.setObjectName(u"track_frame")
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.track_frame.sizePolicy().hasHeightForWidth())
+        self.track_frame.setSizePolicy(sizePolicy)
+        self.track_frame.setMinimumSize(QSize(0, 0))
+        self.track_frame.setFrameShape(QFrame.StyledPanel)
+        self.track_frame.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_10 = QHBoxLayout(self.track_frame)
+        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.track_layout = QVBoxLayout()
+        self.track_layout.setObjectName(u"track_layout")
 
-        self.verticalLayout_4.addWidget(self.track_view)
+        self.horizontalLayout_10.addLayout(self.track_layout)
 
-        self.verticalLayout_4.setStretch(0, 16)
-        self.verticalLayout_4.setStretch(1, 2)
-        self.verticalLayout_4.setStretch(2, 6)
 
-        self.horizontalLayout_2.addLayout(self.verticalLayout_4)
+        self.display_layout.addWidget(self.track_frame)
+
+        self.display_layout.setStretch(0, 16)
+        self.display_layout.setStretch(1, 2)
+        self.display_layout.setStretch(2, 4)
+
+        self.horizontalLayout_2.addLayout(self.display_layout)
 
         self.control_layout = QVBoxLayout()
         self.control_layout.setObjectName(u"control_layout")
@@ -290,8 +305,8 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.annotation_tabs.setCurrentIndex(1)
-        self.control_widget.setCurrentIndex(1)
+        self.annotation_tabs.setCurrentIndex(0)
+        self.control_widget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

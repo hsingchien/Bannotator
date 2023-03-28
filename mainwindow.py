@@ -4,6 +4,8 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QGraphicsScene,
     QGraphicsPixmapItem,
+    QVBoxLayout,
+    QWidget,
 )
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QTimer, Qt
@@ -11,6 +13,7 @@ from state import GuiState
 from video import BehavVideo
 from data import Annotation
 from dataview import BehaviorTableModel, StreamTableModel
+from widgets import TrackBar
 import numpy as np
 import pyqtgraph as pg
 
@@ -27,6 +30,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["current_frame"] = None
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
         self.state["track_window"] = int(self.trackwindow_lineEdit.text())
+        self.state["tracks"] = dict()
         # Set up UI
         self.bvscene = QGraphicsScene()
         self.vid1_view.setScene(self.bvscene)
@@ -155,27 +159,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def plot_tracks(self):
         annot = self.state["annot"]
         streams = annot.get_streams()
-        plot_axis = self.track_view.addPlot()
-        plot_axis.setRange(
-            xRange=(1, annot.get_length()),
-            yRange=(0, 1),
-            padding=0,
-            disableAutoRange=True,
-        )
-        plot_axis.showAxes(False)
-        y_ = 0
         for _, stream in streams.items():
-            epochs = stream.get_epochs()
-            for epoch in epochs:
-                x_start = epoch.start
-                x_end = epoch.end
-                plot_item = pg.PlotDataItem([x_start, x_end], [y_, y_])
-                pen = pg.mkPen({"color": epoch.color.name(), "width": 10})
-                pen.setCapStyle(Qt.SquareCap)
-                pen.setJoinStyle(Qt.MiterJoin)
-                plot_item.setPen(pen)
-                plot_axis.addItem(plot_item)
-            y_ += 0.2
+            stream_vect = stream.get_stream_vect()
+            color_dict = stream.get_color_dict()
+            track = TrackBar(data=stream_vect, color_dict=color_dict)
+            self.state["tracks"][stream.ID] = track
+            self.track_layout.addWidget(track)
 
     def update_tracks(self):
         pass
