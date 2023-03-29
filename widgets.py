@@ -1,4 +1,10 @@
-from PySide6.QtWidgets import QDoubleSpinBox, QLineEdit, QWidget, QScrollBar
+from PySide6.QtWidgets import (
+    QDoubleSpinBox,
+    QTabWidget,
+    QWidget,
+    QScrollBar,
+    QSizePolicy,
+)
 from PySide6.QtGui import QIntValidator, QPainter
 from PySide6.QtCore import Signal, Slot
 import numpy as np
@@ -37,6 +43,7 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps * self.step_ratio)
         else:
             return super().stepBy(steps)
+
 
 class VideoScrollBar(QScrollBar):
     @Slot(int)
@@ -79,3 +86,17 @@ class TrackBar(QWidget):
             painter.setPen(color)
             painter.drawRect(i * bar_width, 0, bar_width, bar_height)
         painter.end()
+
+
+class TabWidget(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.currentChanged.connect(self.resizeToCurrentPage)
+
+    def resizeToCurrentPage(self):
+        cur_widget = self.currentWidget()
+        for i in range(self.count()):
+            self.widget(i).setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        if cur_widget is not None:
+            cur_widget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)

@@ -136,6 +136,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             annotation.get_behaviors(), ["ID", "name", "keybind", "color"], self.state
         )
         self.behavior_table.setModel(behavior_tablemodel)
+        self.behavior_table.resizeColumnsToContents()
         streams = annotation.get_streams()
         for ID, stream in streams.items():
             stream_table = StreamTableModel(
@@ -143,6 +144,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
             stream_table_view = GenericTableView()
             stream_table_view.setModel(stream_table)
+            stream_table_view.resizeColumnsToContents()
             self.state["stream_tables"][ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
         return True

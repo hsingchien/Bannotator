@@ -150,8 +150,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout_11">
      <item>
       <layout class="QVBoxLayout" name="control_layout" stretch="3,1">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetFixedSize</enum>
+       </property>
        <item>
-        <widget class="QTabWidget" name="annotation_tabs">
+        <widget class="TabWidget" name="annotation_tabs">
          <property name="acceptDrops">
           <bool>false</bool>
          </property>
@@ -169,6 +172,9 @@
            <string>Behaviors</string>
           </attribute>
           <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
            <item>
             <widget class="GenericTableView" name="behavior_table">
              <property name="sizePolicy">
@@ -180,6 +186,12 @@
              <property name="horizontalScrollBarPolicy">
               <enum>Qt::ScrollBarAlwaysOff</enum>
              </property>
+             <attribute name="horizontalHeaderMinimumSectionSize">
+              <number>20</number>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
             </widget>
            </item>
            <item>
@@ -210,12 +222,18 @@
            <item>
             <layout class="QHBoxLayout" name="stream_table_layout">
              <property name="spacing">
-              <number>1</number>
+              <number>0</number>
+             </property>
+             <property name="sizeConstraint">
+              <enum>QLayout::SetFixedSize</enum>
              </property>
             </layout>
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetNoConstraint</enum>
+             </property>
              <item>
               <widget class="QPushButton" name="pushButton_4">
                <property name="text">
@@ -454,6 +472,12 @@
    <slots>
     <slot>changePageStep(int)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>TabWidget</class>
+   <extends>QTabWidget</extends>
+   <header>widgets</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

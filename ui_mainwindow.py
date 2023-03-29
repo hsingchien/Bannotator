@@ -18,12 +18,12 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
     QGridLayout, QHBoxLayout, QHeaderView, QLabel,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSpinBox, QStackedWidget, QStatusBar,
-    QTabWidget, QVBoxLayout, QWidget)
+    QLayout, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSpinBox, QStackedWidget,
+    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
-from widgets import (PlaySpeedSpinBox, VideoScrollBar)
+from widgets import (PlaySpeedSpinBox, TabWidget, VideoScrollBar)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -133,7 +133,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
         self.control_layout = QVBoxLayout()
         self.control_layout.setObjectName(u"control_layout")
-        self.annotation_tabs = QTabWidget(self.dockWidgetContents)
+        self.control_layout.setSizeConstraint(QLayout.SetFixedSize)
+        self.annotation_tabs = TabWidget(self.dockWidgetContents)
         self.annotation_tabs.setObjectName(u"annotation_tabs")
         self.annotation_tabs.setAcceptDrops(False)
         self.annotation_tabs.setTabShape(QTabWidget.Rounded)
@@ -142,9 +143,14 @@ class Ui_MainWindow(object):
         self.behav_tab.setObjectName(u"behav_tab")
         self.verticalLayout_2 = QVBoxLayout(self.behav_tab)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setSizeConstraint(QLayout.SetDefaultConstraint)
         self.behavior_table = GenericTableView(self.behav_tab)
         self.behavior_table.setObjectName(u"behavior_table")
-        self.behavior_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        sizePolicy1.setHeightForWidth(self.behavior_table.sizePolicy().hasHeightForWidth())
+        self.behavior_table.setSizePolicy(sizePolicy1)
+        self.behavior_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.behavior_table.horizontalHeader().setMinimumSectionSize(20)
+        self.behavior_table.verticalHeader().setVisible(False)
 
         self.verticalLayout_2.addWidget(self.behavior_table)
 
@@ -169,13 +175,15 @@ class Ui_MainWindow(object):
         self.verticalLayout = QVBoxLayout(self.epoch_tab)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.stream_table_layout = QHBoxLayout()
-        self.stream_table_layout.setSpacing(1)
+        self.stream_table_layout.setSpacing(0)
         self.stream_table_layout.setObjectName(u"stream_table_layout")
+        self.stream_table_layout.setSizeConstraint(QLayout.SetFixedSize)
 
         self.verticalLayout.addLayout(self.stream_table_layout)
 
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setSizeConstraint(QLayout.SetNoConstraint)
         self.pushButton_4 = QPushButton(self.epoch_tab)
         self.pushButton_4.setObjectName(u"pushButton_4")
 

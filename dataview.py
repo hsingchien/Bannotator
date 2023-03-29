@@ -1,11 +1,10 @@
-from PySide6.QtCore import (
-    QAbstractTableModel,
-    QModelIndex,
-    Qt,
-    Slot,
-    QItemSelectionModel,
+from PySide6.QtCore import QAbstractTableModel, QModelIndex, Qt
+from PySide6.QtWidgets import (
+    QTableView,
+    QAbstractItemView,
+    QHeaderView,
+    QAbstractScrollArea,
 )
-from PySide6.QtWidgets import QTableView, QAbstractItemView, QHeaderView
 from PySide6 import QtGui
 from typing import Optional, List
 from state import GuiState
@@ -127,8 +126,13 @@ class GenericTableView(QTableView):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         header_view = QHeaderView(Qt.Horizontal, self)
-        header_view.setSectionResizeMode(QHeaderView.Stretch)
+        for i in range(header_view.count()):
+            header_view.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContentsOnFirstShow)
         header_view.setSectionsClickable(False)
+
         super().setHorizontalHeader(header_view)
 
     def getSelectedRowItem(self):
@@ -141,3 +145,19 @@ class GenericTableView(QTableView):
             self.model().index(0, 0),
             self.model().index(self.model().rowCount(), self.model().columnCount()),
         )
+
+    def resizeColumnsToContents(self) -> None:
+        super().resizeColumnsToContents()
+        viewport = self.viewport()
+        min_width = (
+            self.horizontalHeader().length()
+            + self.verticalHeader().width() * 2
+            + self.verticalScrollBar().width()
+        )
+        viewport.setFixedWidth(min_width)
+        self.setFixedWidth(min_width)
+
+    # def sizeHint(self):
+    #     width = self.horizontalHeader().length() + self.verticalScrollBar().width()
+    #     height = self.verticalHeader().length()
+    #     return QSize(width, height)
