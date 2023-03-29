@@ -3,10 +3,11 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QWidget,
     QScrollBar,
-    QSizePolicy,
+    QStyleOptionTabWidgetFrame,
+    QStackedLayout,
 )
-from PySide6.QtGui import QIntValidator, QPainter
-from PySide6.QtCore import Signal, Slot
+from PySide6.QtGui import QPainter
+from PySide6.QtCore import Signal, Slot, QSize, Qt
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget
 from typing import Dict
@@ -92,11 +93,43 @@ class TabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.currentChanged.connect(self.resizeToCurrentPage)
+        self.currentChanged.connect(self.updateGeometry)
 
-    def resizeToCurrentPage(self):
-        cur_widget = self.currentWidget()
-        for i in range(self.count()):
-            self.widget(i).setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        if cur_widget is not None:
-            cur_widget.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+    def minimumSizeHint(self):
+        # return super().minimumSizeHint()
+        return self.sizeHint()
+
+    def sizeHint(self):
+        lc = QSize(0, 0)
+        rc = QSize(0, 0)
+        opt = QStyleOptionTabWidgetFrame()
+        self.initStyleOption(opt)
+        if self.cornerWidget(Qt.TopLeftCorner):
+            lc = self.cornerWidget(Qt.TopLeftCorner).sizeHint()
+        if self.cornerWidget(Qt.TopRightCorner):
+            rc = self.cornerWidget(Qt.TopRightCorner).sizeHint()
+        layout = self.findChild(QStackedLayout)
+        layoutHint = layout.currentWidget().sizeHint()
+        tabHint = self.tabBar().sizeHint()
+        if self.tabPosition() in (QTabWidget.North, QTabWidget.South):
+            size = QSize(
+                max(layoutHint.width(), tabHint.width() + rc.width() + lc.width()),
+                layoutHint.height()
+                + max(rc.height(), max(lc.height(), tabHint.height())),
+            )
+        else:
+            size = QSize(
+                layoutHint.width() + max(rc.width(), max(lc.width(), tabHint.width())),
+                max(layoutHint.height(), tabHint.height() + rc.height() + lc.height()),
+            )
+        return size
+        # max_width = 0
+        # max_height = 0
+        # opt = QStyleOptionTabWidgetFrame()
+        # self.initStyleOption(opt)
+        # for i in range(self.count()):
+        #     content_width = self.widget(i).sizeHint().width()
+        #     content_height = self.widget(i).sizeHint().height()
+        #     max_width = max(max_width, content_width)
+        #     max_height = max(max_height, content_height)
+        # return QSize(max_width, max_height)

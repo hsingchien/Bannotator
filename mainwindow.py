@@ -136,7 +136,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             annotation.get_behaviors(), ["ID", "name", "keybind", "color"], self.state
         )
         self.behavior_table.setModel(behavior_tablemodel)
-        self.behavior_table.resizeColumnsToContents()
+
+        # self.behavior_table.resizeColumnsToContents()
         streams = annotation.get_streams()
         for ID, stream in streams.items():
             stream_table = StreamTableModel(

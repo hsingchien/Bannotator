@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
     QAbstractScrollArea,
+    QSizePolicy,
 )
 from PySide6 import QtGui
 from typing import Optional, List
@@ -126,14 +127,12 @@ class GenericTableView(QTableView):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         header_view = QHeaderView(Qt.Horizontal, self)
-        for i in range(header_view.count()):
-            header_view.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+        header_view.setSectionsClickable(False)
+        header_view.setSectionResizeMode(QHeaderView.Stretch)
+        super().setHorizontalHeader(header_view)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContentsOnFirstShow)
-        header_view.setSectionsClickable(False)
-
-        super().setHorizontalHeader(header_view)
+        self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
 
     def getSelectedRowItem(self):
         idx = self.currentIndex()
@@ -147,6 +146,9 @@ class GenericTableView(QTableView):
         )
 
     def resizeColumnsToContents(self) -> None:
+        header_view = self.horizontalHeader()
+        for i in range(header_view.count()):
+            header_view.setSectionResizeMode(i, QHeaderView.ResizeToContents)
         super().resizeColumnsToContents()
         viewport = self.viewport()
         min_width = (
@@ -156,8 +158,4 @@ class GenericTableView(QTableView):
         )
         viewport.setFixedWidth(min_width)
         self.setFixedWidth(min_width)
-
-    # def sizeHint(self):
-    #     width = self.horizontalHeader().length() + self.verticalScrollBar().width()
-    #     height = self.verticalHeader().length()
-    #     return QSize(width, height)
+    
