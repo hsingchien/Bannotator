@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
     QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
-from widgets import (PlaySpeedSpinBox, TabWidget, VideoScrollBar)
+from widgets import (PlaySpeedSpinBox, TabWidget, VideoSlider)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -128,14 +128,13 @@ class Ui_MainWindow(object):
 
         self.display_layout.addWidget(self.vid1_view)
 
-        self.video_scrollbar = VideoScrollBar(self.centralwidget)
-        self.video_scrollbar.setObjectName(u"video_scrollbar")
-        self.video_scrollbar.setMinimum(1)
-        self.video_scrollbar.setMaximum(1000)
-        self.video_scrollbar.setPageStep(500)
-        self.video_scrollbar.setOrientation(Qt.Horizontal)
+        self.video_slider = VideoSlider(self.centralwidget)
+        self.video_slider.setObjectName(u"video_slider")
+        self.video_slider.setMinimum(1)
+        self.video_slider.setMaximum(1000)
+        self.video_slider.setOrientation(Qt.Horizontal)
 
-        self.display_layout.addWidget(self.video_scrollbar)
+        self.display_layout.addWidget(self.video_slider)
 
         self.track_frame = QFrame(self.centralwidget)
         self.track_frame.setObjectName(u"track_frame")
@@ -159,7 +158,6 @@ class Ui_MainWindow(object):
 
         self.display_layout.setStretch(0, 1)
         self.display_layout.setStretch(1, 16)
-        self.display_layout.setStretch(2, 2)
         self.display_layout.setStretch(3, 4)
 
         self.horizontalLayout_2.addLayout(self.display_layout)
@@ -190,7 +188,7 @@ class Ui_MainWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.table_dock.sizePolicy().hasHeightForWidth())
         self.table_dock.setSizePolicy(sizePolicy2)
-        self.table_dock.setMinimumSize(QSize(300, 150))
+        self.table_dock.setMinimumSize(QSize(300, 195))
         self.table_dock.setFloating(False)
         self.table_dock.setFeatures(QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
         self.table_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
@@ -310,11 +308,8 @@ class Ui_MainWindow(object):
         self.menuHelp.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
-        self.curframe_spinBox.valueChanged.connect(self.video_scrollbar.setValue)
-        self.video_scrollbar.valueChanged.connect(self.curframe_spinBox.setValue)
-        self.track_window_spinbox.valueChanged.connect(self.video_scrollbar.changePageStep)
 
-        self.annotation_tabs.setCurrentIndex(0)
+        self.annotation_tabs.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)

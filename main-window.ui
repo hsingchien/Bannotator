@@ -22,7 +22,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2">
     <item>
-     <layout class="QVBoxLayout" name="display_layout" stretch="1,16,2,4">
+     <layout class="QVBoxLayout" name="display_layout" stretch="1,16,0,4">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_12">
         <item>
@@ -137,15 +137,12 @@
        <widget class="QGraphicsView" name="vid1_view"/>
       </item>
       <item>
-       <widget class="VideoScrollBar" name="video_scrollbar">
+       <widget class="VideoSlider" name="video_slider">
         <property name="minimum">
          <number>1</number>
         </property>
         <property name="maximum">
          <number>1000</number>
-        </property>
-        <property name="pageStep">
-         <number>500</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -445,69 +442,17 @@
    <header>dataview</header>
   </customwidget>
   <customwidget>
-   <class>VideoScrollBar</class>
-   <extends>QScrollBar</extends>
-   <header>widgets</header>
-   <slots>
-    <slot>changePageStep(int)</slot>
-   </slots>
-  </customwidget>
-  <customwidget>
    <class>TabWidget</class>
    <extends>QTabWidget</extends>
    <header>widgets</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>VideoSlider</class>
+   <extends>QSlider</extends>
+   <header>widgets</header>
+  </customwidget>
  </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>curframe_spinBox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>video_scrollbar</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1180</x>
-     <y>611</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>471</x>
-     <y>587</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>video_scrollbar</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>curframe_spinBox</receiver>
-   <slot>setValue(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>471</x>
-     <y>587</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1180</x>
-     <y>611</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>track_window_spinbox</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>video_scrollbar</receiver>
-   <slot>changePageStep(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>1157</x>
-     <y>703</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>514</x>
-     <y>587</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

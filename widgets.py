@@ -2,12 +2,12 @@ from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QTabWidget,
     QWidget,
-    QScrollBar,
     QStyleOptionTabWidgetFrame,
     QStackedLayout,
+    QSlider,
 )
-from PySide6.QtGui import QPainter, QColor, QBrush
-from PySide6.QtCore import Signal, Slot, QSize, Qt
+from PySide6.QtGui import QPainter, QPen
+from PySide6.QtCore import Slot, QSize, Qt
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget
 from typing import Dict
@@ -46,10 +46,42 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps)
 
 
-class VideoScrollBar(QScrollBar):
-    @Slot(int)
-    def changePageStep(self, pagestep):
-        self.setPageStep(pagestep)
+class VideoSlider(QSlider):
+    @Slot(int, int)
+    def changeBoxRange(self, boxstart, boxend):
+        self.boxstart = boxstart
+        self.boxend = boxend
+        self.update()
+
+    def __init__(self, parent, boxstart: int = None, boxend: int = None):
+        super().__init__(parent)
+        self.setUpdatesEnabled(True)
+        if boxstart is None:
+            self.boxstart = self.minimum()
+            self.boxend = self.minimum()
+        else:
+            self.boxstart = boxstart
+            self.boxend = boxend
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setPen(QPen(Qt.black, 1))
+        painter.setRenderHint(QPainter.Antialiasing)
+        box_height = self.height()
+        bar_width = self.width()
+        box_width = (
+            bar_width
+            * (self.boxend - self.boxstart)
+            / (self.maximum() - self.minimum())
+        )
+        box_start = (
+            (self.boxstart - self.minimum())
+            / (self.maximum() - self.minimum())
+            * self.width()
+        )
+        painter.drawRect(box_start, 0, box_width, box_height)
+        painter.end()
 
 
 class TrackPlotView(GraphicsLayoutWidget):
@@ -58,13 +90,21 @@ class TrackPlotView(GraphicsLayoutWidget):
 
 
 class TrackBar(QWidget):
-    def __init__(self, data: np.ndarray = None, color_dict: Dict = None, parent=None):
+    def __init__(
+        self,
+        data: np.ndarray = None,
+        color_dict: Dict = None,
+        frame_mark: int = None,
+        parent=None,
+    ):
         super().__init__(parent)
         self.data = data
         self.color_dict = color_dict
+        self.frame_mark = frame_mark
 
-    def set_data(self, data: np.ndarray):
+    def set_data(self, data: np.ndarray, frame_mark: int):
         self.data = data
+        self.frame_mark = frame_mark
         if self.color_dict:
             self.update()
 
@@ -85,11 +125,17 @@ class TrackBar(QWidget):
             color = self.color_dict[value]
             painter.setBrush(color)
             painter.setPen(color)
-            painter.drawRect(i * bar_width, 0, bar_width, bar_height)
+            if i == self.frame_mark:
+                painter.drawRect(i * bar_width, 0, bar_width, bar_height)
+            else:
+                painter.drawRect(
+                    i * bar_width, 0.2 * bar_height, bar_width, 0.6 * bar_height
+                )
         painter.end()
 
 
 class TabWidget(QTabWidget):
+    # Auto-resizing tab
     def __init__(self, parent=None):
         super().__init__(parent)
 

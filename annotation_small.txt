@@ -20,6 +20,7 @@ S1: start    end     type
      662     701    climb
      702     720    other
      721     723    sniff_face
+     724     883    other
 
 S2: start    end     type
 -----------------------------
