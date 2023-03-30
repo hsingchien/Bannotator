@@ -169,6 +169,11 @@ class Behavior(object):
 
     def append_epoch(self, epoch: Epoch = None):
         self.epochs.append(epoch)
+    
+    def get_percentage(self):
+        dur = self.duration()
+        stream_length = self.stream.get_length()
+        return dur/stream_length
 
 
 class Stream(object):
@@ -317,9 +322,7 @@ class Annotation(QtCore.QObject):
 
     def get_behaviors(self):
         try:
-            streamIDs = list(self.streams.keys())
-            stream = self.streams[streamIDs[0]]
-            return stream.get_behaviors()
+            return [stream.get_behaviors() for _,stream in self.items()]
         except Exception:
             return []
 

@@ -17,10 +17,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
-    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
-    QLayout, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSpinBox, QStackedWidget,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QHBoxLayout, QHeaderView, QLabel, QLayout,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpinBox, QStatusBar, QTabWidget,
+    QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
 from widgets import (PlaySpeedSpinBox, TabWidget, VideoScrollBar)
@@ -53,6 +53,76 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.display_layout = QVBoxLayout()
         self.display_layout.setObjectName(u"display_layout")
+        self.horizontalLayout_12 = QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
+        self.label_4 = QLabel(self.centralwidget)
+        self.label_4.setObjectName(u"label_4")
+        self.label_4.setTextFormat(Qt.PlainText)
+        self.label_4.setScaledContents(False)
+        self.label_4.setAlignment(Qt.AlignCenter)
+        self.label_4.setTextInteractionFlags(Qt.NoTextInteraction)
+
+        self.horizontalLayout_12.addWidget(self.label_4)
+
+        self.time_label = QLabel(self.centralwidget)
+        self.time_label.setObjectName(u"time_label")
+        self.time_label.setTextFormat(Qt.MarkdownText)
+        self.time_label.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout_12.addWidget(self.time_label)
+
+        self.label_2 = QLabel(self.centralwidget)
+        self.label_2.setObjectName(u"label_2")
+
+        self.horizontalLayout_12.addWidget(self.label_2)
+
+        self.curframe_spinBox = QSpinBox(self.centralwidget)
+        self.curframe_spinBox.setObjectName(u"curframe_spinBox")
+        self.curframe_spinBox.setMinimum(1)
+        self.curframe_spinBox.setMaximum(1000)
+
+        self.horizontalLayout_12.addWidget(self.curframe_spinBox)
+
+        self.pause_button = QPushButton(self.centralwidget)
+        self.pause_button.setObjectName(u"pause_button")
+
+        self.horizontalLayout_12.addWidget(self.pause_button)
+
+        self.play_button = QPushButton(self.centralwidget)
+        self.play_button.setObjectName(u"play_button")
+
+        self.horizontalLayout_12.addWidget(self.play_button)
+
+        self.label_3 = QLabel(self.centralwidget)
+        self.label_3.setObjectName(u"label_3")
+
+        self.horizontalLayout_12.addWidget(self.label_3)
+
+        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.centralwidget)
+        self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
+        self.speed_doubleSpinBox.setMinimum(-10.000000000000000)
+        self.speed_doubleSpinBox.setMaximum(10.000000000000000)
+        self.speed_doubleSpinBox.setSingleStep(0.100000000000000)
+        self.speed_doubleSpinBox.setValue(1.000000000000000)
+
+        self.horizontalLayout_12.addWidget(self.speed_doubleSpinBox)
+
+        self.label = QLabel(self.centralwidget)
+        self.label.setObjectName(u"label")
+
+        self.horizontalLayout_12.addWidget(self.label)
+
+        self.track_window_spinbox = QSpinBox(self.centralwidget)
+        self.track_window_spinbox.setObjectName(u"track_window_spinbox")
+        self.track_window_spinbox.setMinimum(1)
+        self.track_window_spinbox.setMaximum(1000)
+        self.track_window_spinbox.setValue(500)
+
+        self.horizontalLayout_12.addWidget(self.track_window_spinbox)
+
+
+        self.display_layout.addLayout(self.horizontalLayout_12)
+
         self.vid1_view = QGraphicsView(self.centralwidget)
         self.vid1_view.setObjectName(u"vid1_view")
 
@@ -87,9 +157,10 @@ class Ui_MainWindow(object):
 
         self.display_layout.addWidget(self.track_frame)
 
-        self.display_layout.setStretch(0, 16)
-        self.display_layout.setStretch(1, 2)
-        self.display_layout.setStretch(2, 4)
+        self.display_layout.setStretch(0, 1)
+        self.display_layout.setStretch(1, 16)
+        self.display_layout.setStretch(2, 2)
+        self.display_layout.setStretch(3, 4)
 
         self.horizontalLayout_2.addLayout(self.display_layout)
 
@@ -114,11 +185,12 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.table_dock = QDockWidget(MainWindow)
         self.table_dock.setObjectName(u"table_dock")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.table_dock.sizePolicy().hasHeightForWidth())
         self.table_dock.setSizePolicy(sizePolicy2)
+        self.table_dock.setMinimumSize(QSize(300, 150))
         self.table_dock.setFloating(False)
         self.table_dock.setFeatures(QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
         self.table_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
@@ -170,35 +242,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         self.annotation_tabs.addTab(self.behav_tab, "")
-        self.epoch_tab = QWidget()
-        self.epoch_tab.setObjectName(u"epoch_tab")
-        self.verticalLayout = QVBoxLayout(self.epoch_tab)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.stream_table_layout = QHBoxLayout()
-        self.stream_table_layout.setSpacing(0)
-        self.stream_table_layout.setObjectName(u"stream_table_layout")
-        self.stream_table_layout.setSizeConstraint(QLayout.SetFixedSize)
-
-        self.verticalLayout.addLayout(self.stream_table_layout)
-
-        self.horizontalLayout_9 = QHBoxLayout()
-        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
-        self.horizontalLayout_9.setSizeConstraint(QLayout.SetNoConstraint)
-        self.pushButton_4 = QPushButton(self.epoch_tab)
-        self.pushButton_4.setObjectName(u"pushButton_4")
-
-        self.horizontalLayout_9.addWidget(self.pushButton_4)
-
-        self.pushButton_3 = QPushButton(self.epoch_tab)
-        self.pushButton_3.setObjectName(u"pushButton_3")
-
-        self.horizontalLayout_9.addWidget(self.pushButton_3)
-
-
-        self.verticalLayout.addLayout(self.horizontalLayout_9)
-
-        self.verticalLayout.setStretch(0, 8)
-        self.annotation_tabs.addTab(self.epoch_tab, "")
         self.stats_tab = QWidget()
         self.stats_tab.setObjectName(u"stats_tab")
         self.verticalLayout_3 = QVBoxLayout(self.stats_tab)
@@ -212,127 +255,46 @@ class Ui_MainWindow(object):
 
         self.control_layout.addWidget(self.annotation_tabs)
 
-        self.control_widget = QStackedWidget(self.dockWidgetContents)
-        self.control_widget.setObjectName(u"control_widget")
-        self.control_widget.setAutoFillBackground(False)
-        self.control_widget.setFrameShape(QFrame.NoFrame)
-        self.control_widget.setFrameShadow(QFrame.Plain)
-        self.control_widget.setLineWidth(3)
-        self.stat_panel = QWidget()
-        self.stat_panel.setObjectName(u"stat_panel")
-        self.control_widget.addWidget(self.stat_panel)
-        self.control_panel = QWidget()
-        self.control_panel.setObjectName(u"control_panel")
-        self.horizontalLayout_8 = QHBoxLayout(self.control_panel)
-        self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
-        self.gridLayout = QGridLayout()
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.play_button = QPushButton(self.control_panel)
-        self.play_button.setObjectName(u"play_button")
-
-        self.horizontalLayout_7.addWidget(self.play_button)
-
-        self.pause_button = QPushButton(self.control_panel)
-        self.pause_button.setObjectName(u"pause_button")
-
-        self.horizontalLayout_7.addWidget(self.pause_button)
-
-
-        self.gridLayout.addLayout(self.horizontalLayout_7, 2, 1, 1, 1)
-
-        self.horizontalLayout_4 = QHBoxLayout()
-        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
-        self.label_2 = QLabel(self.control_panel)
-        self.label_2.setObjectName(u"label_2")
-
-        self.horizontalLayout_4.addWidget(self.label_2)
-
-        self.curframe_spinBox = QSpinBox(self.control_panel)
-        self.curframe_spinBox.setObjectName(u"curframe_spinBox")
-        self.curframe_spinBox.setMinimum(1)
-        self.curframe_spinBox.setMaximum(1000)
-
-        self.horizontalLayout_4.addWidget(self.curframe_spinBox)
-
-
-        self.gridLayout.addLayout(self.horizontalLayout_4, 0, 0, 1, 1)
-
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.label_4 = QLabel(self.control_panel)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setTextFormat(Qt.PlainText)
-        self.label_4.setScaledContents(False)
-        self.label_4.setAlignment(Qt.AlignCenter)
-        self.label_4.setTextInteractionFlags(Qt.NoTextInteraction)
-
-        self.horizontalLayout_3.addWidget(self.label_4)
-
-        self.time_label = QLabel(self.control_panel)
-        self.time_label.setObjectName(u"time_label")
-        self.time_label.setTextFormat(Qt.MarkdownText)
-        self.time_label.setAlignment(Qt.AlignCenter)
-
-        self.horizontalLayout_3.addWidget(self.time_label)
-
-
-        self.gridLayout.addLayout(self.horizontalLayout_3, 0, 1, 2, 1)
-
-        self.horizontalLayout_6 = QHBoxLayout()
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.label = QLabel(self.control_panel)
-        self.label.setObjectName(u"label")
-
-        self.horizontalLayout_6.addWidget(self.label)
-
-        self.track_window_spinbox = QSpinBox(self.control_panel)
-        self.track_window_spinbox.setObjectName(u"track_window_spinbox")
-        self.track_window_spinbox.setMinimum(1)
-        self.track_window_spinbox.setMaximum(1000)
-        self.track_window_spinbox.setValue(500)
-
-        self.horizontalLayout_6.addWidget(self.track_window_spinbox)
-
-
-        self.gridLayout.addLayout(self.horizontalLayout_6, 2, 0, 1, 1)
-
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.label_3 = QLabel(self.control_panel)
-        self.label_3.setObjectName(u"label_3")
-
-        self.horizontalLayout_5.addWidget(self.label_3)
-
-        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.control_panel)
-        self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
-        self.speed_doubleSpinBox.setMinimum(-10.000000000000000)
-        self.speed_doubleSpinBox.setMaximum(10.000000000000000)
-        self.speed_doubleSpinBox.setSingleStep(0.100000000000000)
-        self.speed_doubleSpinBox.setValue(1.000000000000000)
-
-        self.horizontalLayout_5.addWidget(self.speed_doubleSpinBox)
-
-
-        self.gridLayout.addLayout(self.horizontalLayout_5, 1, 0, 1, 1)
-
-        self.gridLayout.setColumnStretch(0, 2)
-        self.gridLayout.setColumnStretch(1, 3)
-
-        self.horizontalLayout_8.addLayout(self.gridLayout)
-
-        self.control_widget.addWidget(self.control_panel)
-
-        self.control_layout.addWidget(self.control_widget)
-
         self.control_layout.setStretch(0, 3)
-        self.control_layout.setStretch(1, 1)
 
         self.horizontalLayout_11.addLayout(self.control_layout)
 
         self.table_dock.setWidget(self.dockWidgetContents)
         MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.table_dock)
+        self.dockWidget = QDockWidget(MainWindow)
+        self.dockWidget.setObjectName(u"dockWidget")
+        self.dockWidget.setMinimumSize(QSize(181, 150))
+        self.dockWidget.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
+        self.dockWidgetContents_2 = QWidget()
+        self.dockWidgetContents_2.setObjectName(u"dockWidgetContents_2")
+        self.verticalLayout_4 = QVBoxLayout(self.dockWidgetContents_2)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.stream_table_layout = QHBoxLayout()
+        self.stream_table_layout.setSpacing(0)
+        self.stream_table_layout.setObjectName(u"stream_table_layout")
+        self.stream_table_layout.setSizeConstraint(QLayout.SetDefaultConstraint)
+
+        self.verticalLayout_4.addLayout(self.stream_table_layout)
+
+        self.horizontalLayout_9 = QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.pushButton_4 = QPushButton(self.dockWidgetContents_2)
+        self.pushButton_4.setObjectName(u"pushButton_4")
+
+        self.horizontalLayout_9.addWidget(self.pushButton_4)
+
+        self.pushButton_3 = QPushButton(self.dockWidgetContents_2)
+        self.pushButton_3.setObjectName(u"pushButton_3")
+
+        self.horizontalLayout_9.addWidget(self.pushButton_3)
+
+
+        self.verticalLayout_4.addLayout(self.horizontalLayout_9)
+
+        self.verticalLayout_4.setStretch(0, 1)
+        self.dockWidget.setWidget(self.dockWidgetContents_2)
+        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.dockWidget)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuVideo.menuAction())
@@ -353,7 +315,6 @@ class Ui_MainWindow(object):
         self.track_window_spinbox.valueChanged.connect(self.video_scrollbar.changePageStep)
 
         self.annotation_tabs.setCurrentIndex(0)
-        self.control_widget.setCurrentIndex(1)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -367,24 +328,25 @@ class Ui_MainWindow(object):
         self.actionOpen_annotation.setText(QCoreApplication.translate("MainWindow", u"Open annotation", None))
         self.actionSave_annotation.setText(QCoreApplication.translate("MainWindow", u"Save annotation", None))
         self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
+        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
+        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
+        self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
+        self.table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
+        self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
+        self.dockWidget.setWindowTitle(QCoreApplication.translate("MainWindow", u"Epochs", None))
         self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Add stream", None))
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Delete stream", None))
-        self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.epoch_tab), QCoreApplication.translate("MainWindow", u"Epochs", None))
-        self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
-        self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
-        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
-        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
     # retranslateUi
 

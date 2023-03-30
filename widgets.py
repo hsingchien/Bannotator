@@ -6,7 +6,7 @@ from PySide6.QtWidgets import (
     QStyleOptionTabWidgetFrame,
     QStackedLayout,
 )
-from PySide6.QtGui import QPainter
+from PySide6.QtGui import QPainter, QColor, QBrush
 from PySide6.QtCore import Signal, Slot, QSize, Qt
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget

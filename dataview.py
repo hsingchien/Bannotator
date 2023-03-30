@@ -82,6 +82,7 @@ class GenericTableModel(QAbstractTableModel):
 
 
 class BehaviorTableModel(GenericTableModel):
+
     def data(self, index, role):
         key = self.properties[index.column()]
         idx = index.row()
@@ -132,7 +133,7 @@ class GenericTableView(QTableView):
         super().setHorizontalHeader(header_view)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        # self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
 
     def getSelectedRowItem(self):
         idx = self.currentIndex()
@@ -145,17 +146,7 @@ class GenericTableView(QTableView):
             self.model().index(self.model().rowCount(), self.model().columnCount()),
         )
 
-    def resizeColumnsToContents(self) -> None:
-        header_view = self.horizontalHeader()
-        for i in range(header_view.count()):
-            header_view.setSectionResizeMode(i, QHeaderView.ResizeToContents)
-        super().resizeColumnsToContents()
-        viewport = self.viewport()
-        min_width = (
-            self.horizontalHeader().length()
-            + self.verticalHeader().width() * 2
-            + self.verticalScrollBar().width()
-        )
-        viewport.setFixedWidth(min_width)
-        self.setFixedWidth(min_width)
-    
+    def set_columns_fixed(self, columns: List = []):
+        for column in columns:
+            self.horizontalHeader().setSectionResizeMode(column, QHeaderView.Fixed)
+        self.resizeColumnsToContents()
