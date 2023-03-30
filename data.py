@@ -137,6 +137,9 @@ class Behavior(object):
     def get_name(self):
         return self.name
 
+    def get_keybind(self):
+        return self.keybind
+
     def set_ID(self, new_ID: int = None):
         self.ID = new_ID
         return True
@@ -152,6 +155,9 @@ class Behavior(object):
     def set_color(self, new_color: QColor = None):
         self._color = new_color
         return True
+
+    def get_stream_ID(self):
+        return self.stream.ID
 
     def get_color(self):
         return self._color
@@ -169,11 +175,11 @@ class Behavior(object):
 
     def append_epoch(self, epoch: Epoch = None):
         self.epochs.append(epoch)
-    
+
     def get_percentage(self):
         dur = self.duration()
         stream_length = self.stream.get_length()
-        return dur/stream_length
+        return dur / stream_length
 
 
 class Stream(object):
@@ -187,7 +193,7 @@ class Stream(object):
     @property
     def length(self):
         return self._length
-    
+
     @property
     def ID(self):
         return self._ID
@@ -210,7 +216,12 @@ class Stream(object):
         for i, behav in enumerate(config):
             behav_name, keybind = behav.split()
             self.behaviors[behav_name] = Behavior(
-                name=behav_name, keybind=keybind, ID=i, stream=self
+                name=behav_name,
+                keybind=keybind,
+                ID=i,
+                stream=self,
+                epochs=[],
+                color=QColor("black"),
             )
 
     def get_stream_vect(self):
@@ -245,7 +256,9 @@ class Stream(object):
         self._length = self.get_length()
 
     def get_behaviors(self):
-        return [behavior for _, behavior in self.behaviors.items()]
+        behavior_list = [behavior for _, behavior in self.behaviors.items()]
+        behavior_list.sort(reverse=False, key=lambda x: x.ID)
+        return behavior_list
 
     def get_epochs(self):
         return self.epochs
@@ -315,16 +328,39 @@ class Annotation(QtCore.QObject):
                 # Create behaviors for the stream
                 self.streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
                 self.streams[stream_id].construct_behavior_from_config(config)
-                self.streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
+                self.streams[stream_id].construct_epochs_from_sequence(
+                    annotation_sequence
+                )
             return True
         except Exception:
             return False
 
+    def validate_streams(self):
+        behav_list = [stream.get_behaviors() for _, stream in self.streams.items()]
+        # Validate the streams have the same behavior setting
+        for i in range(len(behav_list[0])):
+            bname = behav_list[0][i].name
+            bID = behav_list[0][i].ID
+            bcolor = behav_list[0][i].color
+            bkbind = behav_list[0][i].get_keybind()
+            for j in range(len(behav_list)):
+                cur_behav = behav_list[j][i]
+                if (
+                    cur_behav.name != bname
+                    or cur_behav.ID != bID
+                    or cur_behav.color != bcolor
+                    or cur_behav.get_keybind() != bkbind
+                ):
+                    return False
+        return True
+
     def get_behaviors(self):
-        try:
-            return [stream.get_behaviors() for _,stream in self.items()]
-        except Exception:
-            return []
+        if self.validate_streams():
+            # Return a list of Behavior objects
+            ks = sorted(list(self.streams.keys()))
+            return [self.streams[k].get_behaviors() for k in ks]
+        else:
+            raise Exception("Inconsisten behaviors across streams")
 
     def num_stream(self):
         return len(self.streams)
@@ -337,7 +373,7 @@ class Annotation(QtCore.QObject):
 
     def assign_behavior_color(self):
         behaviors = self.get_behaviors()
-        behavior_names = [i.name for i in behaviors]
+        behavior_names = [i.name for i in behaviors[0]]
         for i, behav in enumerate(behavior_names):
             hue = int(255 * i / len(behavior_names))
             saturation = 200

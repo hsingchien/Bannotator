@@ -82,6 +82,9 @@ class GenericTableModel(QAbstractTableModel):
 
 
 class BehaviorTableModel(GenericTableModel):
+    def __init__(self, behav_list: List = [], *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.item_list = behav_list[0]
 
     def data(self, index, role):
         key = self.properties[index.column()]
@@ -92,6 +95,42 @@ class BehaviorTableModel(GenericTableModel):
         # Color background for color column
         if role == Qt.BackgroundRole and key == "color":
             return QtGui.QBrush(data_item.get_color())
+
+        return super().data(index, role)
+
+
+class StatsTableModel(GenericTableModel):
+    def __init__(self, behav_lists: List = [], *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        # Reorganize behav_list into item_list
+        for i in range(len(behav_lists)):
+            self.properties.append(
+                "S" + str(behav_lists[i][0].get_stream_ID()) + "-prct"
+            )
+        for i in range(len(behav_lists)):
+            self.properties.append(
+                "S" + str(behav_lists[i][0].get_stream_ID()) + "-epochs"
+            )
+        self.blist_dict = dict()
+        for behav_list in behav_lists:
+            self.blist_dict["S" + str(behav_list[0].get_stream_ID())] = behav_list
+        self.item_list = behav_lists[0]
+
+    def data(self, index, role):
+        key = self.properties[index.column()]
+        idx = index.row()
+        if idx >= self.rowCount():
+            return None
+        data_item = self.item_list[idx]
+        # Color background for color column
+        if role == Qt.BackgroundRole and key == "name":
+            return QtGui.QBrush(data_item.get_color())
+        if role == Qt.DisplayRole and "-prct" in key:
+            cur_behav = self.blist_dict[key.split("-")[0]][idx]
+            return str(round(100 * cur_behav.get_percentage(), 2)) + "%"
+        if role == Qt.DisplayRole and "-epochs" in key:
+            cur_behav = self.blist_dict[key.split("-")[0]][idx]
+            return cur_behav.num_epochs()
 
         return super().data(index, role)
 

@@ -12,7 +12,12 @@ from PySide6.QtCore import QTimer, Qt
 from state import GuiState
 from video import BehavVideo
 from data import Annotation
-from dataview import BehaviorTableModel, StreamTableModel, GenericTableView
+from dataview import (
+    BehaviorTableModel,
+    StreamTableModel,
+    GenericTableView,
+    StatsTableModel,
+)
 from widgets import TrackBar
 import numpy as np
 import pyqtgraph as pg
@@ -132,13 +137,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
         # Set up table views
+        # Set up behavior tableview
         behavior_tablemodel = BehaviorTableModel(
-            annotation.get_behaviors()[0],
-            ["ID", "name", "keybind", "color"],
-            self.state,
+            behav_list=annotation.get_behaviors(),
+            properties=["ID", "name", "keybind", "color"],
+            state=self.state,
+            items=[],
         )
         self.behavior_table.setModel(behavior_tablemodel)
-
+        # Set up Statstableview
+        stats_tablemodel = StatsTableModel(
+            behav_lists=annotation.get_behaviors(),
+            properties=["ID", "name"],
+            state=self.state,
+            items=[],
+        )
+        self.stats_table.setModel(stats_tablemodel)
         # self.behavior_table.set_columns_fixed([0, 1, 2, 3])
         streams = annotation.get_streams()
         for ID, stream in streams.items():
