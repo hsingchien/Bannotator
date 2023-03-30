@@ -55,7 +55,6 @@ class VideoSlider(QSlider):
 
     def __init__(self, parent, boxstart: int = None, boxend: int = None):
         super().__init__(parent)
-        self.setUpdatesEnabled(True)
         if boxstart is None:
             self.boxstart = self.minimum()
             self.boxend = self.minimum()

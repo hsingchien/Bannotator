@@ -4,10 +4,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QGraphicsScene,
     QGraphicsPixmapItem,
-    QVBoxLayout,
-    QWidget,
 )
-from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QTimer, Qt
 from state import GuiState
 from video import BehavVideo
@@ -20,7 +17,6 @@ from dataview import (
 )
 from widgets import TrackBar
 import numpy as np
-import pyqtgraph as pg
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -40,6 +36,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["stream_tables"] = dict()
         # Key = ID, item = stream table model
         self.state["slider_box"] = [None, None]
+        self.state["current_stream"] = None
         # Set up UI
         self.bvscene = QGraphicsScene()
         self.vid1_view.setScene(self.bvscene)
