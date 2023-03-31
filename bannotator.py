@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication
 
 app = QApplication(sys.argv)
 mainwindow = MainWindow()
-# app.installEventFilter(mainwindow)
+app.installEventFilter(mainwindow)
 app.setApplicationName("Bannotator")
 mainwindow.show()
 

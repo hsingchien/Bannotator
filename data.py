@@ -80,10 +80,7 @@ class Epoch(object):
         if new_behavior is None:
             return False
         if new_behavior is not self.behavior:
-            old_behavior = self.behavior
-            old_behavior.remove_epoch(self)
             self.behavior = new_behavior
-            new_behavior.append_epoch(self)
             return True
 
     def set_start_end(self, start: int = None, end: int = None):
@@ -94,6 +91,7 @@ class Epoch(object):
         if end is not None:
             self.end = end
         return True
+
     def get_behavior(self):
         return self.behavior
 
@@ -180,8 +178,8 @@ class Behavior(object):
 
     def append_epoch(self, epoch: Epoch = None):
         self.epochs.append(epoch)
-    
-    def remove_epoch(self, epoch:Epoch=None):
+
+    def remove_epoch(self, epoch: Epoch = None):
         self.epochs.remove(epoch)
 
     def get_percentage(self):
@@ -190,14 +188,21 @@ class Behavior(object):
         return dur / stream_length
 
 
-class Stream(object):
+class Stream(QtCore.QObject):
+    content_changed = QtCore.Signal()
+
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
+        super().__init__()
         self._ID = ID
         self.epochs = epochs
         self.behaviors = behaviors
         self._length = self.get_length()
-        self.keymap = self.map_behav_key()
+        if not self.behaviors:
+            self.keymap = dict()
+        else:
+            self.keymap = self.map_behav_key()
+
     @property
     def length(self):
         return self._length
@@ -219,9 +224,13 @@ class Stream(object):
             if epoch1.end >= epoch2.start:
                 return False
         return True
+
     def map_behav_key(self):
-        for _,behav in self.behaviors.items():
-            self.keymap[behav.keybind] = behav
+        try:
+            for _, behav in self.behaviors.items():
+                self.keymap[behav.keybind] = behav
+        except Exception:
+            self.keymap = dict()
 
     def construct_behavior_from_config(self, config):
         for i, behav in enumerate(config):
@@ -235,7 +244,7 @@ class Stream(object):
                 color=QColor("black"),
             )
         self.map_behav_key()
-
+        self.content_changed.emit()
 
     def get_stream_vect(self):
         # Returns 1 x stream length vector with each entry being behavior ID
@@ -249,6 +258,7 @@ class Stream(object):
     def assign_color(self, color_dict):
         for _, behav in self.behaviors.items():
             behav.set_color(color_dict[behav.name])
+        self.content_changed.emit()
 
     def get_color_dict(self):
         color_dict = dict()
@@ -267,6 +277,7 @@ class Stream(object):
             self.epochs.append(epoch)
             self.behaviors[behav_name].append_epoch(epoch)
         self._length = self.get_length()
+        self.content_changed.emit()
 
     def get_behaviors(self):
         behavior_list = [behavior for _, behavior in self.behaviors.items()]
@@ -275,18 +286,19 @@ class Stream(object):
 
     def get_epochs(self):
         return self.epochs
-    
-    def get_epoch_by_idx(self, idx:int):
-        idx = idx+1
+
+    def get_epoch_by_idx(self, idx: int):
+        # Index is frame index, start from 0
+        idx = idx + 1
         epochs = self.epochs
-        epoch = epochs[int(len(self.epochs)/2)]
+        epoch = epochs[int(len(self.epochs) / 2)]
         while epoch.start > idx or epoch.end < idx:
             if epoch.start > idx:
-                epochs = epochs[0:int(1/2*len(epochs))]
-                epoch = epochs[int(1/2*len(epochs))]
+                epochs = epochs[0 : int(1 / 2 * len(epochs))]
+                epoch = epochs[int(1 / 2 * len(epochs))]
             elif epoch.end < idx:
-                epochs = epochs[int(1/2*len(epochs)):len(epochs)]
-                epoch = epochs[int(1/2*len(epochs))]
+                epochs = epochs[int(1 / 2 * len(epochs)) : len(epochs)]
+                epoch = epochs[int(1 / 2 * len(epochs))]
         return epoch
 
     def get_length(self):
@@ -296,40 +308,61 @@ class Stream(object):
             return last_epoch.end
         else:
             return 0
-    
-    def set_behavior(self, fidx:int=None, keypressed:str=None):
+
+    def set_behavior(self, fidx: int = None, keypressed: str = None):
+        if not keypressed in self.keymap.keys():
+            return False
         epoch = self.get_epoch_by_idx(fidx)
         if epoch.get_behavior().get_keybind() != keypressed:
-            if fidx == epoch.start:
+            if fidx == epoch.start-1:
                 # Change the whole epoch
-                epoch.change_behavior(self.map_behav_key[keypressed])
+                # Check both sides for merge
+                old_behavior = epoch.get_behavior()
+                new_behavior = self.keymap[keypressed]
+                prev_epoch = self.get_epoch_by_idx(fidx-1)
+                next_epoch = self.get_epoch_by_idx(epoch.end)
+                epoch.change_behavior()
+                
+                
+                
             else:
                 # Make the rest of the current epoch a new epoch
                 # Truncate the current epoch to the frame before
                 new_start_1 = epoch.start
-                new_start_2 = fidx+1
+                new_start_2 = fidx + 1
                 new_end_1 = fidx
                 new_end_2 = epoch.end
-                new_behavior = self.map_behav_key[keypressed]
-                new_epoch = Epoch(stream= self, behavior=new_behavior,start=new_start_2,end=new_end_2)
+                new_behavior = self.keymap[keypressed]
+                new_epoch = Epoch(
+                    stream=self, behavior=new_behavior, start=new_start_2, end=new_end_2
+                )
                 epoch.set_start_end(start=new_start_1, end=new_end_1)
+                epoch = new_epoch
+                self.content_changed.emit()
+            # Check if the modified or created epoch can be merged with its neighbor
+            next_epoch = self.get_epoch_by_idx(epoch.end)
+            if next_epoch and epoch.name == next_epoch.name:
+                next_epoch.set_start_end(start = epoch.start, end = next_epoch.end)
+            else:
                 self.epochs.append(new_epoch)
                 self.sort_epoch()
-                
-
-
-
-
+            
 
 
 class Annotation(QtCore.QObject):
     construct_from_file = QtCore.Signal(str)
     content_changed = QtCore.Signal()
 
+    @QtCore.Slot()
+    def streams_changed(self):
+        self.content_changed.emit()
+
     def __init__(self, streams: Dict = {}):
         super().__init__()
         # Use dict to organize streams
         self.streams = streams
+        for _, stream in self.streams:
+            stream.content_changed.connect(self.streams_changed)
         # Behvior-color dict
         self.behav_color = dict()
 
@@ -381,6 +414,7 @@ class Annotation(QtCore.QObject):
                 self.streams[stream_id].construct_epochs_from_sequence(
                     annotation_sequence
                 )
+                self.streams[stream_id].content_changed.connect(self.streams_changed)
             return True
         except Exception:
             return False
@@ -426,8 +460,8 @@ class Annotation(QtCore.QObject):
         behavior_names = [i.name for i in behaviors[0]]
         for i, behav in enumerate(behavior_names):
             hue = int(255 * i / len(behavior_names))
-            saturation = 200
-            value = 255
+            saturation = 180
+            value = 200
             self.behav_color[behav] = QColor.fromHsv(hue, saturation, value)
         # Assign colors to the behavior objects for all the streams
         for _, stream in self.streams.items():

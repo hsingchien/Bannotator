@@ -64,23 +64,24 @@ class VideoSlider(QSlider):
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        painter = QPainter(self)
-        painter.setPen(QPen(Qt.black, 1))
-        painter.setRenderHint(QPainter.Antialiasing)
-        box_height = self.height()
-        bar_width = self.width()
-        box_width = (
-            bar_width
-            * (self.boxend - self.boxstart)
-            / (self.maximum() - self.minimum())
-        )
-        box_start = (
-            (self.boxstart - self.minimum())
-            / (self.maximum() - self.minimum())
-            * self.width()
-        )
-        painter.drawRect(box_start, 0, box_width, box_height)
-        painter.end()
+        if self.boxend and self.boxstart:
+            painter = QPainter(self)
+            painter.setPen(QPen(Qt.black, 1))
+            painter.setRenderHint(QPainter.Antialiasing)
+            box_height = self.height()
+            bar_width = self.width()
+            box_width = (
+                bar_width
+                * (self.boxend - self.boxstart)
+                / (self.maximum() - self.minimum())
+            )
+            box_start = (
+                (self.boxstart - self.minimum())
+                / (self.maximum() - self.minimum())
+                * self.width()
+            )
+            painter.drawRect(box_start, 0, box_width, box_height)
+            painter.end()
 
 
 class TrackPlotView(GraphicsLayoutWidget):

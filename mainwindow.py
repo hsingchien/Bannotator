@@ -5,7 +5,7 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QGraphicsPixmapItem,
 )
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import QTimer, Qt, QEvent
 from state import GuiState
 from video import BehavVideo
 from data import Annotation
@@ -95,6 +95,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.curframe_spinBox.setMaximum(self.state["video"].num_frame())
                 self.track_window_spinbox.setMaximum(self.state["video"].num_frame())
             self.video_slider.changeBoxRange(*self.state["slider_box"])
+        if "tables" in topics:
+            # Repaint all tables
+            self.behavior_table.repaint()
+            self.stats_table.repaint()
+            for _, table in self.state["stream_tables"].items():
+                table.repaint()
 
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
@@ -136,6 +142,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         annotation.read_from_file(anno_path)
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
+        annotation.content_changed.connect(
+            lambda: self.update_gui(["tracks", "tables"])
+        )
         # Set up table views
         # Set up behavior tableview
         behavior_tablemodel = BehaviorTableModel(
@@ -164,6 +173,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             stream_table_view.set_columns_fixed([1, 2])
             self.state["stream_tables"][ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
+        # Set the first stream as current stream
+        IDs = sorted(list(streams.keys()))
+        self.state["current_stream"] = streams[IDs[0]]
+
         return True
 
     def go_to_frame(self, frameN):
@@ -270,3 +283,103 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 window_vect, current_frame - this_start
             )
         return True
+
+    def change_current_behavior(self, keypressed: str = None):
+        cur_idx = self.state["current_frame"]
+        cur_stream = self.state["current_stream"]
+        if cur_stream is None:
+            return False
+        else:
+            cur_stream.set_behavior(cur_idx, keypressed)
+            return True
+
+    def assign_current_stream(self, keyint: int):
+        keyint = keyint - 49
+        if keyint == -1:
+            keyint = 9
+        skeys = sorted(list(self.state["annot"].get_streams().keys()))
+        try:
+            skey = skeys[keyint]
+            self.state["current_stream"] = self.state["annot"].get_streams()[skey]
+            return True
+        except Exception:
+            return False
+
+    def eventFilter(self, obj, event):
+        if event.type() != QEvent.KeyPress:
+            return super().eventFilter(obj, event)
+        elif event.key() >= 65 and event.key() <= 90:
+            # Alphabets
+            self.change_current_behavior(event.text().lower())
+        elif event.key() >= 48 and event.key() <= 57:
+            # Numbers
+            self.assign_current_stream(event.key())
+        elif event.key() == 96:
+            # ` key, rotate current stream
+            # Find where the current stream is
+            current_stream_id = self.state["current_stream"].ID
+            skeys = sorted(list(self.state["annot"].get_streams().keys()))
+            for i in range(len(skeys)):
+                if skeys[i] == current_stream_id:
+                    break
+            if i == len(skeys) - 1:
+                i = -1
+            i += 50
+            self.assign_current_stream(i)
+
+        elif event.key() == 45:
+            # - key, move to the previous cut point
+            current_stream = self.state["current_stream"]
+            current_frame = self.state["current_frame"]
+            current_epoch = current_stream.get_epoch_by_idx(current_frame)
+            if current_frame != (current_epoch.start - 1):
+                # Move to the start of the current epoch
+                self.state["current_frame"] = current_epoch.start - 1
+            else:
+                # Move to the start of the previous epoch
+                try:
+                    previous_epoch = current_stream.get_epoch_by_idx(current_frame - 1)
+                    self.state["current_frame"] = previous_epoch.start - 1
+                except Exception:
+                    pass
+            return True
+        elif event.key() == 61:
+            # = key, move to next end
+            current_stream = self.state["current_stream"]
+            current_frame = self.state["current_frame"]
+            current_epoch = current_stream.get_epoch_by_idx(current_frame)
+            if current_frame != (current_epoch.end):
+                # Move to the start of the current epoch
+                self.state["current_frame"] = current_epoch.end
+            else:
+                # Move to the end of the next epoch
+                try:
+                    next_epoch = current_stream.get_epoch_by_idx(current_frame + 1)
+                    self.state["current_frame"] = next_epoch.end
+                except Exception:
+                    pass
+            return True
+        elif event.key() == 32:
+            # Spacebar, toggle play/pause
+            if not self.timer.isActive():
+                self.play_video()
+            else:
+                self.timer.stop()
+        elif event.key() == 16777235:
+            # UP key, up the playspeed by 1 step
+            self.speed_doubleSpinBox.stepBy(1)
+        elif event.key() == 16777237:
+            # DOWN key, down the playspeed by 1 step
+            self.speed_doubleSpinBox.stepBy(-1)
+        elif event.key() == 16777234:
+            # LEFT key, previous 1 frame
+            self.state["current_frame"] = max(self.state["current_frame"] - 1, 0)
+        elif event.key() == 16777236:
+            # RIGHT key, next 1 frame
+            self.state["current_frame"] = min(
+                self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
+            )
+        else:
+            print(event.key())
+        event.accept()
+        return super().eventFilter(obj, event)
