@@ -74,7 +74,10 @@ class Epoch(object):
         if new_behavior is None:
             return False
         else:
+            old_behavior = self.behavior
+            old_behavior.remove_epoch(self)
             self.behavior = new_behavior
+            new_behavior.append_epoch(self)
 
     def change_behavior(self, new_behavior: "Behavior" = None):
         if new_behavior is None:
@@ -216,12 +219,14 @@ class Stream(QtCore.QObject):
         return True
 
     def validate_epoch(self):
-        # Validate epochs to make sure no overlap
+        # Validate epochs to make sure no overlap, no repetitive behavior
         self.sort_epoch()
         for i in range(len(self.epochs) - 1):
             epoch1 = self.epochs[i]
             epoch2 = self.epochs[i + 1]
             if epoch1.end >= epoch2.start:
+                return False
+            if epoch1.name == epoch2.name:
                 return False
         return True
 
@@ -277,6 +282,7 @@ class Stream(QtCore.QObject):
             self.epochs.append(epoch)
             self.behaviors[behav_name].append_epoch(epoch)
         self._length = self.get_length()
+        self.validate_epoch()
         self.content_changed.emit()
 
     def get_behaviors(self):
@@ -313,40 +319,52 @@ class Stream(QtCore.QObject):
         if not keypressed in self.keymap.keys():
             return False
         epoch = self.get_epoch_by_idx(fidx)
-        if epoch.get_behavior().get_keybind() != keypressed:
-            if fidx == epoch.start-1:
-                # Change the whole epoch
-                # Check both sides for merge
-                old_behavior = epoch.get_behavior()
-                new_behavior = self.keymap[keypressed]
-                prev_epoch = self.get_epoch_by_idx(fidx-1)
-                next_epoch = self.get_epoch_by_idx(epoch.end)
-                epoch.change_behavior()
-                
-                
-                
+        if epoch.get_behavior().get_keybind() == keypressed:
+            return False
+        if fidx == epoch.start - 1:
+            # Change the whole epoch
+            # Check both sides for merge
+            old_behavior = epoch.get_behavior()
+            old_behavior.remove_epoch(epoch)
+            new_behavior = self.keymap[keypressed]
+            prev_epoch = self.get_epoch_by_idx(fidx - 1)
+            next_epoch = self.get_epoch_by_idx(epoch.end)
+            epoch.change_behavior(new_behavior)
+            if prev_epoch and epoch.name == prev_epoch.name:
+                epoch.set_start_end(prev_epoch.start, epoch.end)
+                # Del prev_epoch references
+                self.epochs.remove(prev_epoch)
+                new_behavior.remove_epoch(prev_epoch)
+            if next_epoch and epoch.name == next_epoch.name:
+                epoch.set_start_end(epoch.start, next_epoch.end)
+                self.epochs.remove(next_epoch)
+                new_behavior.remove_epoch(next_epoch)
+            self.epochs.append(epoch)
+            new_behavior.append_epoch(epoch)
+        else:
+            # Make the rest of the current epoch a new epoch
+            # Truncate the current epoch to the frame before
+            new_start_1 = epoch.start
+            new_start_2 = fidx + 1
+            new_end_1 = fidx
+            new_end_2 = epoch.end
+            new_behavior = self.keymap[keypressed]
+            epoch.set_start_end(start=new_start_1, end=new_end_1)
+            next_epoch = self.get_epoch_by_idx(new_end_2)
+            if new_behavior.name == next_epoch.name:
+                next_epoch.set_start_end(start=new_start_2, end=next_epoch.end)
             else:
-                # Make the rest of the current epoch a new epoch
-                # Truncate the current epoch to the frame before
-                new_start_1 = epoch.start
-                new_start_2 = fidx + 1
-                new_end_1 = fidx
-                new_end_2 = epoch.end
-                new_behavior = self.keymap[keypressed]
                 new_epoch = Epoch(
                     stream=self, behavior=new_behavior, start=new_start_2, end=new_end_2
                 )
-                epoch.set_start_end(start=new_start_1, end=new_end_1)
-                epoch = new_epoch
-                self.content_changed.emit()
-            # Check if the modified or created epoch can be merged with its neighbor
-            next_epoch = self.get_epoch_by_idx(epoch.end)
-            if next_epoch and epoch.name == next_epoch.name:
-                next_epoch.set_start_end(start = epoch.start, end = next_epoch.end)
-            else:
+                new_behavior.append_epoch(new_epoch)
                 self.epochs.append(new_epoch)
-                self.sort_epoch()
-            
+        validated = self.validate_epoch()
+        if not validated:
+            raise Exception(
+                f"Stream-{self.ID} has problematic epochs (overlapped epoch or repetitive behaviors)!"
+            )
+        self.content_changed.emit()
 
 
 class Annotation(QtCore.QObject):
