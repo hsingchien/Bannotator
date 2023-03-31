@@ -298,6 +298,9 @@ class Stream(QtCore.QObject):
         idx = idx + 1
         epochs = self.epochs
         epoch = epochs[int(len(self.epochs) / 2)]
+        # Edge case
+        if idx < 1 or idx > self.length:
+            return None
         while epoch.start > idx or epoch.end < idx:
             if epoch.start > idx:
                 epochs = epochs[0 : int(1 / 2 * len(epochs))]
@@ -339,7 +342,6 @@ class Stream(QtCore.QObject):
                 epoch.set_start_end(epoch.start, next_epoch.end)
                 self.epochs.remove(next_epoch)
                 new_behavior.remove_epoch(next_epoch)
-            self.epochs.append(epoch)
             new_behavior.append_epoch(epoch)
         else:
             # Make the rest of the current epoch a new epoch
@@ -351,7 +353,7 @@ class Stream(QtCore.QObject):
             new_behavior = self.keymap[keypressed]
             epoch.set_start_end(start=new_start_1, end=new_end_1)
             next_epoch = self.get_epoch_by_idx(new_end_2)
-            if new_behavior.name == next_epoch.name:
+            if next_epoch and new_behavior.name == next_epoch.name:
                 next_epoch.set_start_end(start=new_start_2, end=next_epoch.end)
             else:
                 new_epoch = Epoch(

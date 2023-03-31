@@ -5,9 +5,10 @@ from PySide6.QtWidgets import (
     QStyleOptionTabWidgetFrame,
     QStackedLayout,
     QSlider,
+    QSpinBox
 )
 from PySide6.QtGui import QPainter, QPen
-from PySide6.QtCore import Slot, QSize, Qt
+from PySide6.QtCore import Slot, QSize, Qt, QEvent
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget
 from typing import Dict
@@ -44,7 +45,18 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps * self.step_ratio)
         else:
             return super().stepBy(steps)
-
+    def event(self, event):
+        if event.type() == QEvent.KeyPress and event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
+            return True
+        else:
+            return super().event(event)
+        
+class SpinBox(QSpinBox):
+    def event(self, event):
+        if event.type() == QEvent.KeyPress and event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
+            return True
+        else:
+            return super().event(event)
 
 class VideoSlider(QSlider):
     @Slot(int, int)

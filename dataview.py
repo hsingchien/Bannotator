@@ -185,6 +185,7 @@ class GenericTableView(QTableView):
             self.model().index(self.model().rowCount(), self.model().columnCount()),
         )
 
+
     def set_columns_fixed(self, columns: List = []):
         for column in columns:
             self.horizontalHeader().setSectionResizeMode(column, QHeaderView.Fixed)

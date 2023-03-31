@@ -97,10 +97,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.video_slider.changeBoxRange(*self.state["slider_box"])
         if "tables" in topics:
             # Repaint all tables
-            self.behavior_table.repaint()
-            self.stats_table.repaint()
+            self.behavior_table.repaint_table()
+            self.stats_table.repaint_table()
             for _, table in self.state["stream_tables"].items():
-                table.repaint()
+                table.repaint_table()
 
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
@@ -308,13 +308,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:
             return super().eventFilter(obj, event)
-        elif event.key() >= 65 and event.key() <= 90:
+        elif event.key() in range(Qt.Key_A, Qt.Key_Z+1):
             # Alphabets
             self.change_current_behavior(event.text().lower())
-        elif event.key() >= 48 and event.key() <= 57:
+        elif (event.key() in range(Qt.Key_0, Qt.Key_9+1)):
+            print(obj)
             # Numbers
             self.assign_current_stream(event.key())
-        elif event.key() == 96:
+        elif event.key() == Qt.Key_QuoteLeft:
             # ` key, rotate current stream
             # Find where the current stream is
             current_stream_id = self.state["current_stream"].ID
@@ -327,7 +328,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             i += 50
             self.assign_current_stream(i)
 
-        elif event.key() == 45:
+        elif event.key() == Qt.Key_Minus:
             # - key, move to the previous cut point
             current_stream = self.state["current_stream"]
             current_frame = self.state["current_frame"]
@@ -343,7 +344,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 except Exception:
                     pass
             return True
-        elif event.key() == 61:
+        elif event.key() == Qt.Key_Equal:
             # = key, move to next end
             current_stream = self.state["current_stream"]
             current_frame = self.state["current_frame"]
@@ -359,27 +360,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 except Exception:
                     pass
             return True
-        elif event.key() == 32:
+        elif event.key() == Qt.Key_Space:
             # Spacebar, toggle play/pause
             if not self.timer.isActive():
                 self.play_video()
             else:
                 self.timer.stop()
-        elif event.key() == 16777235:
+        elif event.key() == Qt.Key_Up:
             # UP key, up the playspeed by 1 step
             self.speed_doubleSpinBox.stepBy(1)
-        elif event.key() == 16777237:
+        elif event.key() == Qt.Key_Down:
             # DOWN key, down the playspeed by 1 step
             self.speed_doubleSpinBox.stepBy(-1)
-        elif event.key() == 16777234:
+        elif event.key() == Qt.Key_Left:
             # LEFT key, previous 1 frame
             self.state["current_frame"] = max(self.state["current_frame"] - 1, 0)
-        elif event.key() == 16777236:
+        elif event.key() == Qt.Key_Right:
             # RIGHT key, next 1 frame
             self.state["current_frame"] = min(
                 self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
             )
         else:
             print(event.key())
-        event.accept()
-        return super().eventFilter(obj, event)
+        # Stop propagation
+        return True
