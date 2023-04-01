@@ -11,6 +11,7 @@ from typing import Optional, List
 from state import GuiState
 import numpy as np
 from data import Stream
+import re
 
 
 class GenericTableModel(QAbstractTableModel):
@@ -44,7 +45,7 @@ class GenericTableModel(QAbstractTableModel):
         data_item = self.item_list[idx]
 
         # Display content
-        if role == Qt.DisplayRole:
+        if role == Qt.DisplayRole or role == Qt.EditRole:
             if isinstance(data_item, dict) and key in data_item:
                 return data_item[key]
             if hasattr(data_item, key):
@@ -85,6 +86,7 @@ class BehaviorTableModel(GenericTableModel):
     def __init__(self, behav_list: List = [], *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.item_list = behav_list[0]
+        self.all_behaviors = behav_list
 
     def data(self, index, role):
         key = self.properties[index.column()]
@@ -95,8 +97,29 @@ class BehaviorTableModel(GenericTableModel):
         # Color background for color column
         if role == Qt.BackgroundRole and key == "color":
             return QtGui.QBrush(data_item.get_color())
-
         return super().data(index, role)
+
+    def flags(self, index: QModelIndex):
+        if self.properties[index.column()] in ["color", "keybind"]:
+            # Keybind and Color are editable
+            flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+        else:
+            flags = Qt.ItemIsEnabled
+        return flags
+
+    def setData(self, index, value, role=Qt.EditRole):
+        if role != Qt.EditRole:
+            return False
+        if self.properties[index.column()] == "color":
+            # Varify if the input is a valid hex code
+            pattern = re.compile("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")
+            if bool(pattern.match(value)):
+                for stream_behav in self.all_behaviors:
+                    stream_behav[index.row()].set_color(QtGui.QColor(value))
+                self.dataChanged.emit(index, index)
+                return True
+            else:
+                return False
 
 
 class StatsTableModel(GenericTableModel):
@@ -173,6 +196,13 @@ class GenericTableView(QTableView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         # self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.installEventFilter(self)
+
+    def eventFilter(self, source, event):
+        if source == self and self.state() == QAbstractItemView.EditingState:
+            # key = event.key()
+            return True
+        return super().eventFilter(source, event)
 
     def getSelectedRowItem(self):
         idx = self.currentIndex()
@@ -184,7 +214,6 @@ class GenericTableView(QTableView):
             self.model().index(0, 0),
             self.model().index(self.model().rowCount(), self.model().columnCount()),
         )
-
 
     def set_columns_fixed(self, columns: List = []):
         for column in columns:

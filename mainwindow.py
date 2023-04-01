@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QGraphicsScene,
     QGraphicsPixmapItem,
+    QAbstractItemView,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
 from state import GuiState
@@ -154,6 +155,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             items=[],
         )
         self.behavior_table.setModel(behavior_tablemodel)
+        self.behavior_table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.behavior_table.setSelectionBehavior(QAbstractItemView.SelectItems)
         # Set up Statstableview
         stats_tablemodel = StatsTableModel(
             behav_lists=annotation.get_behaviors(),
@@ -308,13 +311,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:
             return super().eventFilter(obj, event)
-        elif event.key() in range(Qt.Key_A, Qt.Key_Z+1):
+        if event.key() in range(Qt.Key_A, Qt.Key_Z + 1):
             # Alphabets
             self.change_current_behavior(event.text().lower())
-        elif (event.key() in range(Qt.Key_0, Qt.Key_9+1)):
-            print(obj)
+        if self.focusWidget() not in [
+            self.speed_doubleSpinBox,
+            self.curframe_spinBox,
+            self.track_window_spinbox,
+            self.behavior_table,
+        ] and event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
             # Numbers
-            self.assign_current_stream(event.key())
+            try:
+                self.assign_current_stream(event.key())
+            except Exception:
+                pass
         elif event.key() == Qt.Key_QuoteLeft:
             # ` key, rotate current stream
             # Find where the current stream is
@@ -381,6 +391,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
             )
         else:
-            print(event.key())
+            return super().eventFilter(obj, event)
         # Stop propagation
         return True
