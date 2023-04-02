@@ -3,10 +3,8 @@ from PySide6.QtWidgets import (
     QTableView,
     QAbstractItemView,
     QHeaderView,
-    QAbstractScrollArea,
-    QSizePolicy,
 )
-from PySide6 import QtGui
+from PySide6 import QtGui, QtCore
 from typing import Optional, List
 from state import GuiState
 import numpy as np
@@ -111,7 +109,7 @@ class BehaviorTableModel(GenericTableModel):
         if role != Qt.EditRole:
             return False
         if self.properties[index.column()] == "color":
-            # Varify if the input is a valid hex code
+            # Verify if the input is a valid hex code
             pattern = re.compile("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")
             if bool(pattern.match(value)):
                 for stream_behav in self.all_behaviors:
@@ -120,6 +118,22 @@ class BehaviorTableModel(GenericTableModel):
                 return True
             else:
                 return False
+        if self.properties[index.column()] == "keybind":
+            # Verify if the input is a single letter
+            pattern = r"^[a-zA-Z]$"
+            if bool(re.match(pattern, value)):
+                value = value.lower()
+            else:
+                return False
+            # Check if the keybind is occupied
+            all_keysbinds = [behav.keybind for behav in self.item_list]
+            for i, keybind in enumerate(all_keysbinds):
+                if value == keybind:
+                    return False
+            # Accept the change
+            for stream_behav in self.all_behaviors:
+                stream_behav[index.row()].set_keybind(value)
+            return True
 
 
 class StatsTableModel(GenericTableModel):
@@ -197,12 +211,6 @@ class GenericTableView(QTableView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         # self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.installEventFilter(self)
-
-    def eventFilter(self, source, event):
-        if source == self and self.state() == QAbstractItemView.EditingState:
-            # key = event.key()
-            return True
-        return super().eventFilter(source, event)
 
     def getSelectedRowItem(self):
         idx = self.currentIndex()

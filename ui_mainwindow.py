@@ -19,11 +19,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
     QHBoxLayout, QHeaderView, QLabel, QLayout,
     QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QStatusBar, QTabWidget, QVBoxLayout,
-    QWidget)
+    QSizePolicy, QSpinBox, QStatusBar, QTabWidget,
+    QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
-from widgets import (PlaySpeedSpinBox, SpinBox, TabWidget, VideoSlider)
+from widgets import (PlaySpeedSpinBox, TabWidget, VideoSlider)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -76,7 +76,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.label_2)
 
-        self.curframe_spinBox = SpinBox(self.centralwidget)
+        self.curframe_spinBox = QSpinBox(self.centralwidget)
         self.curframe_spinBox.setObjectName(u"curframe_spinBox")
         self.curframe_spinBox.setMinimum(1)
         self.curframe_spinBox.setMaximum(1000)
@@ -112,7 +112,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.label)
 
-        self.track_window_spinbox = SpinBox(self.centralwidget)
+        self.track_window_spinbox = QSpinBox(self.centralwidget)
         self.track_window_spinbox.setObjectName(u"track_window_spinbox")
         self.track_window_spinbox.setMinimum(1)
         self.track_window_spinbox.setMaximum(1000)

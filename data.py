@@ -99,7 +99,10 @@ class Epoch(object):
         return self.behavior
 
 
-class Behavior(object):
+class Behavior(QtCore.QObject):
+    keybind_changed = QtCore.Signal()
+    color_changed = QtCore.Signal()
+
     # Defines behaviors
     def __init__(
         self,
@@ -110,6 +113,7 @@ class Behavior(object):
         epochs: List = [],
         stream: "Stream" = None,
     ):
+        super().__init__()
         self._name = name
         self.keybind = keybind
         self._ID = ID
@@ -151,16 +155,23 @@ class Behavior(object):
         return True
 
     def set_keybind(self, new_keybind: str = None):
-        self.keybind = new_keybind
-        return True
+        if self.keybind != new_keybind:
+            self.keybind_changed.emit()
+            return True
+        else:
+            return False
 
     def set_stream(self, new_stream: "Stream" = None):
         self.stream = new_stream
         return True
 
     def set_color(self, new_color: QColor = None):
-        self._color = new_color
-        return True
+        if self._color != new_color:
+            self._color = new_color
+            self.color_changed.emit()
+            return True
+        else:
+            return False
 
     def get_stream_ID(self):
         return self.stream.ID
@@ -204,7 +215,10 @@ class Stream(QtCore.QObject):
         if not self.behaviors:
             self.keymap = dict()
         else:
-            self.keymap = self.map_behav_key()
+            self.map_behav_key()
+            for _, be in self.behaviors.items():
+                be.keybind_changed.connect(self.map_behav_key)
+                be.color_changed.connect(lambda: self.content_changed.emit())
 
     @property
     def length(self):
@@ -247,6 +261,10 @@ class Stream(QtCore.QObject):
                 stream=self,
                 epochs=[],
                 color=QColor("black"),
+            )
+            self.behaviors[behav_name].keybind_changed.connect(self.map_behav_key)
+            self.behaviors[behav_name].color_changed.connect(
+                lambda: self.content_changed.emit()
             )
         self.map_behav_key()
         self.content_changed.emit()

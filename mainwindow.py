@@ -86,15 +86,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             except Exception:
                 pass
         if "gui" in topics:
-            try:
+            if self.state["annot"]:
                 annot_length = self.state["annot"].get_length()
                 self.video_slider.setMaximum(annot_length)
                 self.curframe_spinBox.setMaximum(annot_length)
                 self.track_window_spinbox.setMaximum(annot_length)
-            except Exception:
+            elif self.state["video"]:
                 self.video_slider.setMaximum(self.state["video"].num_frame())
                 self.curframe_spinBox.setMaximum(self.state["video"].num_frame())
                 self.track_window_spinbox.setMaximum(self.state["video"].num_frame())
+
             self.video_slider.changeBoxRange(*self.state["slider_box"])
         if "tables" in topics:
             # Repaint all tables
@@ -157,6 +158,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.behavior_table.setModel(behavior_tablemodel)
         self.behavior_table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.behavior_table.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.behavior_table.model().dataChanged.connect(
+            self.behavior_table.clearSelection
+        )
         # Set up Statstableview
         stats_tablemodel = StatsTableModel(
             behav_lists=annotation.get_behaviors(),
@@ -285,6 +289,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.state["tracks"][stream.ID].set_data(
                 window_vect, current_frame - this_start
             )
+            self.state["tracks"][stream.ID].set_color_dict(stream.get_color_dict())
         return True
 
     def change_current_behavior(self, keypressed: str = None):
@@ -311,15 +316,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:
             return super().eventFilter(obj, event)
+        if self.editing_state():
+            return False
         if event.key() in range(Qt.Key_A, Qt.Key_Z + 1):
             # Alphabets
             self.change_current_behavior(event.text().lower())
-        if self.focusWidget() not in [
-            self.speed_doubleSpinBox,
-            self.curframe_spinBox,
-            self.track_window_spinbox,
-            self.behavior_table,
-        ] and event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
+        if event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
             # Numbers
             try:
                 self.assign_current_stream(event.key())
@@ -328,54 +330,58 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif event.key() == Qt.Key_QuoteLeft:
             # ` key, rotate current stream
             # Find where the current stream is
-            current_stream_id = self.state["current_stream"].ID
-            skeys = sorted(list(self.state["annot"].get_streams().keys()))
-            for i in range(len(skeys)):
-                if skeys[i] == current_stream_id:
-                    break
-            if i == len(skeys) - 1:
-                i = -1
-            i += 50
-            self.assign_current_stream(i)
+            try:
+                current_stream_id = self.state["current_stream"].ID
+                skeys = sorted(list(self.state["annot"].get_streams().keys()))
+                for i in range(len(skeys)):
+                    if skeys[i] == current_stream_id:
+                        break
+                if i == len(skeys) - 1:
+                    i = -1
+                i += 50
+                self.assign_current_stream(i)
+            except:
+                pass
 
         elif event.key() == Qt.Key_Minus:
             # - key, move to the previous cut point
-            current_stream = self.state["current_stream"]
-            current_frame = self.state["current_frame"]
-            current_epoch = current_stream.get_epoch_by_idx(current_frame)
-            if current_frame != (current_epoch.start - 1):
-                # Move to the start of the current epoch
-                self.state["current_frame"] = current_epoch.start - 1
-            else:
-                # Move to the start of the previous epoch
-                try:
+            try:
+                current_stream = self.state["current_stream"]
+                current_frame = self.state["current_frame"]
+                current_epoch = current_stream.get_epoch_by_idx(current_frame)
+                if current_frame != (current_epoch.start - 1):
+                    # Move to the start of the current epoch
+                    self.state["current_frame"] = current_epoch.start - 1
+                else:
+                    # Move to the start of the previous epoch
                     previous_epoch = current_stream.get_epoch_by_idx(current_frame - 1)
                     self.state["current_frame"] = previous_epoch.start - 1
-                except Exception:
-                    pass
-            return True
+            except Exception:
+                pass
         elif event.key() == Qt.Key_Equal:
             # = key, move to next end
-            current_stream = self.state["current_stream"]
-            current_frame = self.state["current_frame"]
-            current_epoch = current_stream.get_epoch_by_idx(current_frame)
-            if current_frame != (current_epoch.end):
-                # Move to the start of the current epoch
-                self.state["current_frame"] = current_epoch.end
-            else:
-                # Move to the end of the next epoch
-                try:
+            try:
+                current_stream = self.state["current_stream"]
+                current_frame = self.state["current_frame"]
+                current_epoch = current_stream.get_epoch_by_idx(current_frame)
+                if current_frame != (current_epoch.end):
+                    # Move to the start of the current epoch
+                    self.state["current_frame"] = current_epoch.end
+                else:
+                    # Move to the end of the next epoch
                     next_epoch = current_stream.get_epoch_by_idx(current_frame + 1)
                     self.state["current_frame"] = next_epoch.end
-                except Exception:
-                    pass
-            return True
+            except Exception:
+                pass
         elif event.key() == Qt.Key_Space:
             # Spacebar, toggle play/pause
-            if not self.timer.isActive():
-                self.play_video()
-            else:
-                self.timer.stop()
+            try:
+                if not self.timer.isActive():
+                    self.play_video()
+                else:
+                    self.timer.stop()
+            except:
+                pass
         elif event.key() == Qt.Key_Up:
             # UP key, up the playspeed by 1 step
             self.speed_doubleSpinBox.stepBy(1)
@@ -394,3 +400,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return super().eventFilter(obj, event)
         # Stop propagation
         return True
+
+    def editing_state(self):
+        # Check focus widgets
+        if self.focusWidget() in [
+            self.speed_doubleSpinBox,
+            self.curframe_spinBox,
+            self.track_window_spinbox,
+        ]:
+            return True
+        if self.behavior_table.state() == QAbstractItemView.EditingState:
+            return True
+        if self.stats_table.state() == QAbstractItemView.EditingState:
+            return True
+        for _, table in self.state["stream_tables"].items():
+            if table.state() == QAbstractItemView.EditingState:
+                return True
+        return False

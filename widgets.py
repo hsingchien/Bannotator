@@ -55,15 +55,6 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().event(event)
 
 
-class SpinBox(QSpinBox):
-    def keyPressEvent(self, event):
-        # if event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
-        #     return True
-        # else:
-        #     return super().keyPressEvent(event)
-        return super().keyPressEvent(event)
-
-
 class VideoSlider(QSlider):
     @Slot(int, int)
     def changeBoxRange(self, boxstart, boxend):
@@ -128,7 +119,7 @@ class TrackBar(QWidget):
 
     def set_color_dict(self, color_dict: Dict = None):
         self.color_dict = color_dict
-        if self.data:
+        if self.data is not None:
             self.update()
 
     def paintEvent(self, event):
