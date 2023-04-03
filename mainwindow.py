@@ -436,7 +436,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return True
         return False
 
-    def stop_threads(self):
+    def closeEvent(self, event):
         for video in self.state["video"]:
             video.stop_worker()
-            video.clear_threads()
+            event.accept()

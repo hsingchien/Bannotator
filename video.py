@@ -40,6 +40,8 @@ class BehavVideo(QObject):
 
     def stop_worker(self):
         self.run_worker.emit(False)
+        self.threadpool.waitForDone()
+        self.clear_threads()
 
     def clear_threads(self):
         self.threadpool.clear()

@@ -9,7 +9,6 @@ def main():
     app.installEventFilter(mainwindow)
     app.setApplicationName("Bannotator")
     mainwindow.show()
-    app.aboutToQuit.connect(mainwindow.stop_threads)
     app.exec()
 
 
