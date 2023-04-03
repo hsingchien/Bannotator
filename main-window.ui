@@ -24,7 +24,7 @@
     <item>
      <layout class="QVBoxLayout" name="display_layout" stretch="1,16,0,4">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_12">
+       <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1">
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
@@ -75,16 +75,29 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pause_button">
-          <property name="text">
-           <string>Pause</string>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
           </property>
-         </widget>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <widget class="QPushButton" name="play_button">
           <property name="text">
            <string>Play</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pause_button">
+          <property name="text">
+           <string>Pause</string>
           </property>
          </widget>
         </item>
@@ -131,10 +144,48 @@
           </property>
          </widget>
         </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Video Layout</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox">
+          <item>
+           <property name="text">
+            <string>Side by Side</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Stacked</string>
+           </property>
+          </item>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>
-       <widget class="QGraphicsView" name="vid1_view"/>
+       <layout class="QHBoxLayout" name="video_layout">
+        <item>
+         <widget class="QGraphicsView" name="vid1_view"/>
+        </item>
+       </layout>
       </item>
       <item>
        <widget class="VideoSlider" name="video_slider">
@@ -401,7 +452,7 @@
   </widget>
   <action name="actionOpen_video">
    <property name="text">
-    <string>Open video</string>
+    <string>Add video</string>
    </property>
   </action>
   <action name="actionOpen_config">

@@ -16,11 +16,11 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QDockWidget, QFrame, QGraphicsView,
-    QHBoxLayout, QHeaderView, QLabel, QLayout,
-    QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSpinBox, QStatusBar, QTabWidget,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
+    QGraphicsView, QHBoxLayout, QHeaderView, QLabel,
+    QLayout, QMainWindow, QMenu, QMenuBar,
+    QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
+    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
 from widgets import (PlaySpeedSpinBox, TabWidget, VideoSlider)
@@ -83,15 +83,19 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.curframe_spinBox)
 
-        self.pause_button = QPushButton(self.centralwidget)
-        self.pause_button.setObjectName(u"pause_button")
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout_12.addWidget(self.pause_button)
+        self.horizontalLayout_12.addItem(self.horizontalSpacer)
 
         self.play_button = QPushButton(self.centralwidget)
         self.play_button.setObjectName(u"play_button")
 
         self.horizontalLayout_12.addWidget(self.play_button)
+
+        self.pause_button = QPushButton(self.centralwidget)
+        self.pause_button.setObjectName(u"pause_button")
+
+        self.horizontalLayout_12.addWidget(self.pause_button)
 
         self.label_3 = QLabel(self.centralwidget)
         self.label_3.setObjectName(u"label_3")
@@ -120,13 +124,41 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.track_window_spinbox)
 
+        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.horizontalLayout_12.addItem(self.horizontalSpacer_2)
+
+        self.label_5 = QLabel(self.centralwidget)
+        self.label_5.setObjectName(u"label_5")
+
+        self.horizontalLayout_12.addWidget(self.label_5)
+
+        self.comboBox = QComboBox(self.centralwidget)
+        self.comboBox.addItem("")
+        self.comboBox.addItem("")
+        self.comboBox.setObjectName(u"comboBox")
+
+        self.horizontalLayout_12.addWidget(self.comboBox)
+
+        self.horizontalLayout_12.setStretch(1, 1)
+        self.horizontalLayout_12.setStretch(3, 1)
+        self.horizontalLayout_12.setStretch(4, 1)
+        self.horizontalLayout_12.setStretch(8, 1)
+        self.horizontalLayout_12.setStretch(10, 1)
+        self.horizontalLayout_12.setStretch(11, 1)
+        self.horizontalLayout_12.setStretch(13, 1)
 
         self.display_layout.addLayout(self.horizontalLayout_12)
 
+        self.video_layout = QHBoxLayout()
+        self.video_layout.setObjectName(u"video_layout")
         self.vid1_view = QGraphicsView(self.centralwidget)
         self.vid1_view.setObjectName(u"vid1_view")
 
-        self.display_layout.addWidget(self.vid1_view)
+        self.video_layout.addWidget(self.vid1_view)
+
+
+        self.display_layout.addLayout(self.video_layout)
 
         self.video_slider = VideoSlider(self.centralwidget)
         self.video_slider.setObjectName(u"video_slider")
@@ -317,7 +349,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.actionOpen_video.setText(QCoreApplication.translate("MainWindow", u"Open video", None))
+        self.actionOpen_video.setText(QCoreApplication.translate("MainWindow", u"Add video", None))
         self.actionOpen_config.setText(QCoreApplication.translate("MainWindow", u"Open config", None))
         self.actionCreate_new_config.setText(QCoreApplication.translate("MainWindow", u"Save config", None))
         self.actionOpen_annotation.setText(QCoreApplication.translate("MainWindow", u"Open annotation", None))
@@ -326,10 +358,14 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
-        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
+        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Video Layout", None))
+        self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Side by Side", None))
+        self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Stacked", None))
+
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))

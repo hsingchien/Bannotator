@@ -5,9 +5,9 @@ from PySide6.QtWidgets import (
     QStyleOptionTabWidgetFrame,
     QStackedLayout,
     QSlider,
-    QSpinBox,
+    QGraphicsPixmapItem,
 )
-from PySide6.QtGui import QPainter, QPen
+from PySide6.QtGui import QPainter, QPen, QPixmap
 from PySide6.QtCore import Slot, QSize, Qt, QEvent
 import numpy as np
 from pyqtgraph import GraphicsLayoutWidget
@@ -188,3 +188,13 @@ class TabWidget(QTabWidget):
         #     max_width = max(max_width, content_width)
         #     max_height = max(max_height, content_height)
         # return QSize(max_width, max_height)
+
+
+class BehavVideoItem(QGraphicsPixmapItem):
+    @Slot()
+    def updatePixmap(self, new_pixmap):
+        if new_pixmap is not None and isinstance(new_pixmap, QPixmap):
+            self.setPixmap(new_pixmap)
+            return True
+        else:
+            return False

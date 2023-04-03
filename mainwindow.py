@@ -3,7 +3,6 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QFileDialog,
     QGraphicsScene,
-    QGraphicsPixmapItem,
     QAbstractItemView,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
@@ -16,7 +15,7 @@ from dataview import (
     GenericTableView,
     StatsTableModel,
 )
-from widgets import TrackBar
+from widgets import TrackBar, BehavVideoItem
 import numpy as np
 
 
@@ -26,7 +25,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # Initialize states
         self.state = GuiState()
-        self.state["video"] = None
+        self.state["video"] = []
         self.state["annot"] = None
         self.state["FPS"] = None
         self.state["current_frame"] = self.curframe_spinBox.value() - 1
@@ -39,10 +38,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
         # Set up UI
-        self.bvscene = QGraphicsScene()
-        self.vid1_view.setScene(self.bvscene)
-        self.video_item = QGraphicsPixmapItem()
-        self.bvscene.addItem(self.video_item)
+        bvscene = QGraphicsScene()
+        self.vid1_view.setScene(bvscene)
+        video_item = BehavVideoItem()
+        bvscene.addItem(video_item)
+        self.vid_views = [self.vid1_view]
+        self.vid_items = [video_item]
+        # Set up timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.play_video_update_frame)
 
@@ -92,9 +94,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.curframe_spinBox.setMaximum(annot_length)
                 self.track_window_spinbox.setMaximum(annot_length)
             elif self.state["video"]:
-                self.video_slider.setMaximum(self.state["video"].num_frame())
-                self.curframe_spinBox.setMaximum(self.state["video"].num_frame())
-                self.track_window_spinbox.setMaximum(self.state["video"].num_frame())
+                self.video_slider.setMaximum(self.state["video"][0].num_frame())
+                self.curframe_spinBox.setMaximum(self.state["video"][0].num_frame())
+                self.track_window_spinbox.setMaximum(self.state["video"][0].num_frame())
 
             self.video_slider.changeBoxRange(*self.state["slider_box"])
         if "tables" in topics:
@@ -121,10 +123,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if not video_path:
             return False
-        bvideo = BehavVideo(video_path, self)
-        self.state["video"] = bvideo
-        self.state["FPS"] = bvideo.frame_rate()
+        bvideo = BehavVideo(video_path)
+        if not self.state["video"]:
+            self.state["video"].append(bvideo)
+            bvideo.new_frame_fetched.connect(self.vid_items[0].updatePixmap)
+            self.state["FPS"] = bvideo.frame_rate()
+        else:
+            self.state["video"].append(bvideo)
+            new_scene = QGraphicsScene()
+            new_vid_item = BehavVideoItem()
+            bvideo.new_frame_fetched.connect(new_vid_item.updatePixmap)
+            new_scene.addItem(new_vid_item)
+            self.vid_items.append(new_vid_item)
+
         self.go_to_frame(self.state["current_frame"])
+
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
@@ -187,10 +200,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return True
 
     def go_to_frame(self, frameN):
-        video = self.state["video"]
-        if video:
-            frame_pixmap = video.get_pixmap(frameN)
-            self.video_item.setPixmap(frame_pixmap)
+        videos = self.state["video"]
+        if videos:
+            for video in videos:
+                video.get_pixmap(frameN)
             return True
         else:
             return False
