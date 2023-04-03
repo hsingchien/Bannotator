@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QGraphicsScene,
     QAbstractItemView,
+    QGraphicsView,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
 from state import GuiState
@@ -135,6 +136,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             bvideo.new_frame_fetched.connect(new_vid_item.updatePixmap)
             new_scene.addItem(new_vid_item)
             self.vid_items.append(new_vid_item)
+            new_view = QGraphicsView()
+            new_view.setScene(new_scene)
+            self.vid_views.append(new_view)
+            self.video_layout.addWidget(new_view)
 
         self.go_to_frame(self.state["current_frame"])
 
@@ -430,3 +435,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if table.state() == QAbstractItemView.EditingState:
                 return True
         return False
+
+    def stop_threads(self):
+        for video in self.state["video"]:
+            video.stop_worker()
+            video.clear_threads()

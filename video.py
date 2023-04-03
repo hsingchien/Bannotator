@@ -2,12 +2,12 @@ import cv2
 import numpy as np
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QRunnable, Signal, Slot, QObject, QThreadPool
-import traceback
-import sys
+
 
 class BehavVideo(QObject):
     fetch_frame_number = Signal(object)
     new_frame_fetched = Signal(object)
+    run_worker = Signal(bool)
     
     @Slot()
     def emit_new_frame(self,new_frame):
@@ -23,6 +23,7 @@ class BehavVideo(QObject):
         self.worker = VideoWorker(video_path)
         self.threadpool = QThreadPool()
         self.fetch_frame_number.connect(self.worker.receive_frame_number)
+        self.run_worker.connect(self.worker.receive_run_state)
         self.worker.signals.frame_signal.connect(self.emit_new_frame)
         self.threadpool.start(self.worker)
 
@@ -37,6 +38,11 @@ class BehavVideo(QObject):
     def frame_rate(self):
         return self.FPS
 
+    def stop_worker(self):
+        self.run_worker.emit(False)
+
+    def clear_threads(self):
+        self.threadpool.clear()
 
 class VideoSignals(QObject):
     frame_signal = Signal(object)
@@ -44,11 +50,16 @@ class VideoWorker(QRunnable):
     @Slot()
     def receive_frame_number(self, frameN:int):
         self._frame_number = frameN
+    @Slot()
+    def receive_run_state(self, running:bool):
+        self._run = running
+
     def __init__(self, url):
         super(VideoWorker, self).__init__()
         self.url = url
         self.signals = VideoSignals()
         self._frame_number = None
+        self._run = True
     @Slot()
     def run(self):
         cap = cv2.VideoCapture(self.url)
@@ -56,7 +67,7 @@ class VideoWorker(QRunnable):
             print("Error opening video stream or file")
             return
 
-        while True:
+        while self._run:
             if self._frame_number is not None:
                 # Set the current frame position to the requested frame
                 cap.set(cv2.CAP_PROP_POS_FRAMES, self._frame_number)
