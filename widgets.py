@@ -6,6 +6,8 @@ from PySide6.QtWidgets import (
     QStackedLayout,
     QSlider,
     QGraphicsPixmapItem,
+    QGraphicsView,
+    QGraphicsScene,
 )
 from PySide6.QtGui import QPainter, QPen, QPixmap
 from PySide6.QtCore import Slot, QSize, Qt, QEvent
@@ -190,11 +192,36 @@ class TabWidget(QTabWidget):
         # return QSize(max_width, max_height)
 
 
-class BehavVideoItem(QGraphicsPixmapItem):
+class BehavVideoView(QGraphicsView):
+    def __init__(self, parent=None, background="default"):
+        super().__init__()
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
+        self.setScene(QGraphicsScene())
+        self.pixItem = QGraphicsPixmapItem()
+        self.scene().addItem(self.pixItem)
+
     @Slot()
     def updatePixmap(self, new_pixmap):
         if new_pixmap is not None and isinstance(new_pixmap, QPixmap):
-            self.setPixmap(new_pixmap)
+            self.pixItem.setPixmap(new_pixmap)
             return True
         else:
             return False
+
+    def fitPixItem(self):
+        viewport_size = self.viewport().size()
+
+        item_size = self.pixItem.pixmap().size()
+
+        # Calculate the scale factor for the item based on the viewport size
+        scale_factor = min(
+            viewport_size.width() / item_size.width(),
+            viewport_size.height() / item_size.height(),
+        )
+
+        # Set the scale factor for the item
+        self.pixItem.setScale(scale_factor)
+        self.scene().setSceneRect(self.pixItem.pixmap().rect())
+        self.fitInView(self.scene().sceneRect(), aspectRadioMode=Qt.KeepAspectRatio)

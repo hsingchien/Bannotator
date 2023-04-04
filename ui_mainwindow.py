@@ -17,13 +17,13 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
 from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
-    QGraphicsView, QHBoxLayout, QHeaderView, QLabel,
-    QLayout, QMainWindow, QMenu, QMenuBar,
-    QPushButton, QSizePolicy, QSpacerItem, QSpinBox,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QHBoxLayout, QHeaderView, QLabel, QLayout,
+    QMainWindow, QMenu, QMenuBar, QPushButton,
+    QSizePolicy, QSpacerItem, QSpinBox, QStatusBar,
+    QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
-from widgets import (PlaySpeedSpinBox, TabWidget, VideoSlider)
+from widgets import (BehavVideoView, PlaySpeedSpinBox, TabWidget, VideoSlider)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -152,7 +152,7 @@ class Ui_MainWindow(object):
 
         self.video_layout = QHBoxLayout()
         self.video_layout.setObjectName(u"video_layout")
-        self.vid1_view = QGraphicsView(self.centralwidget)
+        self.vid1_view = BehavVideoView(self.centralwidget)
         self.vid1_view.setObjectName(u"vid1_view")
 
         self.video_layout.addWidget(self.vid1_view)

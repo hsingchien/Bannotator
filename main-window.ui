@@ -183,7 +183,7 @@
       <item>
        <layout class="QHBoxLayout" name="video_layout">
         <item>
-         <widget class="QGraphicsView" name="vid1_view"/>
+         <widget class="BehavVideoView" name="vid1_view"/>
         </item>
        </layout>
       </item>
@@ -501,6 +501,11 @@
   <customwidget>
    <class>VideoSlider</class>
    <extends>QSlider</extends>
+   <header>widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>BehavVideoView</class>
+   <extends>QGraphicsView</extends>
    <header>widgets</header>
   </customwidget>
  </customwidgets>

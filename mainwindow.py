@@ -16,7 +16,7 @@ from dataview import (
     GenericTableView,
     StatsTableModel,
 )
-from widgets import TrackBar, BehavVideoItem
+from widgets import TrackBar, BehavVideoView
 import numpy as np
 
 
@@ -38,13 +38,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Key = ID, item = stream table model
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
-        # Set up UI
-        bvscene = QGraphicsScene()
-        self.vid1_view.setScene(bvscene)
-        video_item = BehavVideoItem()
-        bvscene.addItem(video_item)
+        # Group video viewers into list
         self.vid_views = [self.vid1_view]
-        self.vid_items = [video_item]
         # Set up timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.play_video_update_frame)
@@ -127,21 +122,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         bvideo = BehavVideo(video_path)
         if not self.state["video"]:
             self.state["video"].append(bvideo)
-            bvideo.new_frame_fetched.connect(self.vid_items[0].updatePixmap)
+            bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
             self.state["video"].append(bvideo)
-            new_scene = QGraphicsScene()
-            new_vid_item = BehavVideoItem()
-            bvideo.new_frame_fetched.connect(new_vid_item.updatePixmap)
-            new_scene.addItem(new_vid_item)
-            self.vid_items.append(new_vid_item)
-            new_view = QGraphicsView()
-            new_view.setScene(new_scene)
+            new_view = BehavVideoView()
+            bvideo.new_frame_fetched.connect(new_view.updatePixmap)
             self.vid_views.append(new_view)
             self.video_layout.addWidget(new_view)
+            new_view.show()
 
         self.go_to_frame(self.state["current_frame"])
+
+        for v in self.vid_views:
+            v.fitPixItem()
 
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
