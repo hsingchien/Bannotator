@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # Initialize states
         self.state = GuiState()
-        self.state["video"] = []
+        self.state["video"] = 0
         self.state["annot"] = None
         self.state["FPS"] = None
         self.state["current_frame"] = self.curframe_spinBox.value() - 1
@@ -41,6 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["current_stream"] = None
         # Group video viewers into list
         self.vid_views = [self.vid1_view]
+        self.vids = []
         # Set up timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.play_video_update_frame)
@@ -57,12 +58,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Connect state change
         self.state.connect(
             "current_frame",
-            [self.go_to_frame, lambda: self.update_gui(["video_ui", "tracks", "gui"])],
+            [self.go_to_frame, lambda: self.update_gui(["video_ui", "tracks"])],
         )
         self.state.connect(
             "track_window",
-            [lambda: self.update_gui(["tracks", "gui"])],
+            [lambda: self.update_gui(["tracks"])],
         )
+        self.state.connect("slider_box", [lambda: self.update_gui(["video_ui"])])
         self.state.connect(
             "annot", [self.plot_tracks, lambda: self.update_gui(["gui"])]
         )
@@ -76,28 +78,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state.connect("annot", [lambda: self.update_gui(["gui"])])
 
     def update_gui(self, topics):
-        if "video_ui" in topics:
-            self.video_slider.setValue(self.state["current_frame"] + 1)
-            self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
-
         if "tracks" in topics:
             try:
                 self.update_tracks()
             except Exception:
                 pass
+
+        if "video_ui" in topics:
+            self.video_slider.setValue(self.state["current_frame"] + 1)
+            self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
+            self.video_slider.changeBoxRange(*self.state["slider_box"])
+
         if "gui" in topics:
             if self.state["annot"]:
                 annot_length = self.state["annot"].get_length()
                 self.video_slider.setMaximum(annot_length)
                 self.curframe_spinBox.setMaximum(annot_length)
                 self.track_window_spinbox.setMaximum(annot_length)
-            elif self.state["video"]:
-                self.video_slider.setMaximum(self.state["video"][0].num_frame())
-                self.curframe_spinBox.setMaximum(self.state["video"][0].num_frame())
-                self.track_window_spinbox.setMaximum(self.state["video"][0].num_frame())
-            for view in self.vid_views:
-                view.fitPixItem()
-            self.video_slider.changeBoxRange(*self.state["slider_box"])
+            elif self.state["video"] > 0:
+                self.video_slider.setMaximum(self.vids[0].num_frame())
+                self.curframe_spinBox.setMaximum(self.vids[0].num_frame())
+                self.track_window_spinbox.setMaximum(self.vids[0].num_frame())
+
         if "tables" in topics:
             # Repaint all tables
             self.behavior_table.repaint_table()
@@ -123,20 +125,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not video_path:
             return False
         bvideo = BehavVideo(video_path)
-        if not self.state["video"]:
-            self.state["video"].append(bvideo)
+        self.vids.append(bvideo)
+
+        if self.state["video"] == 0:
             bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
-            self.state["video"].append(bvideo)
             new_view = BehavVideoView()
             bvideo.new_frame_fetched.connect(new_view.updatePixmap)
             self.vid_views.append(new_view)
             self.video_layout.addWidget(new_view)
             new_view.show()
 
-        self.go_to_frame(self.state["current_frame"])
-
+        self.state["video"] += 1
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
@@ -199,7 +200,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return True
 
     def go_to_frame(self, frameN):
-        videos = self.state["video"]
+        videos = self.vids
         if videos:
             for video in videos:
                 video.get_pixmap(frameN)
@@ -217,11 +218,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.state["play_speed"]
             )
 
-        if next_frame < self.state["video"].num_frame() and next_frame > -1:
+        if next_frame < self.vids[0].num_frame() and next_frame > -1:
             self.state["current_frame"] = next_frame
             return True
-        elif next_frame >= self.state["video"].num_frame():
-            self.state["current_frame"] = self.state["video"].num_frame() - 1
+        elif next_frame >= self.vids[0].num_frame():
+            self.state["current_frame"] = self.vids[0].num_frame() - 1
             self.timer.stop()
         elif next_frame <= 0:
             self.state["current_frame"] = 0
@@ -431,6 +432,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return False
 
     def closeEvent(self, event):
-        for video in self.state["video"]:
+        for video in self.vids:
             video.stop_worker()
             event.accept()

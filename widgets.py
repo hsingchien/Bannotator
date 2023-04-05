@@ -197,6 +197,8 @@ class BehavVideoView(QGraphicsView):
         self.setScene(QGraphicsScene())
         self.pixItem = QGraphicsPixmapItem()
         self.scene().addItem(self.pixItem)
+        self.scene().sceneRectChanged.connect(self.fitPixItem)
+
 
     @Slot()
     def updatePixmap(self, new_pixmap):
@@ -208,7 +210,6 @@ class BehavVideoView(QGraphicsView):
         super().resizeEvent(event)
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
 
-    
-    def fitPixItem(self):
-        print("run")
+    def fitPixItem(self, srect=None):
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
+
