@@ -500,7 +500,10 @@ class Annotation(QtCore.QObject):
             hue = int(255 * i / len(behavior_names))
             saturation = 180
             value = 200
-            self.behav_color[behav] = QColor.fromHsv(hue, saturation, value)
+            if behav not in ["other", "blank"]:
+                self.behav_color[behav] = QColor.fromHsv(hue, saturation, value)
+            else:
+                self.behav_color[behav] = QColor("#9d9d9d")
         # Assign colors to the behavior objects for all the streams
         for _, stream in self.streams.items():
             stream.assign_color(self.behav_color)
