@@ -10,9 +10,8 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
 )
 from PySide6.QtGui import QPainter, QPen, QPixmap
-from PySide6.QtCore import Slot, QSize, Qt, QEvent
+from PySide6.QtCore import Slot, QSize, Qt, QEvent, Signal, QPoint
 import numpy as np
-from pyqtgraph import GraphicsLayoutWidget
 from typing import Dict
 
 
@@ -93,11 +92,6 @@ class VideoSlider(QSlider):
             )
             painter.drawRect(box_start, 0, box_width, box_height)
             painter.end()
-
-
-class TrackPlotView(GraphicsLayoutWidget):
-    def __init__(self, *arg, **kwarg):
-        super().__init__(*arg, **kwarg)
 
 
 class TrackBar(QWidget):
@@ -193,35 +187,28 @@ class TabWidget(QTabWidget):
 
 
 class BehavVideoView(QGraphicsView):
+    frame_updated = Signal()
+
     def __init__(self, parent=None, background="default"):
         super().__init__()
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
+        # self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
         self.setScene(QGraphicsScene())
         self.pixItem = QGraphicsPixmapItem()
         self.scene().addItem(self.pixItem)
 
     @Slot()
     def updatePixmap(self, new_pixmap):
-        if new_pixmap is not None and isinstance(new_pixmap, QPixmap):
+        if isinstance(new_pixmap, QPixmap):
             self.pixItem.setPixmap(new_pixmap)
-            return True
-        else:
-            return False
+            self.frame_updated.emit()
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
+
+    
     def fitPixItem(self):
-        viewport_size = self.viewport().size()
-
-        item_size = self.pixItem.pixmap().size()
-
-        # Calculate the scale factor for the item based on the viewport size
-        scale_factor = min(
-            viewport_size.width() / item_size.width(),
-            viewport_size.height() / item_size.height(),
-        )
-
-        # Set the scale factor for the item
-        self.pixItem.setScale(scale_factor)
-        self.scene().setSceneRect(self.pixItem.pixmap().rect())
-        self.fitInView(self.scene().sceneRect(), aspectRadioMode=Qt.KeepAspectRatio)
+        print("run")
+        self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)

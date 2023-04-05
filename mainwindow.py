@@ -18,6 +18,7 @@ from dataview import (
 )
 from widgets import TrackBar, BehavVideoView
 import numpy as np
+import time
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -78,6 +79,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if "video_ui" in topics:
             self.video_slider.setValue(self.state["current_frame"] + 1)
             self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
+
         if "tracks" in topics:
             try:
                 self.update_tracks()
@@ -93,7 +95,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.video_slider.setMaximum(self.state["video"][0].num_frame())
                 self.curframe_spinBox.setMaximum(self.state["video"][0].num_frame())
                 self.track_window_spinbox.setMaximum(self.state["video"][0].num_frame())
-
+            for view in self.vid_views:
+                view.fitPixItem()
             self.video_slider.changeBoxRange(*self.state["slider_box"])
         if "tables" in topics:
             # Repaint all tables
@@ -133,9 +136,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             new_view.show()
 
         self.go_to_frame(self.state["current_frame"])
-
-        for v in self.vid_views:
-            v.fitPixItem()
 
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)

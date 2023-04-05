@@ -62,6 +62,7 @@ class VideoWorker(QRunnable):
         self.signals = VideoSignals()
         self._frame_number = None
         self._run = True
+        self._current_frame_number = -10
     @Slot()
     def run(self):
         cap = cv2.VideoCapture(self.url)
@@ -73,16 +74,18 @@ class VideoWorker(QRunnable):
             if self._frame_number is not None:
                 # Set the current frame position to the requested frame
                 cap.set(cv2.CAP_PROP_POS_FRAMES, self._frame_number)
-            # Read the frame
-            ret, frame = cap.read()
-            if ret:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                self.signals.frame_signal.emit(frame)
-                height, width, _ = frame.shape
-                bytes_per_line = 3*width
-                q_image = QImage(frame.data, width, height, bytes_per_line,QImage.Format_RGB888)
-                pixmap = QPixmap.fromImage(q_image)
-                self.signals.frame_signal.emit(pixmap)
+                # Read the frame
+                ret, frame = cap.read()
+                if ret:
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                    self.signals.frame_signal.emit(frame)
+                    height, width, _ = frame.shape
+                    bytes_per_line = 3*width
+                    q_image = QImage(frame.data, width, height, bytes_per_line,QImage.Format_RGB888)
+                    pixmap = QPixmap.fromImage(q_image)
+                    if self._frame_number != self._current_frame_number:
+                        self.signals.frame_signal.emit(pixmap)
+                        self._current_frame_number = self._frame_number
         cap.release()
     
             
