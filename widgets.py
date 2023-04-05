@@ -210,6 +210,6 @@ class BehavVideoView(QGraphicsView):
         super().resizeEvent(event)
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
 
-    def fitPixItem(self, srect=None):
+    def fitPixItem(self):
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
 

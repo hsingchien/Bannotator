@@ -133,12 +133,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.label_5)
 
-        self.comboBox = QComboBox(self.centralwidget)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
+        self.video_layout_comboBox = QComboBox(self.centralwidget)
+        self.video_layout_comboBox.addItem("")
+        self.video_layout_comboBox.addItem("")
+        self.video_layout_comboBox.setObjectName(u"video_layout_comboBox")
 
-        self.horizontalLayout_12.addWidget(self.comboBox)
+        self.horizontalLayout_12.addWidget(self.video_layout_comboBox)
 
         self.horizontalLayout_12.setStretch(1, 1)
         self.horizontalLayout_12.setStretch(3, 1)
@@ -363,8 +363,8 @@ class Ui_MainWindow(object):
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Video Layout", None))
-        self.comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Side by Side", None))
-        self.comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Stacked", None))
+        self.video_layout_comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Side by Side", None))
+        self.video_layout_comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Stacked", None))
 
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))

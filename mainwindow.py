@@ -2,9 +2,10 @@ from ui_mainwindow import Ui_MainWindow
 from PySide6.QtWidgets import (
     QMainWindow,
     QFileDialog,
-    QGraphicsScene,
     QAbstractItemView,
-    QGraphicsView,
+    QVBoxLayout,
+    QHBoxLayout,
+    QGridLayout,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
 from state import GuiState
@@ -28,6 +29,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Initialize states
         self.state = GuiState()
         self.state["video"] = 0
+        self.state["video_layout"] = self.video_layout_comboBox.currentText()
         self.state["annot"] = None
         self.state["FPS"] = None
         self.state["current_frame"] = self.curframe_spinBox.value() - 1
@@ -39,6 +41,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Key = ID, item = stream table model
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
+
         # Group video viewers into list
         self.vid_views = [self.vid1_view]
         self.vids = []
@@ -52,6 +55,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video_slider.valueChanged.connect(self.set_frame)
         self.curframe_spinBox.valueChanged.connect(self.set_frame)
         self.track_window_spinbox.valueChanged.connect(self.set_track_window)
+        self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
@@ -76,6 +80,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ],
         )
         self.state.connect("annot", [lambda: self.update_gui(["gui"])])
+        self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
 
     def update_gui(self, topics):
         if "tracks" in topics:
@@ -99,6 +104,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.video_slider.setMaximum(self.vids[0].num_frame())
                 self.curframe_spinBox.setMaximum(self.vids[0].num_frame())
                 self.track_window_spinbox.setMaximum(self.vids[0].num_frame())
+            if (
+                self.state["video"] > 2
+                and self.video_layout_comboBox.findText("Grid") == -1
+            ):
+                self.video_layout_comboBox.addItem("Grid")
+            elif (
+                self.state["video"] <= 2
+                and self.video_layout_comboBox.currentText() != "Grid"
+            ):
+                self.video_layout_comboBox.removeItem(
+                    self.video_layout_comboBox.findText("Grid")
+                )
+            elif (
+                self.state["video"] <= 2
+                and self.video_layout_comboBox.currentText() == "Grid"
+            ):
+                self.video_layout_comboBox.setCurrentText("Side by Side")
+                self.video_layout_comboBox.removeItem(
+                    self.video_layout_comboBox.findText("Grid")
+                )
 
         if "tables" in topics:
             # Repaint all tables
@@ -106,6 +131,30 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stats_table.repaint_table()
             for _, table in self.state["stream_tables"].items():
                 table.repaint_table()
+
+        if "video_layout" in topics:
+            # Convert video layout
+            current_layout = self.video_layout
+            index = self.display_layout.indexOf(current_layout)
+            stretch_factor = self.display_layout.stretch(index)
+            if self.state["video_layout"] == "Side by Side":
+                new_layout = QHBoxLayout()
+                for vid in self.vid_views:
+                    new_layout.addWidget(vid)
+            if self.state["video_layout"] == "Stacked":
+                new_layout = QVBoxLayout()
+                for vid in self.vid_views:
+                    new_layout.addWidget(vid)
+
+            if self.state["video_layout"] == "Grid":
+                new_layout = QGridLayout()
+                n_row = np.floor(np.sqrt(self.state["video"]))
+                n_col = np.ceil(self.state["video"] / n_row)
+                for i, vid in enumerate(self.vid_views):
+                    new_layout.addWidget(vid, i // n_col, i % n_col)
+            self.video_layout = new_layout
+            self.display_layout.removeItem(current_layout)
+            self.display_layout.insertLayout(index, new_layout, stretch_factor)
 
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
@@ -126,18 +175,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
         bvideo = BehavVideo(video_path)
         self.vids.append(bvideo)
-
-        if self.state["video"] == 0:
+        self.state["video"] += 1
+        if self.state["video"] == 1:
             bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
             new_view = BehavVideoView()
             bvideo.new_frame_fetched.connect(new_view.updatePixmap)
             self.vid_views.append(new_view)
-            self.video_layout.addWidget(new_view)
+            if self.state["video_layout"] != "Grid":
+                self.video_layout.addWidget(new_view)
+            else:
+                n_row = np.floor(np.sqrt(self.state["video"]))
+                n_col = np.ceil(self.state["video"] / n_row)
+                if (
+                    n_row == self.video_layout.rowCount()
+                    and n_col == self.video_layout.columnCount()
+                ):
+                    self.video_layout.addWidget(
+                        new_view,
+                        (self.state["video"] - 1) // n_col,
+                        (self.state["video"] - 1) % n_col,
+                    )
+                else:
+                    # Rebuild the gridlayout
+                    self.update_gui(["video_layout"])
             new_view.show()
 
-        self.state["video"] += 1
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
@@ -325,6 +389,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return True
         except Exception:
             return False
+
+    def set_video_layout(self, layout_option):
+        self.state["video_layout"] = layout_option
 
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:

@@ -165,7 +165,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBox">
+         <widget class="QComboBox" name="video_layout_comboBox">
           <item>
            <property name="text">
             <string>Side by Side</string>
@@ -181,7 +181,7 @@
        </layout>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="video_layout">
+       <layout class="QHBoxLayout" name="video_layout" stretch="0">
         <item>
          <widget class="BehavVideoView" name="vid1_view"/>
         </item>
