@@ -252,9 +252,11 @@
     </property>
     <addaction name="actionOpen_annotation"/>
     <addaction name="actionSave_annotation"/>
+    <addaction name="actionNew_annotation"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_config"/>
-    <addaction name="actionCreate_new_config"/>
+    <addaction name="actionSave_config"/>
+    <addaction name="actionNew_config"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -460,7 +462,7 @@
     <string>Open config</string>
    </property>
   </action>
-  <action name="actionCreate_new_config">
+  <action name="actionSave_config">
    <property name="text">
     <string>Save config</string>
    </property>
@@ -478,6 +480,16 @@
   <action name="actionAbout">
    <property name="text">
     <string>About</string>
+   </property>
+  </action>
+  <action name="actionNew_annotation">
+   <property name="text">
+    <string>New annotation</string>
+   </property>
+  </action>
+  <action name="actionNew_config">
+   <property name="text">
+    <string>New config</string>
    </property>
   </action>
  </widget>

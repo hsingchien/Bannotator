@@ -390,6 +390,7 @@ class Stream(QtCore.QObject):
 class Annotation(QtCore.QObject):
     construct_from_file = QtCore.Signal(str)
     content_changed = QtCore.Signal()
+    saved_in_file = QtCore.Signal(str)
 
     @QtCore.Slot()
     def streams_changed(self):
@@ -522,3 +523,55 @@ class Annotation(QtCore.QObject):
         for _, i in self.streams.items():
             length = max(i.length, length)
         return length
+
+    def save_to_file(self, filename):
+        try:
+            with open(filename, "w") as f:
+                f.write("Behavior Annotator - Annotation File\n")
+                f.write("\nConfiguration file:\n")
+                self.write_behavior(f)
+                f.write("\n")
+                self.write_streams(f)
+            self.saved_in_file.emit(f"Saved annotation to {filename} successfully!")
+            return True
+        except Exception:
+            return False
+
+    def save_config_to_file(self, filename):
+        num_streams = len(self.streams)
+        try:
+            with open(filename, "w") as f:
+                f.write("nStream " + str(num_streams) + "\n")
+                self.write_behavior(f)
+            self.saved_in_file.emit(f"Saved config to {filename} successfully!")
+            return True
+        except Exception:
+            return False
+
+    def write_behavior(self, f):
+        config = self.get_behaviors()[0]
+        lines = []
+        for behav in config:
+            lines.append(behav.name + "\t" + behav.keybind + "\n")
+        if f:
+            f.writelines(lines)
+
+    def write_streams(self, f):
+        lines = []
+        for _, stream in self.streams.items():
+            lines.append("S" + str(stream.ID) + ":\tstart\tend\ttype\n")
+            lines.append("-" * 25 + "\n")
+            stream.sort_epoch()
+            for epoch in stream.get_epochs():
+                lines.append(
+                    "   \t"
+                    + str(epoch.start)
+                    + "\t"
+                    + str(epoch.end)
+                    + "\t"
+                    + epoch.name
+                    + "\n"
+                )
+            lines.append("  \n")
+        if f:
+            f.writelines(lines)

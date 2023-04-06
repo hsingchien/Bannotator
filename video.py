@@ -31,6 +31,8 @@ class BehavVideo(QObject):
     def get_pixmap(self,frameN):
         self.fetch_frame_number.emit(frameN)
 
+    def file_name(self):
+        return self.file_name
 
     def num_frame(self):
         return self.last_frame_index + 1

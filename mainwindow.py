@@ -59,6 +59,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
+        self.actionSave_annotation.triggered.connect(self.save_annotation)
+        self.actionSave_config.triggered.connect(self.save_config)
         # Connect state change
         self.state.connect(
             "current_frame",
@@ -262,6 +264,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["current_stream"] = streams[IDs[0]]
 
         return True
+    
+    def save_annotation(self):
+        self.state["annot"].saved_in_file.connect(lambda x: self.statusbar.showMessage(x, 5000))
+        self.statusbar.showMessage("Saving annotation...", 0)
+        filename, _ = QFileDialog.getSaveFileName(
+            None, "Save Annotation", "annotation.txt", "text Files (*.txt)"
+        )
+        if not filename:
+            return False
+        self.statusbar.clearMessage()
+        return self.state["annot"].save_to_file(filename)
+    
+    def save_config(self):
+        self.state["annot"].saved_in_file.connect(lambda x: self.statusbar.showMessage(x, 5000))
+        self.statusbar.showMessage("Saving annotation...", 0)
+        filename, _ = QFileDialog.getSaveFileName(
+            None, "Save Configuration", "config.txt", "text Files (*.txt)"
+        )
+        if not filename:
+            return False
+        self.statusbar.clearMessage()
+        return self.state["annot"].save_config_to_file(filename)
 
     def go_to_frame(self, frameN):
         videos = self.vids
