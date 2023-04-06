@@ -245,6 +245,7 @@
      <string>Video</string>
     </property>
     <addaction name="actionOpen_video"/>
+    <addaction name="actionRemove_video"/>
    </widget>
    <widget class="QMenu" name="menuAnnotation">
     <property name="title">
@@ -262,17 +263,24 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionReset"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionTips"/>
    </widget>
    <widget class="QMenu" name="menuWindows">
     <property name="title">
      <string>View</string>
     </property>
+    <addaction name="actionFull_annotation"/>
+    <addaction name="actionBehavior_table"/>
+    <addaction name="actionEpoch_table"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuVideo"/>
@@ -298,7 +306,7 @@
     <bool>false</bool>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
@@ -331,7 +339,7 @@
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="movable">
           <bool>true</bool>
@@ -400,10 +408,10 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="epoch_dockWidget">
    <property name="minimumSize">
     <size>
-     <width>181</width>
+     <width>205</width>
      <height>150</height>
     </size>
    </property>
@@ -417,37 +425,64 @@
     <number>2</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,0">
+    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0">
      <item>
-      <layout class="QHBoxLayout" name="stream_table_layout">
-       <property name="spacing">
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
         <number>0</number>
        </property>
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
+       <property name="elideMode">
+        <enum>Qt::ElideLeft</enum>
        </property>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_9">
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
-       </property>
-       <item>
-        <widget class="QPushButton" name="pushButton_4">
-         <property name="text">
-          <string>Add stream</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_3">
-         <property name="text">
-          <string>Delete stream</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+       <widget class="QWidget" name="all_epoch">
+        <attribute name="title">
+         <string>All Epochs</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
+         <item>
+          <layout class="QHBoxLayout" name="stream_table_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
+           <item>
+            <widget class="QPushButton" name="pushButton_4">
+             <property name="text">
+              <string>Add stream</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton_3">
+             <property name="text">
+              <string>Delete stream</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="behavior_epoch">
+        <attribute name="title">
+         <string>Behavior Epochs</string>
+        </attribute>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <layout class="QHBoxLayout" name="behav_epoch_table_layout"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -490,6 +525,59 @@
   <action name="actionNew_config">
    <property name="text">
     <string>New config</string>
+   </property>
+  </action>
+  <action name="actionFull_annotation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Full annotation</string>
+   </property>
+  </action>
+  <action name="actionBehavior_table">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Behavior table</string>
+   </property>
+  </action>
+  <action name="actionEpoch_table">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Epoch table</string>
+   </property>
+  </action>
+  <action name="actionRemove_video">
+   <property name="text">
+    <string>Remove video</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionReset">
+   <property name="text">
+    <string>Reset</string>
+   </property>
+  </action>
+  <action name="actionTips">
+   <property name="text">
+    <string>Tips</string>
    </property>
   </action>
  </widget>

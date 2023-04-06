@@ -6,4 +6,4 @@ build/
 *.spec
 cscreener.egg-info/
 *.csv
-*test*
+*.txt
