@@ -83,7 +83,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         self.state.connect("annot", [lambda: self.update_gui(["gui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
-
+        self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
     def update_gui(self, topics):
         if "tracks" in topics:
             try:
@@ -364,8 +364,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             track = TrackBar(
                 data=window_vect, color_dict=color_dict, frame_mark=current_frame_tick
             )
+            if self.state["current_stream"] is stream:
+                track.set_selected(True)
+            else:
+                track.set_selected(False)
             self.state["tracks"][stream.ID] = track
             self.track_layout.addWidget(track)
+
 
     def update_tracks(self):
         annot = self.state["annot"]
@@ -391,6 +396,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 window_vect, current_frame - this_start
             )
             self.state["tracks"][stream.ID].set_color_dict(stream.get_color_dict())
+            if self.state["current_stream"] is stream:
+                self.state["tracks"][stream.ID].set_selected(True)
+            else:
+                self.state["tracks"][stream.ID].set_selected(False)
+
+
+
         return True
 
     def change_current_behavior(self, keypressed: str = None):

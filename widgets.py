@@ -9,8 +9,8 @@ from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
 )
-from PySide6.QtGui import QPainter, QPen, QPixmap
-from PySide6.QtCore import Slot, QSize, Qt, QEvent, Signal, QPoint
+from PySide6.QtGui import QPainter, QPen, QPixmap, QColor
+from PySide6.QtCore import Slot, QSize, Qt, QEvent, Signal
 import numpy as np
 from typing import Dict
 
@@ -94,6 +94,7 @@ class VideoSlider(QSlider):
             painter.end()
 
 
+
 class TrackBar(QWidget):
     def __init__(
         self,
@@ -106,6 +107,7 @@ class TrackBar(QWidget):
         self.data = data
         self.color_dict = color_dict
         self.frame_mark = frame_mark
+        self.selected = False
 
     def set_data(self, data: np.ndarray, frame_mark: int):
         self.data = data
@@ -136,7 +138,14 @@ class TrackBar(QWidget):
                 painter.drawRect(
                     i * bar_width, 0.2 * bar_height, bar_width, 0.6 * bar_height
                 )
+        if self.selected:
+            painter.setBrush(Qt.NoBrush)
+            painter.setPen(QPen(QColor("#C7038A"), 3))
+            painter.drawRect(0, 0.2 * bar_height, self.width(), 0.6 * bar_height)
         painter.end()
+
+    def set_selected(self, selected: bool = False):
+        self.selected = selected
 
 
 class TabWidget(QTabWidget):
@@ -199,7 +208,6 @@ class BehavVideoView(QGraphicsView):
         self.scene().addItem(self.pixItem)
         self.scene().sceneRectChanged.connect(self.fitPixItem)
 
-
     @Slot()
     def updatePixmap(self, new_pixmap):
         if isinstance(new_pixmap, QPixmap):
@@ -212,4 +220,3 @@ class BehavVideoView(QGraphicsView):
 
     def fitPixItem(self):
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
-
