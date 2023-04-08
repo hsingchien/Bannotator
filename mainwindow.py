@@ -35,12 +35,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.state["current_frame"] = self.curframe_spinBox.value() - 1
         self.state["play_speed"] = self.speed_doubleSpinBox.value()
         self.state["track_window"] = self.track_window_spinbox.value()
-        self.state["tracks"] = dict()
-        # Key = ID, item = TrackBar widget
-        self.state["stream_tables"] = dict()
-        # Key = ID, item = stream table model
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
+
+        # Container for dynamically generated widgets
+        self.tracks = dict()
+        # Key = ID, item = TrackBar widget
+        self.stream_tables = dict()
+        # Key = ID, item = stream table model
 
         # Group video viewers into list
         self.vid_views = [self.vid1_view]
@@ -64,15 +66,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Connect state change
         self.state.connect(
             "current_frame",
-            [self.go_to_frame, lambda: self.update_gui(["video_ui", "tracks"])],
+            [
+                self.go_to_frame,
+                self.update_slider_box,
+                lambda: self.update_gui(["video_ui"]),
+            ],
         )
         self.state.connect(
             "track_window",
-            [lambda: self.update_gui(["tracks"])],
+            [self.update_slider_box],
         )
-        self.state.connect("slider_box", [lambda: self.update_gui(["video_ui"])])
         self.state.connect(
-            "annot", [self.plot_tracks, lambda: self.update_gui(["gui"])]
+            "slider_box", [lambda: self.update_gui(["video_ui", "tracks"])]
+        )
+        self.state.connect(
+            "annot", [self.update_slider_box, lambda: self.update_gui(["gui"])]
         )
         self.state.connect(
             "video",
@@ -81,20 +89,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 lambda: self.update_gui(["gui"]),
             ],
         )
-        self.state.connect("annot", [lambda: self.update_gui(["gui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
         self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
+
     def update_gui(self, topics):
         if "tracks" in topics:
-            try:
+            if self.tracks:
                 self.update_tracks()
-            except Exception:
-                pass
+            else:
+                self.plot_tracks()
 
         if "video_ui" in topics:
             self.video_slider.setValue(self.state["current_frame"] + 1)
             self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
             self.video_slider.changeBoxRange(*self.state["slider_box"])
+            frame_tick = self.state["current_frame"] - self.state["slider_box"][0]
+            for _,track in self.tracks.items():
+                track.set_frame_mark(frame_tick)
 
         if "gui" in topics:
             if self.state["annot"]:
@@ -131,7 +142,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Repaint all tables
             self.behavior_table.repaint_table()
             self.stats_table.repaint_table()
-            for _, table in self.state["stream_tables"].items():
+            for _, table in self.stream_tables.items():
                 table.repaint_table()
 
         if "video_layout" in topics:
@@ -164,6 +175,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_track_window(self, value):
         self.state["track_window"] = value
+
+    def update_slider_box(self):
+        try:
+            annot = self.state["annot"]
+            current_frame = self.state["current_frame"]
+            track_window = self.state["track_window"]
+            track_start = current_frame - int(np.floor(1 / 2 * track_window))
+            track_end = current_frame + int(np.ceil(1 / 2 * track_window))
+            annot_len = annot.get_length()
+            this_start = track_start
+            this_end = track_end
+            # Calculate start and end of track display
+            if this_start < 0:
+                this_start = 0
+                this_end = this_start + track_window
+            if this_end >= annot_len:
+                this_end = annot_len
+                this_start = this_end - track_window
+            if track_end == track_start:
+                track_end = track_start + 1
+            self.state["slider_box"] = [this_start, this_end]
+        except Exception:
+            pass
 
     def open_video(self):
         fileDialog = QFileDialog()
@@ -257,16 +291,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             stream_table_view = GenericTableView()
             stream_table_view.setModel(stream_table)
             stream_table_view.set_columns_fixed([1, 2])
-            self.state["stream_tables"][ID] = stream_table_view
+            self.stream_tables[ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
+        self.update_slider_box()
         # Set the first stream as current stream
         IDs = sorted(list(streams.keys()))
         self.state["current_stream"] = streams[IDs[0]]
 
         return True
-    
+
     def save_annotation(self):
-        self.state["annot"].saved_in_file.connect(lambda x: self.statusbar.showMessage(x, 5000))
+        self.state["annot"].saved_in_file.connect(
+            lambda x: self.statusbar.showMessage(x, 5000)
+        )
         self.statusbar.showMessage("Saving annotation...", 0)
         filename, _ = QFileDialog.getSaveFileName(
             None, "Save Annotation", "annotation.txt", "text Files (*.txt)"
@@ -275,9 +312,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
         self.statusbar.clearMessage()
         return self.state["annot"].save_to_file(filename)
-    
+
     def save_config(self):
-        self.state["annot"].saved_in_file.connect(lambda x: self.statusbar.showMessage(x, 5000))
+        self.state["annot"].saved_in_file.connect(
+            lambda x: self.statusbar.showMessage(x, 5000)
+        )
         self.statusbar.showMessage("Saving annotation...", 0)
         filename, _ = QFileDialog.getSaveFileName(
             None, "Save Configuration", "config.txt", "text Files (*.txt)"
@@ -336,26 +375,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return True
 
     def plot_tracks(self):
+        this_start, this_end = self.state["slider_box"]
         annot = self.state["annot"]
         streams = annot.get_streams()
-        current_frame = self.state["current_frame"]
-        track_window = self.state["track_window"]
-        track_start = current_frame - int(1 / 2 * track_window)
-        track_end = current_frame + int(np.ceil(1 / 2 * track_window))
-        annot_len = annot.get_length()
-        this_start = track_start
-        this_end = track_end
-        # Calculate start and end of track display
-        if this_start < 0:
-            this_start = 0
-            this_end = this_start + track_window
-        if this_end >= annot_len:
-            this_end = annot_len
-            this_start = this_end - track_window
-        if track_end == track_start:
-            track_end = track_start + 1
-        current_frame_tick = current_frame - this_start
-        self.state["slider_box"] = [this_start + 1, this_end + 1]
+        current_frame_tick = self.state["current_frame"] - this_start
         # Generate tracks for streams
         for _, stream in streams.items():
             stream_vect = stream.get_stream_vect()
@@ -368,41 +391,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 track.set_selected(True)
             else:
                 track.set_selected(False)
-            self.state["tracks"][stream.ID] = track
+            self.tracks[stream.ID] = track
             self.track_layout.addWidget(track)
-
 
     def update_tracks(self):
         annot = self.state["annot"]
         streams = annot.get_streams()
         current_frame = self.state["current_frame"]
-        track_window = self.state["track_window"]
-        track_start = current_frame - int(1 / 2 * track_window)
-        track_end = current_frame + int(np.ceil(1 / 2 * track_window).item())
-        annot_len = annot.get_length()
-        this_start = track_start
-        this_end = track_end
-        if this_start < 0:
-            this_start = 0
-            this_end = this_start + track_window
-        if this_end >= annot_len:
-            this_end = annot_len
-            this_start = this_end - track_window
-        self.state["slider_box"] = [this_start + 1, this_end + 1]
+        this_start, this_end = self.state["slider_box"]
         for _, stream in streams.items():
             stream_vect = stream.get_stream_vect()
             window_vect = stream_vect[this_start:this_end]
-            self.state["tracks"][stream.ID].set_data(
-                window_vect, current_frame - this_start
-            )
-            self.state["tracks"][stream.ID].set_color_dict(stream.get_color_dict())
+            self.tracks[stream.ID].set_data(window_vect, current_frame - this_start)
+            self.tracks[stream.ID].set_color_dict(stream.get_color_dict())
             if self.state["current_stream"] is stream:
-                self.state["tracks"][stream.ID].set_selected(True)
+                self.tracks[stream.ID].set_selected(True)
             else:
-                self.state["tracks"][stream.ID].set_selected(False)
-
-
-
+                self.tracks[stream.ID].set_selected(False)
         return True
 
     def change_current_behavior(self, keypressed: str = None):
@@ -529,7 +534,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return True
         if self.stats_table.state() == QAbstractItemView.EditingState:
             return True
-        for _, table in self.state["stream_tables"].items():
+        for _, table in self.stream_tables.items():
             if table.state() == QAbstractItemView.EditingState:
                 return True
         return False

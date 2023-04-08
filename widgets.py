@@ -94,7 +94,6 @@ class VideoSlider(QSlider):
             painter.end()
 
 
-
 class TrackBar(QWidget):
     def __init__(
         self,
@@ -120,6 +119,20 @@ class TrackBar(QWidget):
         if self.data is not None:
             self.update()
 
+    def set_frame_mark(self, new_frame_mark=None):
+        old_frame_mark = self.frame_mark
+        if old_frame_mark == new_frame_mark:
+            return False
+        bar_height = self.height()
+        bar_width = self.width() / len(self.data)
+        self.frame_mark = new_frame_mark
+        self.update(
+            (old_frame_mark - 5) * bar_width, 0, max(3 * bar_width, 10), bar_height
+        )
+        self.update(
+            (new_frame_mark - 5) * bar_width, 0, max(3 * bar_width, 10), bar_height
+        )
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -127,7 +140,14 @@ class TrackBar(QWidget):
         bar_height = self.height()
         bar_width = self.width() / len(self.data)
 
-        for i in range(len(self.data)):
+        paint_rect = event.rect()
+        start_index = int(paint_rect.x() / bar_width)
+        end_index = start_index + int(paint_rect.width() / bar_width)
+        for i in range(start_index, end_index):
+            if i >= len(self.data):
+                break
+            if i < 0:
+                continue
             value = self.data[i]
             color = self.color_dict[value]
             painter.setBrush(color)
@@ -140,8 +160,9 @@ class TrackBar(QWidget):
                 )
         if self.selected:
             painter.setBrush(Qt.NoBrush)
-            painter.setPen(QPen(QColor("#C7038A"), 3))
+            painter.setPen(QPen(QColor("#C7038A"), 2))
             painter.drawRect(0, 0.2 * bar_height, self.width(), 0.6 * bar_height)
+
         painter.end()
 
     def set_selected(self, selected: bool = False):
