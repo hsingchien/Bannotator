@@ -203,8 +203,9 @@ class Behavior(QtCore.QObject):
 
 
 class Stream(QtCore.QObject):
-    content_changed = QtCore.Signal()
-
+    data_changed = QtCore.Signal(object)
+    color_changed = QtCore.Signal(object)
+    
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
         super().__init__()
@@ -218,7 +219,7 @@ class Stream(QtCore.QObject):
             self.map_behav_key()
             for _, be in self.behaviors.items():
                 be.keybind_changed.connect(self.map_behav_key)
-                be.color_changed.connect(lambda: self.content_changed.emit())
+                be.color_changed.connect(lambda: self.color_changed.emit())
 
     @property
     def length(self):
@@ -264,10 +265,10 @@ class Stream(QtCore.QObject):
             )
             self.behaviors[behav_name].keybind_changed.connect(self.map_behav_key)
             self.behaviors[behav_name].color_changed.connect(
-                lambda: self.content_changed.emit()
+                lambda: self.color_changed.emit()
             )
         self.map_behav_key()
-        self.content_changed.emit()
+        self.data_changed.emit()
 
     def get_stream_vect(self):
         # Returns 1 x stream length vector with each entry being behavior ID
@@ -281,7 +282,7 @@ class Stream(QtCore.QObject):
     def assign_color(self, color_dict):
         for _, behav in self.behaviors.items():
             behav.set_color(color_dict[behav.name])
-        self.content_changed.emit()
+        self.color_changed.emit()
 
     def get_color_dict(self):
         color_dict = dict()
@@ -301,7 +302,7 @@ class Stream(QtCore.QObject):
             self.behaviors[behav_name].append_epoch(epoch)
         self._length = self.get_length()
         self.validate_epoch()
-        self.content_changed.emit()
+        self.data_changed.emit()
 
     def get_behaviors(self):
         behavior_list = [behavior for _, behavior in self.behaviors.items()]
@@ -384,7 +385,7 @@ class Stream(QtCore.QObject):
             raise Exception(
                 f"Stream-{self.ID} has problematic epochs (overlapped epoch or repetitive behaviors)!"
             )
-        self.content_changed.emit()
+        self.data_changed.emit()
 
 
 class Annotation(QtCore.QObject):
