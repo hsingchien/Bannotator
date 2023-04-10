@@ -19,8 +19,8 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QLayout,
     QMainWindow, QMenu, QMenuBar, QPushButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QStatusBar,
-    QTabWidget, QVBoxLayout, QWidget)
+    QSizePolicy, QSlider, QSpacerItem, QSpinBox,
+    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
 from dataview import GenericTableView
 from widgets import (BehavVideoView, PlaySpeedSpinBox, TabWidget, VideoSlider)
@@ -186,9 +186,23 @@ class Ui_MainWindow(object):
 
         self.video_slider = VideoSlider(self.centralwidget)
         self.video_slider.setObjectName(u"video_slider")
+        self.video_slider.setStyleSheet(u"QSlider::groove:horizontal {\n"
+"    border: 1px solid #999999;\n"
+"    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
+"    margin: 0px 0;\n"
+"}\n"
+"QSlider::handle:horizontal {\n"
+"    background: #ffffff;\n"
+"    border: 1px solid #5c5c5c;\n"
+"    width: 6px;\n"
+"    margin: 0px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */\n"
+"    border-radius: 3px;\n"
+"	subcontrol-origin: content;\n"
+"}")
         self.video_slider.setMinimum(1)
         self.video_slider.setMaximum(1000)
         self.video_slider.setOrientation(Qt.Horizontal)
+        self.video_slider.setTickPosition(QSlider.NoTicks)
 
         self.display_layout.addWidget(self.video_slider)
 
@@ -237,17 +251,17 @@ class Ui_MainWindow(object):
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.table_dock = QDockWidget(MainWindow)
-        self.table_dock.setObjectName(u"table_dock")
+        self.behav_table_dock = QDockWidget(MainWindow)
+        self.behav_table_dock.setObjectName(u"behav_table_dock")
         sizePolicy2 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy2.setHorizontalStretch(0)
         sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.table_dock.sizePolicy().hasHeightForWidth())
-        self.table_dock.setSizePolicy(sizePolicy2)
-        self.table_dock.setMinimumSize(QSize(300, 195))
-        self.table_dock.setFloating(False)
-        self.table_dock.setFeatures(QDockWidget.DockWidgetClosable|QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
-        self.table_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
+        sizePolicy2.setHeightForWidth(self.behav_table_dock.sizePolicy().hasHeightForWidth())
+        self.behav_table_dock.setSizePolicy(sizePolicy2)
+        self.behav_table_dock.setMinimumSize(QSize(300, 195))
+        self.behav_table_dock.setFloating(False)
+        self.behav_table_dock.setFeatures(QDockWidget.DockWidgetClosable|QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
+        self.behav_table_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         self.dockWidgetContents = QWidget()
         self.dockWidgetContents.setObjectName(u"dockWidgetContents")
         sizePolicy3 = QSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
@@ -313,12 +327,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_11.addLayout(self.control_layout)
 
-        self.table_dock.setWidget(self.dockWidgetContents)
-        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.table_dock)
-        self.epoch_dockWidget = QDockWidget(MainWindow)
-        self.epoch_dockWidget.setObjectName(u"epoch_dockWidget")
-        self.epoch_dockWidget.setMinimumSize(QSize(205, 150))
-        self.epoch_dockWidget.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
+        self.behav_table_dock.setWidget(self.dockWidgetContents)
+        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.behav_table_dock)
+        self.epoch_dock = QDockWidget(MainWindow)
+        self.epoch_dock.setObjectName(u"epoch_dock")
+        self.epoch_dock.setMinimumSize(QSize(205, 150))
+        self.epoch_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         self.dockWidgetContents_2 = QWidget()
         self.dockWidgetContents_2.setObjectName(u"dockWidgetContents_2")
         self.verticalLayout_4 = QVBoxLayout(self.dockWidgetContents_2)
@@ -368,8 +382,26 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.tabWidget)
 
-        self.epoch_dockWidget.setWidget(self.dockWidgetContents_2)
-        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.epoch_dockWidget)
+        self.epoch_dock.setWidget(self.dockWidgetContents_2)
+        MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.epoch_dock)
+        self.tracks_dock = QDockWidget(MainWindow)
+        self.tracks_dock.setObjectName(u"tracks_dock")
+        self.tracks_dock.setEnabled(True)
+        self.tracks_dock.setMinimumSize(QSize(82, 44))
+        self.tracks_dock.setFloating(True)
+        self.tracks_dock.setFeatures(QDockWidget.DockWidgetClosable|QDockWidget.DockWidgetFloatable)
+        self.tracks_dock.setAllowedAreas(Qt.NoDockWidgetArea)
+        self.dockWidgetContents_3 = QWidget()
+        self.dockWidgetContents_3.setObjectName(u"dockWidgetContents_3")
+        self.horizontalLayout_3 = QHBoxLayout(self.dockWidgetContents_3)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.full_tracks_layout = QVBoxLayout()
+        self.full_tracks_layout.setObjectName(u"full_tracks_layout")
+
+        self.horizontalLayout_3.addLayout(self.full_tracks_layout)
+
+        self.tracks_dock.setWidget(self.dockWidgetContents_3)
+        MainWindow.addDockWidget(Qt.BottomDockWidgetArea, self.tracks_dock)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuVideo.menuAction())
@@ -436,15 +468,16 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
-        self.table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
+        self.behav_table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
-        self.epoch_dockWidget.setWindowTitle(QCoreApplication.translate("MainWindow", u"Epochs", None))
+        self.epoch_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Epochs", None))
         self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Add stream", None))
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Delete stream", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.all_epoch), QCoreApplication.translate("MainWindow", u"All Epochs", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.behavior_epoch), QCoreApplication.translate("MainWindow", u"Behavior Epochs", None))
+        self.tracks_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Full annotation", None))
     # retranslateUi
 

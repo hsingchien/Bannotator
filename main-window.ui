@@ -189,6 +189,21 @@
       </item>
       <item>
        <widget class="VideoSlider" name="video_slider">
+        <property name="styleSheet">
+         <string notr="true">QSlider::groove:horizontal {
+    border: 1px solid #999999;
+    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    margin: 0px 0;
+}
+QSlider::handle:horizontal {
+    background: #ffffff;
+    border: 1px solid #5c5c5c;
+    width: 6px;
+    margin: 0px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+	subcontrol-origin: content;
+}</string>
+        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -197,6 +212,9 @@
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="tickPosition">
+         <enum>QSlider::NoTicks</enum>
         </property>
        </widget>
       </item>
@@ -289,7 +307,7 @@
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="table_dock">
+  <widget class="QDockWidget" name="behav_table_dock">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -408,7 +426,7 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="epoch_dockWidget">
+  <widget class="QDockWidget" name="epoch_dock">
    <property name="minimumSize">
     <size>
      <width>205</width>
@@ -483,6 +501,39 @@
         </layout>
        </widget>
       </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="tracks_dock">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>82</width>
+     <height>44</height>
+    </size>
+   </property>
+   <property name="floating">
+    <bool>true</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable</set>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::NoDockWidgetArea</set>
+   </property>
+   <property name="windowTitle">
+    <string>Full annotation</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <layout class="QVBoxLayout" name="full_tracks_layout"/>
      </item>
     </layout>
    </widget>

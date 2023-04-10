@@ -40,6 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Container for dynamically generated widgets
         self.tracks = dict()
+        self.full_tracks = dict()
         # Key = ID, item = TrackBar widget
         self.stream_tables = dict()
         # Key = ID, item = stream table model
@@ -53,6 +54,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
+        self.pause_button.clicked.connect(self.timer.stop)
         self.speed_doubleSpinBox.valueChanged.connect(self.set_play_speed)
         self.video_slider.valueChanged.connect(self.set_frame)
         self.curframe_spinBox.valueChanged.connect(self.set_frame)
@@ -63,6 +65,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
         self.actionSave_annotation.triggered.connect(self.save_annotation)
         self.actionSave_config.triggered.connect(self.save_config)
+        self.actionFull_annotation.toggled.connect(
+            lambda: self.update_gui(["dock_widgets"])
+        )
+        self.actionBehavior_table.toggled.connect(
+            lambda: self.update_gui(["dock_widgets"])
+        )
+        self.actionEpoch_table.toggled.connect(
+            lambda: self.update_gui(["dock_widgets"])
+        )
+        self.behav_table_dock.visibilityChanged.connect(
+            self.actionBehavior_table.setChecked
+        )
+        self.epoch_dock.visibilityChanged.connect(self.actionEpoch_table.setChecked)
+        self.tracks_dock.visibilityChanged.connect(
+            self.actionFull_annotation.setChecked
+        )
         # Connect state change
         self.state.connect(
             "current_frame",
@@ -90,7 +108,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ],
         )
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
-        self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
+        self.state.connect(
+            "current_stream", [lambda: self.update_gui(["tracks", "gui"])]
+        )
 
     def update_gui(self, topics):
         if "tracks" in topics:
@@ -102,12 +122,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if "video_ui" in topics:
             self.video_slider.setValue(self.state["current_frame"] + 1)
             self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
-            self.video_slider.changeBoxRange(*self.state["slider_box"])
+            self.video_slider.changeBoxRange(
+                self.state["slider_box"][0] + 1, self.state["slider_box"][1] + 1
+            )  # "slider_box" index from 0, video_slider index from 1
             frame_tick = self.state["current_frame"] - self.state["slider_box"][0]
-            for _,track in self.tracks.items():
+            for _, track in self.tracks.items():
                 track.set_frame_mark(frame_tick)
 
         if "gui" in topics:
+            # "gui" includes all the elements update that do not happen frequently
+            # Update range of spinboxes and slider
             if self.state["annot"]:
                 annot_length = self.state["annot"].get_length()
                 self.video_slider.setMaximum(annot_length)
@@ -117,6 +141,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.video_slider.setMaximum(self.vids[0].num_frame())
                 self.curframe_spinBox.setMaximum(self.vids[0].num_frame())
                 self.track_window_spinbox.setMaximum(self.vids[0].num_frame())
+            # Update the video layout combobox
             if (
                 self.state["video"] > 2
                 and self.video_layout_comboBox.findText("Grid") == -1
@@ -136,6 +161,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.video_layout_comboBox.setCurrentText("Side by Side")
                 self.video_layout_comboBox.removeItem(
                     self.video_layout_comboBox.findText("Grid")
+                )
+            # Update background of the slider to be the current stream
+            if self.state["current_stream"]:
+                self.video_slider.set_track_data(
+                    self.state["current_stream"].get_stream_vect(),
+                    self.state["current_stream"].get_color_dict(),
                 )
 
         if "tables" in topics:
@@ -169,6 +200,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.display_layout.removeItem(current_layout)
             self.display_layout.insertLayout(index, new_layout, stretch_factor)
 
+        if "dock_widgets" in topics:
+            self.behav_table_dock.setVisible(self.actionBehavior_table.isChecked())
+            self.epoch_dock.setVisible(self.actionEpoch_table.isChecked())
+            self.tracks_dock.setVisible(self.actionFull_annotation.isChecked())
+
     def set_frame(self, frameN):
         # Called by frame slider and spinbox
         self.state["current_frame"] = frameN - 1
@@ -195,7 +231,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 this_start = this_end - track_window
             if track_end == track_start:
                 track_end = track_start + 1
-            self.state["slider_box"] = [this_start, this_end]
+            self.state["slider_box"] = [int(this_start), int(this_end)]
         except Exception:
             pass
 
@@ -381,18 +417,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         current_frame_tick = self.state["current_frame"] - this_start
         # Generate tracks for streams
         for _, stream in streams.items():
+            # Make mainwindow track widgets
             stream_vect = stream.get_stream_vect()
             color_dict = stream.get_color_dict()
             window_vect = stream_vect[this_start:this_end]
-            track = TrackBar(
-                data=window_vect, color_dict=color_dict, frame_mark=current_frame_tick
-            )
+            track = TrackBar(window_vect, color_dict, frame_mark=current_frame_tick)
             if self.state["current_stream"] is stream:
                 track.set_selected(True)
             else:
                 track.set_selected(False)
             self.tracks[stream.ID] = track
             self.track_layout.addWidget(track)
+            # Make full length track widgets
+            full_track = TrackBar(
+                stream_vect,
+                color_dict,
+                self.state["current_frame"],
+                None,
+                True,
+                self.state["slider_box"],
+            )
+            self.state.connect("current_frame", full_track.set_frame_mark)
+            self.state.connect("slider_box", full_track.set_slider_box)
+            self.full_tracks_layout.addWidget(full_track)
 
     def update_tracks(self):
         annot = self.state["annot"]
