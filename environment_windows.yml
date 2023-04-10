@@ -1,4 +1,4 @@
-name: cscreener
+name: bannotator
 channels:
   - conda-forge
   - defaults
