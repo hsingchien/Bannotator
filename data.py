@@ -203,9 +203,11 @@ class Behavior(QtCore.QObject):
 
 
 class Stream(QtCore.QObject):
+    # Date changed signal, emit updated epoch vector
     data_changed = QtCore.Signal(object)
+    # Color changed signal, emit updated color dictionary
     color_changed = QtCore.Signal(object)
-    
+
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
         super().__init__()
@@ -265,10 +267,9 @@ class Stream(QtCore.QObject):
             )
             self.behaviors[behav_name].keybind_changed.connect(self.map_behav_key)
             self.behaviors[behav_name].color_changed.connect(
-                lambda: self.color_changed.emit()
+                lambda: self.color_changed.emit(self.get_color_dict())
             )
         self.map_behav_key()
-        self.data_changed.emit()
 
     def get_stream_vect(self):
         # Returns 1 x stream length vector with each entry being behavior ID
@@ -282,7 +283,7 @@ class Stream(QtCore.QObject):
     def assign_color(self, color_dict):
         for _, behav in self.behaviors.items():
             behav.set_color(color_dict[behav.name])
-        self.color_changed.emit()
+        self.color_changed.emit(self.get_color_dict())
 
     def get_color_dict(self):
         color_dict = dict()
@@ -302,7 +303,7 @@ class Stream(QtCore.QObject):
             self.behaviors[behav_name].append_epoch(epoch)
         self._length = self.get_length()
         self.validate_epoch()
-        self.data_changed.emit()
+        self.data_changed.emit(self.get_stream_vect())
 
     def get_behaviors(self):
         behavior_list = [behavior for _, behavior in self.behaviors.items()]
@@ -385,7 +386,7 @@ class Stream(QtCore.QObject):
             raise Exception(
                 f"Stream-{self.ID} has problematic epochs (overlapped epoch or repetitive behaviors)!"
             )
-        self.data_changed.emit()
+        self.data_changed.emit(self.get_stream_vect())
 
 
 class Annotation(QtCore.QObject):
@@ -402,7 +403,8 @@ class Annotation(QtCore.QObject):
         # Use dict to organize streams
         self.streams = streams
         for _, stream in self.streams:
-            stream.content_changed.connect(self.streams_changed)
+            stream.data_changed.connect(self.streams_changed)
+            stream.color_changed.connect(self.streams_changed)
         # Behvior-color dict
         self.behav_color = dict()
 
@@ -446,18 +448,13 @@ class Annotation(QtCore.QObject):
             self.construct_from_file.emit("Failed to construct annotation from file")
 
     def construct_streams(self, config, annots):
-        try:
-            for stream_id, annotation_sequence in annots.items():
-                # Create behaviors for the stream
-                self.streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
-                self.streams[stream_id].construct_behavior_from_config(config)
-                self.streams[stream_id].construct_epochs_from_sequence(
-                    annotation_sequence
-                )
-                self.streams[stream_id].content_changed.connect(self.streams_changed)
-            return True
-        except Exception:
-            return False
+        for stream_id, annotation_sequence in annots.items():
+            # Create behaviors for the stream
+            self.streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
+            self.streams[stream_id].construct_behavior_from_config(config)
+            self.streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
+            self.streams[stream_id].data_changed.connect(self.streams_changed)
+        return True
 
     def validate_streams(self):
         behav_list = [stream.get_behaviors() for _, stream in self.streams.items()]

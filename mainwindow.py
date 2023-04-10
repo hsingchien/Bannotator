@@ -94,9 +94,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "track_window",
             [self.update_slider_box],
         )
-        self.state.connect(
-            "slider_box", [lambda: self.update_gui(["video_ui", "tracks"])]
-        )
+        self.state.connect("slider_box", [lambda: self.update_gui(["video_ui"])])
         self.state.connect(
             "annot", [self.update_slider_box, lambda: self.update_gui(["gui"])]
         )
@@ -108,26 +106,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ],
         )
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
-        self.state.connect(
-            "current_stream", [lambda: self.update_gui(["tracks", "gui"])]
-        )
+        self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
 
     def update_gui(self, topics):
-        if "tracks" in topics:
-            if self.tracks:
-                self.update_tracks()
-            else:
-                self.plot_tracks()
-
         if "video_ui" in topics:
             self.video_slider.setValue(self.state["current_frame"] + 1)
             self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
             self.video_slider.changeBoxRange(
                 self.state["slider_box"][0] + 1, self.state["slider_box"][1] + 1
             )  # "slider_box" index from 0, video_slider index from 1
-            frame_tick = self.state["current_frame"] - self.state["slider_box"][0]
-            for _, track in self.tracks.items():
-                track.set_frame_mark(frame_tick)
+        if "tracks" in topics:
+            for _, stream in self.state["annot"].get_streams().items():
+                if self.state["current_stream"] is stream:
+                    self.tracks[stream.ID].set_selected(True)
+                else:
+                    self.tracks[stream.ID].set_selected(False)
+            # Update background of the slider to be the current stream
+            self.video_slider.set_color_track(
+                self.state["current_stream"].get_stream_vect(),
+                self.state["current_stream"].get_color_dict(),
+            )
 
         if "gui" in topics:
             # "gui" includes all the elements update that do not happen frequently
@@ -161,12 +159,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.video_layout_comboBox.setCurrentText("Side by Side")
                 self.video_layout_comboBox.removeItem(
                     self.video_layout_comboBox.findText("Grid")
-                )
-            # Update background of the slider to be the current stream
-            if self.state["current_stream"]:
-                self.video_slider.set_track_data(
-                    self.state["current_stream"].get_stream_vect(),
-                    self.state["current_stream"].get_color_dict(),
                 )
 
         if "tables" in topics:
@@ -293,9 +285,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         annotation.read_from_file(anno_path)
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
-        annotation.content_changed.connect(
-            lambda: self.update_gui(["tracks", "tables"])
-        )
         # Set up table views
         # Set up behavior tableview
         behavior_tablemodel = BehaviorTableModel(
@@ -310,6 +299,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.behavior_table.model().dataChanged.connect(
             self.behavior_table.clearSelection
         )
+        annotation.content_changed.connect(self.behavior_table.repaint_table)
         # Set up Statstableview
         stats_tablemodel = StatsTableModel(
             behav_lists=annotation.get_behaviors(),
@@ -318,7 +308,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             items=[],
         )
         self.stats_table.setModel(stats_tablemodel)
-        # self.behavior_table.set_columns_fixed([0, 1, 2, 3])
+        annotation.content_changed.connect(self.stats_table.repaint_table)
+        # Set up epochs table for each stream
         streams = annotation.get_streams()
         for ID, stream in streams.items():
             stream_table = StreamTableModel(
@@ -327,9 +318,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             stream_table_view = GenericTableView()
             stream_table_view.setModel(stream_table)
             stream_table_view.set_columns_fixed([1, 2])
+            stream.data_changed.connect(stream_table_view.repaint_table)
             self.stream_tables[ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
         self.update_slider_box()
+        self.plot_tracks()
         # Set the first stream as current stream
         IDs = sorted(list(streams.keys()))
         self.state["current_stream"] = streams[IDs[0]]
@@ -414,48 +407,47 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         this_start, this_end = self.state["slider_box"]
         annot = self.state["annot"]
         streams = annot.get_streams()
-        current_frame_tick = self.state["current_frame"] - this_start
         # Generate tracks for streams
         for _, stream in streams.items():
             # Make mainwindow track widgets
             stream_vect = stream.get_stream_vect()
             color_dict = stream.get_color_dict()
-            window_vect = stream_vect[this_start:this_end]
-            track = TrackBar(window_vect, color_dict, frame_mark=current_frame_tick)
+            track = TrackBar(
+                stream_vect,
+                color_dict,
+                self.state["current_frame"],
+                self.state["slider_box"],
+                False,
+                False,
+            )
             if self.state["current_stream"] is stream:
                 track.set_selected(True)
             else:
                 track.set_selected(False)
             self.tracks[stream.ID] = track
+            stream.data_changed.connect(track.set_data)
+            stream.color_changed.connect(track.set_color_dict)
+            self.state.connect("current_frame", track.set_frame_mark)
+            self.state.connect("slider_box", track.set_slider_box)
             self.track_layout.addWidget(track)
             # Make full length track widgets
+            self.tracks_dock.resize(self.width(), 100)
             full_track = TrackBar(
                 stream_vect,
                 color_dict,
                 self.state["current_frame"],
-                None,
-                True,
                 self.state["slider_box"],
+                True,
+                True,
             )
             self.state.connect("current_frame", full_track.set_frame_mark)
             self.state.connect("slider_box", full_track.set_slider_box)
+            stream.data_changed.connect(full_track.set_data)
+            stream.color_changed.connect(full_track.set_color_dict)
             self.full_tracks_layout.addWidget(full_track)
-
-    def update_tracks(self):
-        annot = self.state["annot"]
-        streams = annot.get_streams()
-        current_frame = self.state["current_frame"]
-        this_start, this_end = self.state["slider_box"]
-        for _, stream in streams.items():
-            stream_vect = stream.get_stream_vect()
-            window_vect = stream_vect[this_start:this_end]
-            self.tracks[stream.ID].set_data(window_vect, current_frame - this_start)
-            self.tracks[stream.ID].set_color_dict(stream.get_color_dict())
-            if self.state["current_stream"] is stream:
-                self.tracks[stream.ID].set_selected(True)
-            else:
-                self.tracks[stream.ID].set_selected(False)
-        return True
+            # Also connect stream content change signals to video slider track update
+            stream.data_changed.connect(self.video_slider.set_track_data)
+            stream.color_changed.connect(self.video_slider.set_color_dict)
 
     def change_current_behavior(self, keypressed: str = None):
         cur_idx = self.state["current_frame"]

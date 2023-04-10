@@ -107,20 +107,30 @@ class VideoSlider(QSlider):
 
         super().paintEvent(event)
 
-    def set_track_data(self, new_track_data, color_dict):
+    def set_track_data(self, new_track_data):
         self.track_data = new_track_data
+        self.update_track_flag = True
+        self.update()
+
+    def set_color_dict(self, color_dict):
         self.color_dict = color_dict
+        self.update_track_flag = True
+        self.update()
+
+    def set_color_track(self, new_track_data, new_color_dict):
+        self.track_data = new_track_data
+        self.color_dict = new_color_dict
         self.update_track_flag = True
         self.update()
 
     def draw_pixmap_bg(self):
         if self.update_track_flag and self.track_data is not None:
-            self.pixmap_bg = QPixmap(self.width(), self.height())
+            self.pixmap_bg = QPixmap(self.width()-6, self.height())
             painter = QPainter(self.pixmap_bg)
             painter.setRenderHint(QPainter.Antialiasing)
 
             bar_height = self.height()
-            bar_width = self.width() / len(self.track_data)
+            bar_width = (self.width()-6) / len(self.track_data)
 
             for i in range(len(self.track_data)):
                 value = self.track_data[i]
@@ -133,7 +143,7 @@ class VideoSlider(QSlider):
             self.update_track_flag = False
 
     def update_track_bg(self):
-        self.draw_pixmap_bg = True
+        self.update_track_flag = True
         self.update()
 
     def resizeEvent(self, event):
@@ -148,46 +158,70 @@ class TrackBar(QWidget):
         data: np.ndarray = None,
         color_dict: Dict = None,
         frame_mark: int = None,
+        slider_box=[],
+        use_pixmap=False,
+        full_track_flag=False,
         parent=None,
-        use_pixmap = False,
-        slider_box = []
     ):
         super().__init__(parent)
-        self.data = data
+        self.full_data = data
         self.color_dict = color_dict
-        self.frame_mark = frame_mark
         self.selected = False
-        self.pixmap = None
         self.slider_box = slider_box
-        self.update_track_flag = False
+        self.frame_mark = frame_mark
+        self.redraw_track_flag = False
         self.use_pixmap = use_pixmap
-        
+        self.pixmap = None
+        self.full_track_flag = full_track_flag
+
+        if not self.full_track_flag and self.slider_box:
+            # Only draw the content in the slider box
+            self.data = self.full_data[self.slider_box[0] : self.slider_box[1]]
+        else:
+            # Draw the whole track
+            self.data = self.full_data
+
         if use_pixmap:
             self.draw_pixmap_bg()
 
-    def set_data(self, data: np.ndarray, frame_mark: int):
-        self.data = data
-        self.frame_mark = frame_mark
-        if self.color_dict:
-            self.update()
+    def set_data(self, data: np.ndarray):
+        self.full_data = data
+        if not self.full_track_flag and self.slider_box:
+            self.data = self.full_data[self.slider_box[0] : self.slider_box[1]]
+        else:
+            self.data = self.full_data
+
+        # Update the widget after data is changed
+        if self.use_pixmap:
+            # Set redraw pixmap flag
+            self.redraw_track_flag = True
+        self.update()
 
     def set_color_dict(self, color_dict: Dict = None):
         self.color_dict = color_dict
-        if self.data is not None:
-            self.update()
+        if self.use_pixmap:
+            self.redraw_track_flag = True
+        self.update()
 
     def set_frame_mark(self, new_frame_mark=None):
         # Only update frame mark rect
+        old_frame_mark = self.frame_mark
+        if old_frame_mark == new_frame_mark:
+            return False
+
         if self.use_pixmap:
             self.frame_mark = new_frame_mark
             self.update()
         else:
-            old_frame_mark = self.frame_mark
-            if old_frame_mark == new_frame_mark:
-                return False
             bar_height = self.height()
             bar_width = self.width() / len(self.data)
+            if not self.full_track_flag:
+                # The position of the frame mark is relative to the beginning of the data
+                old_frame_mark -= self.slider_box[0]
             self.frame_mark = new_frame_mark
+
+            if not self.full_track_flag:
+                new_frame_mark -= self.slider_box[0]
             self.update(
                 max(old_frame_mark * bar_width - 10, 0),
                 0,
@@ -201,8 +235,12 @@ class TrackBar(QWidget):
                 bar_height,
             )
 
-    def set_slider_box(self, new_slider_box = []):
+    def set_slider_box(self, new_slider_box=[]):
         self.slider_box = new_slider_box
+        if not self.full_track_flag:
+            self.data = self.full_data[new_slider_box[0] : new_slider_box[1]]
+            if self.use_pixmap:
+                self.redraw_track_flag = True
         self.update()
 
     def draw_pixmap_bg(self):
@@ -222,25 +260,42 @@ class TrackBar(QWidget):
                 painter.drawRect(i * bar_width, 0, bar_width, bar_height)
 
             painter.end()
-            self.update_track_flag = False
-    
+            self.redraw_track_flag = False
+
     def paintEvent(self, event):
         bar_height = self.height()
         bar_width = self.width() / len(self.data)
+        if not self.full_track_flag:
+            frame_mark = self.frame_mark - self.slider_box[0]
+        else:
+            frame_mark = self.frame_mark
         # Full length track use pixmap to improve performance
-        if self.update_track_flag and self.use_pixmap:
+        if self.redraw_track_flag and self.use_pixmap:
             self.draw_pixmap_bg()
         if self.pixmap is not None:
+            # Make colored track pixmap
             painter = QPainter(self)
             painter.setRenderHint(QPainter.Antialiasing)
             painter.drawPixmap(QRect(0, 0, self.width(), self.height()), self.pixmap)
+            # Mark the current frame with black line
             painter.setPen(QPen(Qt.black, 2))
-            painter.drawRect(self.frame_mark*bar_width, 0, bar_width,bar_height)
-            painter.drawRect(self.slider_box[0]*bar_width, 0, (self.slider_box[1]-self.slider_box[0])*bar_width, bar_height)
+            painter.drawRect(frame_mark * bar_width, 0, bar_width, bar_height)
+            # Mark the slider box, if full track flag is true
+            if self.full_track_flag:
+                painter.drawRect(
+                    self.slider_box[0] * bar_width,
+                    0,
+                    (self.slider_box[1] - self.slider_box[0]) * bar_width,
+                    bar_height,
+                )
+            if self.selected:
+                painter.setBrush(Qt.NoBrush)
+                painter.setPen(QPen(QColor("#C7038A"), 2))
+                painter.drawRect(0, 0, self.width(), bar_height)
             painter.end()
-            
+
         else:
-            # Dyanamically update the event rect area   
+            # Dyanamically update the event rect area
             painter = QPainter(self)
             painter.setRenderHint(QPainter.Antialiasing)
             paint_rect = event.rect()
@@ -255,12 +310,22 @@ class TrackBar(QWidget):
                 color = self.color_dict[value]
                 painter.setBrush(color)
                 painter.setPen(color)
-                if i == self.frame_mark:
+
+                if i == frame_mark:
                     painter.drawRect(i * bar_width, 0, bar_width, bar_height)
                 else:
                     painter.drawRect(
                         i * bar_width, 0.2 * bar_height, bar_width, 0.6 * bar_height
                     )
+            if self.full_track_flag:
+                painter.setBrush(Qt.NoBrush)
+                painter.setPen(QPen(Qt.black, 2))
+                painter.drawRect(
+                    self.slider_box[0] * bar_width,
+                    0,
+                    (self.slider_box[1] - self.slider_box[0]) * bar_width,
+                    bar_height,
+                )
             if self.selected:
                 painter.setBrush(Qt.NoBrush)
                 painter.setPen(QPen(QColor("#C7038A"), 2))
@@ -270,7 +335,13 @@ class TrackBar(QWidget):
 
     def set_selected(self, selected: bool = False):
         self.selected = selected
-    
+        self.update()
+
+    def resizeEvent(self, event):
+        if self.use_pixmap:
+            self.redraw_track_flag = True
+
+        return super().resizeEvent(event)
 
 
 class TabWidget(QTabWidget):

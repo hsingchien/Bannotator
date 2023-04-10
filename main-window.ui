@@ -193,13 +193,15 @@
          <string notr="true">QSlider::groove:horizontal {
     border: 1px solid #999999;
     height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
-    margin: 0px 0;
+    margin-left: 3px;
+	margin-right: 3px;
 }
 QSlider::handle:horizontal {
     background: #ffffff;
     border: 1px solid #5c5c5c;
     width: 6px;
-    margin: 0px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    margin-left: -3px;
+	margin-right:-3px;
     border-radius: 3px;
 	subcontrol-origin: content;
 }</string>
@@ -209,6 +211,9 @@ QSlider::handle:horizontal {
         </property>
         <property name="maximum">
          <number>1000</number>
+        </property>
+        <property name="value">
+         <number>1</number>
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>

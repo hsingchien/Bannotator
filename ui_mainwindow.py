@@ -189,18 +189,21 @@ class Ui_MainWindow(object):
         self.video_slider.setStyleSheet(u"QSlider::groove:horizontal {\n"
 "    border: 1px solid #999999;\n"
 "    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
-"    margin: 0px 0;\n"
+"    margin-left: 3px;\n"
+"	margin-right: 3px;\n"
 "}\n"
 "QSlider::handle:horizontal {\n"
 "    background: #ffffff;\n"
 "    border: 1px solid #5c5c5c;\n"
 "    width: 6px;\n"
-"    margin: 0px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */\n"
+"    margin-left: -3px;\n"
+"	margin-right:-3px;\n"
 "    border-radius: 3px;\n"
 "	subcontrol-origin: content;\n"
 "}")
         self.video_slider.setMinimum(1)
         self.video_slider.setMaximum(1000)
+        self.video_slider.setValue(1)
         self.video_slider.setOrientation(Qt.Horizontal)
         self.video_slider.setTickPosition(QSlider.NoTicks)
 
