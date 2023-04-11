@@ -193,15 +193,15 @@
          <string notr="true">QSlider::groove:horizontal {
     border: 0px solid #999999;
     height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
-    margin-left: 0px;
-	margin-right: 0px;
+    margin-left: 3px;
+	margin-right: 3px;
 }
 QSlider::handle:horizontal {
     background: #ffffff;
     border: 1px solid #5c5c5c;
     width: 6px;
-    margin-left: 0px;
-	margin-right:0px;
+    margin-left: -3px;
+	margin-right:-3px;
     border-radius: 3px;
 	subcontrol-origin: content;
 }</string>
@@ -260,7 +260,7 @@ QSlider::handle:horizontal {
      <x>0</x>
      <y>0</y>
      <width>1512</width>
-     <height>37</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuVideo">
@@ -312,7 +312,7 @@ QSlider::handle:horizontal {
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <widget class="QDockWidget" name="behav_table_dock">
+  <widget class="DockWidget" name="behav_table_dock">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -431,7 +431,7 @@ QSlider::handle:horizontal {
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="epoch_dock">
+  <widget class="DockWidget" name="epoch_dock">
    <property name="minimumSize">
     <size>
      <width>299</width>
@@ -510,7 +510,7 @@ QSlider::handle:horizontal {
     </layout>
    </widget>
   </widget>
-  <widget class="QDockWidget" name="tracks_dock">
+  <widget class="DockWidget" name="tracks_dock">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -663,6 +663,12 @@ QSlider::handle:horizontal {
    <class>BehavVideoView</class>
    <extends>QGraphicsView</extends>
    <header>widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>DockWidget</class>
+   <extends>QDockWidget</extends>
+   <header>widgets</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

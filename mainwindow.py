@@ -73,13 +73,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionEpoch_table.toggled.connect(
             lambda: self.update_gui(["dock_widgets"])
         )
-        self.behav_table_dock.visibilityChanged.connect(
-            self.actionBehavior_table.setChecked
-        )
-        self.epoch_dock.visibilityChanged.connect(self.actionEpoch_table.setChecked)
-        self.tracks_dock.visibilityChanged.connect(
-            self.actionFull_annotation.setChecked
-        )
+        self.behav_table_dock.closed.connect(self.actionBehavior_table.setChecked)
+        self.epoch_dock.closed.connect(self.actionEpoch_table.setChecked)
+        self.tracks_dock.closed.connect(self.actionFull_annotation.setChecked)
         # Connect state change
         self.state.connect(
             "current_frame",

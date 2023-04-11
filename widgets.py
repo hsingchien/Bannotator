@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QGraphicsPixmapItem,
     QGraphicsView,
     QGraphicsScene,
-    QStyle,
+    QDockWidget
 )
 from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QBrush
 from PySide6.QtCore import Slot, QSize, Qt, QEvent, Signal, QRect
@@ -83,7 +83,9 @@ class VideoSlider(QSlider):
 
         if self.pixmap_bg is not None:
             painter = QPainter(self)
-            painter.drawPixmap(QRect(0, 0, self.width(), self.height()), self.pixmap_bg)
+            painter.drawPixmap(
+                QRect(3, 0, self.width() - 6, self.height()), self.pixmap_bg
+            )
             painter.end()
 
         if self.boxend and self.boxstart:
@@ -91,7 +93,7 @@ class VideoSlider(QSlider):
             painter.setPen(QPen(Qt.black, 2))
             painter.setRenderHint(QPainter.Antialiasing)
             box_height = self.height()
-            bar_width = self.width()
+            bar_width = self.width() - 6
             box_width = (
                 bar_width
                 * (self.boxend - self.boxstart)
@@ -100,9 +102,9 @@ class VideoSlider(QSlider):
             box_start = (
                 (self.boxstart - self.minimum())
                 / (self.maximum() - self.minimum())
-                * self.width()
+                * bar_width
             )
-            painter.drawRect(box_start, 0, box_width, box_height)
+            painter.drawRect(box_start + 3, 0, box_width, box_height)
             painter.end()
 
         super().paintEvent(event)
@@ -125,12 +127,12 @@ class VideoSlider(QSlider):
 
     def draw_pixmap_bg(self):
         if self.update_track_flag and self.track_data is not None:
-            self.pixmap_bg = QPixmap(self.width()-6, self.height())
+            self.pixmap_bg = QPixmap(self.width() - 6, self.height())
             painter = QPainter(self.pixmap_bg)
             painter.setRenderHint(QPainter.Antialiasing)
 
             bar_height = self.height()
-            bar_width = (self.width()-6) / len(self.track_data)
+            bar_width = (self.width() - 6) / len(self.track_data)
 
             for i in range(len(self.track_data)):
                 value = self.track_data[i]
@@ -342,6 +344,12 @@ class TrackBar(QWidget):
             self.redraw_track_flag = True
 
         return super().resizeEvent(event)
+
+class DockWidget(QDockWidget):
+    closed = Signal(bool)
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        self.closed.emit(False)
 
 
 class TabWidget(QTabWidget):
