@@ -19,7 +19,6 @@ from dataview import (
 )
 from widgets import TrackBar, BehavVideoView
 import numpy as np
-import time
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):

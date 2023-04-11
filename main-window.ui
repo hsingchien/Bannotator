@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1366</width>
-    <height>768</height>
+    <width>1512</width>
+    <height>840</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -191,17 +191,17 @@
        <widget class="VideoSlider" name="video_slider">
         <property name="styleSheet">
          <string notr="true">QSlider::groove:horizontal {
-    border: 1px solid #999999;
+    border: 0px solid #999999;
     height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
-    margin-left: 3px;
-	margin-right: 3px;
+    margin-left: 0px;
+	margin-right: 0px;
 }
 QSlider::handle:horizontal {
     background: #ffffff;
     border: 1px solid #5c5c5c;
     width: 6px;
-    margin-left: -3px;
-	margin-right:-3px;
+    margin-left: 0px;
+	margin-right:0px;
     border-radius: 3px;
 	subcontrol-origin: content;
 }</string>
@@ -259,8 +259,8 @@ QSlider::handle:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1366</width>
-     <height>22</height>
+     <width>1512</width>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuVideo">
@@ -321,8 +321,8 @@ QSlider::handle:horizontal {
    </property>
    <property name="minimumSize">
     <size>
-     <width>300</width>
-     <height>195</height>
+     <width>328</width>
+     <height>226</height>
     </size>
    </property>
    <property name="floating">
@@ -434,7 +434,7 @@ QSlider::handle:horizontal {
   <widget class="QDockWidget" name="epoch_dock">
    <property name="minimumSize">
     <size>
-     <width>205</width>
+     <width>299</width>
      <height>150</height>
     </size>
    </property>
@@ -517,7 +517,7 @@ QSlider::handle:horizontal {
    <property name="minimumSize">
     <size>
      <width>82</width>
-     <height>44</height>
+     <height>48</height>
     </size>
    </property>
    <property name="floating">

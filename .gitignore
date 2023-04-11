@@ -7,3 +7,4 @@ build/
 cscreener.egg-info/
 *.csv
 *.txt
+*.seq

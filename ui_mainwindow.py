@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1366, 768)
+        MainWindow.resize(1512, 840)
         self.actionOpen_video = QAction(MainWindow)
         self.actionOpen_video.setObjectName(u"actionOpen_video")
         self.actionOpen_config = QAction(MainWindow)
@@ -187,17 +187,17 @@ class Ui_MainWindow(object):
         self.video_slider = VideoSlider(self.centralwidget)
         self.video_slider.setObjectName(u"video_slider")
         self.video_slider.setStyleSheet(u"QSlider::groove:horizontal {\n"
-"    border: 1px solid #999999;\n"
+"    border: 0px solid #999999;\n"
 "    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
-"    margin-left: 3px;\n"
-"	margin-right: 3px;\n"
+"    margin-left: 0px;\n"
+"	margin-right: 0px;\n"
 "}\n"
 "QSlider::handle:horizontal {\n"
 "    background: #ffffff;\n"
 "    border: 1px solid #5c5c5c;\n"
 "    width: 6px;\n"
-"    margin-left: -3px;\n"
-"	margin-right:-3px;\n"
+"    margin-left: 0px;\n"
+"	margin-right:0px;\n"
 "    border-radius: 3px;\n"
 "	subcontrol-origin: content;\n"
 "}")
@@ -239,7 +239,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1512, 37))
         self.menuVideo = QMenu(self.menubar)
         self.menuVideo.setObjectName(u"menuVideo")
         self.menuAnnotation = QMenu(self.menubar)
@@ -261,7 +261,7 @@ class Ui_MainWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.behav_table_dock.sizePolicy().hasHeightForWidth())
         self.behav_table_dock.setSizePolicy(sizePolicy2)
-        self.behav_table_dock.setMinimumSize(QSize(300, 195))
+        self.behav_table_dock.setMinimumSize(QSize(328, 226))
         self.behav_table_dock.setFloating(False)
         self.behav_table_dock.setFeatures(QDockWidget.DockWidgetClosable|QDockWidget.DockWidgetFloatable|QDockWidget.DockWidgetMovable)
         self.behav_table_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
@@ -334,7 +334,7 @@ class Ui_MainWindow(object):
         MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.behav_table_dock)
         self.epoch_dock = QDockWidget(MainWindow)
         self.epoch_dock.setObjectName(u"epoch_dock")
-        self.epoch_dock.setMinimumSize(QSize(205, 150))
+        self.epoch_dock.setMinimumSize(QSize(299, 150))
         self.epoch_dock.setAllowedAreas(Qt.LeftDockWidgetArea|Qt.RightDockWidgetArea)
         self.dockWidgetContents_2 = QWidget()
         self.dockWidgetContents_2.setObjectName(u"dockWidgetContents_2")
@@ -390,7 +390,7 @@ class Ui_MainWindow(object):
         self.tracks_dock = QDockWidget(MainWindow)
         self.tracks_dock.setObjectName(u"tracks_dock")
         self.tracks_dock.setEnabled(True)
-        self.tracks_dock.setMinimumSize(QSize(82, 44))
+        self.tracks_dock.setMinimumSize(QSize(82, 48))
         self.tracks_dock.setFloating(True)
         self.tracks_dock.setFeatures(QDockWidget.DockWidgetClosable|QDockWidget.DockWidgetFloatable)
         self.tracks_dock.setAllowedAreas(Qt.NoDockWidgetArea)
