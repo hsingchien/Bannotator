@@ -107,9 +107,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if "video_ui" in topics:
             self.video_slider.setValue(self.state["current_frame"] + 1)
             self.curframe_spinBox.setValue(self.state["current_frame"] + 1)
-            self.video_slider.changeBoxRange(
-                self.state["slider_box"][0] + 1, self.state["slider_box"][1] + 1
-            )  # "slider_box" index from 0, video_slider index from 1
+            if self.state["slider_box"][0] is not None:
+                self.video_slider.changeBoxRange(
+                    self.state["slider_box"][0] + 1, self.state["slider_box"][1] + 1
+                )  # "slider_box" index from 0, video_slider index from 1
         if "tracks" in topics:
             for _, stream in self.state["annot"].get_streams().items():
                 if self.state["current_stream"] is stream:
