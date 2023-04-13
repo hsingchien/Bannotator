@@ -127,6 +127,13 @@ HEADER_FIELDS = [
 jpg_byte_start = b'\xff\xd8'
 jpg_byte_end = b'\xff\xd9'
 
+
+
+class SeqVideoSignals(QObject):
+    frame_signal = Signal(object)
+    fetch_index = Signal(object)
+    run_worker = Signal(bool)
+
 class SeqBehaveVideo(NorpixSeq):
     def __init__(self, filename):
         self._filename = filename
@@ -157,6 +164,14 @@ class SeqBehaveVideo(NorpixSeq):
                 self._height = self.header_dict['height']
         else:
             raise IOError("Only uncompressed or JPEG images are supported at this point")
+        self._file.close()
+        self.worker = SeqVideoWorker(self._filename, self._jpeg)
+        self.threadpool = QThreadPool()
+        self.signals = SeqVideoSignals()
+        self.signals.fetch_index.connect(self.worker.receive_read_position)
+        self.signals.run_worker.connect(self.worker.receive_run_state)
+        self.worker.signals.frame_signal.connect(self.emit_new_frame)
+        self.threadpool.start(self.worker)
 
     def find_jpeg_blocks(self):
         im_starts = []
@@ -170,60 +185,72 @@ class SeqBehaveVideo(NorpixSeq):
                 break
             end = imdata.find(jpg_byte_end, _from)
             _from = end
-            im_starts.append(start)
-            im_ends.append(end)
+            im_starts.append(start+self._image_offset)
+            im_ends.append(end+self._image_offset)
         return (im_starts, im_ends)
             
             
-            
+    def emit_new_frame(self, new_frame):
+        self.signals.frame_signal.emit(new_frame)
+             
+    def get_frame(self, i):
+        if self._jpeg:
+            this_start = self._imstarts[i]
+            this_end = self._imends[i]
+            next_start = None # Edit this
+        else:
+            this_start = self._image_block_size*i
+            this_end = this_start + self._image_block_size
+            next_start = None
         
+        self.signals.fetch_index.emit((this_start,this_end,next_start))
+
+                 
     
     def header(self):
         return self.header_dict
         
             
-            
-class SeqVideoSignals(QObject):
-    frame_signal = Signal(object)
 class SeqVideoWorker(QRunnable):
     @Slot()
-    def receive_frame_number(self, frameN:int):
-        self._frame_number = frameN
+    def receive_read_position(self, idices):
+        self._start, self._end, self._next_start = idices
     @Slot()
     def receive_run_state(self, running:bool):
         self._run = running
 
-    def __init__(self, _file, _jpeg):
+    def __init__(self, url, _jpeg):
         super(VideoWorker, self).__init__()
-        self._file = _file
+        self._url = url
         self._jpeg = _jpeg
         self.signals = SeqVideoSignals()
-        self._frame_number = None
+        self._start = None
+        self._end = None
+        self._next_start = None
         self._run = True
-        self._current_frame_number = -10
+        self._current_start = -10
     @Slot()
     def run(self):
-        if self._file.closed:
-            print("Error opening video stream or file")
-            return
+        seqfile = open(self._url, "rb")
 
         while self._run:
-            if self._frame_number is not None:
+            if self._start is not None and self._jpeg:
                 # Set the current frame position to the requested frame
-                cap.set(cv2.CAP_PROP_POS_FRAMES, self._frame_number)
+                seqfile.seek(self._start)
+                imdata = seqfile.read()
                 # Read the frame
-                ret, frame = cap.read()
-                if ret:
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    self.signals.frame_signal.emit(frame)
+                jpg_image = bytearray()
+                jpg_image += imdata[self._start:self._end+1]
+                if self._current_start != self._start:
+                    frame = np.asarray(cv2.imdecode(jpg_image, 0))
                     height, width, _ = frame.shape
-                    bytes_per_line = 3*width
-                    q_image = QImage(frame.data, width, height, bytes_per_line,QImage.Format_RGB888)
-                    pixmap = QPixmap.fromImage(q_image)
-                    if self._frame_number != self._current_frame_number:
-                        self.signals.frame_signal.emit(pixmap)
-                        self._current_frame_number = self._frame_number
-        cap.release()
+                    q_image = QImage(frame.data, width, height, QImage.Format_Grayscale8)
+                    pixmap = QPixmap(q_image)
+                    self.signals.frame_signal.emit(pixmap)
+                    self._current_frame_number = self._frame_number
+            elif self._start:
+                
+        seqfile.close()
   
         
     
