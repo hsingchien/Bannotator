@@ -134,19 +134,22 @@ class SeqVideoSignals(QObject):
     fetch_index = Signal(object)
     run_worker = Signal(bool)
     new_frame_fetched = Signal(object)
+    progress_signal = Signal(int)
 
 class SeqBehavVideo(NorpixSeq):
     def __init__(self, filename):
         self._filename = filename
         self._file = open(filename, 'rb')
         self.header_dict = self._read_header(HEADER_FIELDS)
+        self.threadpool = QThreadPool()
+        # self.worker = Worker()
         if self.header_dict["compression_format"] == 0:
             # If the seq file is uncompressed, let pims NorpixSeq handle the file read and load
             super().__init__(filename, True)
             self._jpeg = False
         elif self.header_dict["compression_format"] == 1:
             self._jpeg = True
-            # Jpeg compression, search for frames
+            # Jpeg compression, search for frames by looking for the head and tail signatures
             if self.header_dict['version'] >= 5:  # StreamPix version 6
                 self._image_offset = 8192
                 # Timestamp = 4-byte unsigned long + 2-byte unsigned short (ms)
@@ -169,7 +172,6 @@ class SeqBehavVideo(NorpixSeq):
             raise IOError("Only uncompressed or JPEG images are supported at this point")
         self._file.close()
         self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
-        self.threadpool = QThreadPool()
         self.signals = SeqVideoSignals()
         self.signals.fetch_index.connect(self.worker.receive_read_position)
         self.signals.run_worker.connect(self.worker.receive_run_state)
@@ -191,6 +193,10 @@ class SeqBehavVideo(NorpixSeq):
             _from = end
             im_starts.append(start+self._image_offset)
             im_ends.append(end+self._image_offset+2) # The length of jpeg ending mark is 2
+            progress = len(im_ends)*100//self.header_dict["allocated_frames"]
+            if progress % 5 == 0:
+                self.signals.progress_signal.emit(progress)
+                
         return (im_starts, im_ends)
             
             
