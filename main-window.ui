@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1512</width>
-    <height>840</height>
+    <width>1366</width>
+    <height>768</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -259,8 +259,8 @@ QSlider::handle:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1512</width>
-     <height>22</height>
+     <width>1366</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuVideo">
@@ -268,6 +268,8 @@ QSlider::handle:horizontal {
      <string>Video</string>
     </property>
     <addaction name="actionOpen_video"/>
+    <addaction name="actionAdd_seq"/>
+    <addaction name="separator"/>
     <addaction name="actionRemove_video"/>
    </widget>
    <widget class="QMenu" name="menuAnnotation">
@@ -618,7 +620,7 @@ QSlider::handle:horizontal {
   </action>
   <action name="actionRemove_video">
    <property name="text">
-    <string>Remove video</string>
+    <string>Remove video/seq</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -634,6 +636,11 @@ QSlider::handle:horizontal {
   <action name="actionTips">
    <property name="text">
     <string>Tips</string>
+   </property>
+  </action>
+  <action name="actionAdd_seq">
+   <property name="text">
+    <string>Add seq</string>
    </property>
   </action>
  </widget>

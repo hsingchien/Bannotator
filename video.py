@@ -133,8 +133,9 @@ class SeqVideoSignals(QObject):
     frame_signal = Signal(object)
     fetch_index = Signal(object)
     run_worker = Signal(bool)
+    new_frame_fetched = Signal(object)
 
-class SeqBehaveVideo(NorpixSeq):
+class SeqBehavVideo(NorpixSeq):
     def __init__(self, filename):
         self._filename = filename
         self._file = open(filename, 'rb')
@@ -156,16 +157,18 @@ class SeqBehaveVideo(NorpixSeq):
                 self._image_offset = 1024
                 self._timestamp_struct = struct.Struct('<LH')
                 self._timestamp_micro = False
-                self._imstarts, self._imends = self.find_jpeg_blocks()
-                self._image_count = self.header_dict["allocated_frames"]
-                if len(self._imstarts) != self._image_count:
-                    raise IOError("Number of frames does not match header data")
-                self._width = self.header_dict['width']
-                self._height = self.header_dict['height']
+
+            self._imstarts, self._imends = self.find_jpeg_blocks()
+            self._image_count = len(self._imstarts)
+            # self._image_count = self.header_dict["allocated_frames"]
+            # if len(self._imstarts) != self._image_count:
+            #     raise IOError("Number of frames does not match header data")
+            self._width = self.header_dict['width']
+            self._height = self.header_dict['height']
         else:
             raise IOError("Only uncompressed or JPEG images are supported at this point")
         self._file.close()
-        self.worker = SeqVideoWorker(self._filename, self._jpeg)
+        self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
         self.threadpool = QThreadPool()
         self.signals = SeqVideoSignals()
         self.signals.fetch_index.connect(self.worker.receive_read_position)
@@ -183,29 +186,39 @@ class SeqBehaveVideo(NorpixSeq):
             start = imdata.find(jpg_byte_start, _from)
             if start < 0:
                 break
+            _from = start
             end = imdata.find(jpg_byte_end, _from)
             _from = end
             im_starts.append(start+self._image_offset)
-            im_ends.append(end+self._image_offset)
+            im_ends.append(end+self._image_offset+2) # The length of jpeg ending mark is 2
         return (im_starts, im_ends)
             
             
     def emit_new_frame(self, new_frame):
-        self.signals.frame_signal.emit(new_frame)
+        self.signals.new_frame_fetched.emit(new_frame)
              
-    def get_frame(self, i):
+    def get_pixmap(self, i):
         if self._jpeg:
             this_start = self._imstarts[i]
             this_end = self._imends[i]
             next_start = None # Edit this
         else:
-            this_start = self._image_block_size*i
-            this_end = this_start + self._image_block_size
+            this_start = self._image_block_size*i+self._image_offset
+            this_end = this_start + self._image_block_size+self._image_offset
             next_start = None
         
         self.signals.fetch_index.emit((this_start,this_end,next_start))
 
-                 
+    def stop_worker(self):
+        self.signals.run_worker.emit(False)
+        self.threadpool.waitForDone()
+        self.threadpool.clear()
+
+    def num_frame(self):
+        return self._image_count
+
+    def frame_rate(self):
+        return self.header_dict["suggested_frame_rate"]        
     
     def header(self):
         return self.header_dict
@@ -219,10 +232,11 @@ class SeqVideoWorker(QRunnable):
     def receive_run_state(self, running:bool):
         self._run = running
 
-    def __init__(self, url, _jpeg):
-        super(VideoWorker, self).__init__()
+    def __init__(self, url, _jpeg, header):
+        super(SeqVideoWorker, self).__init__()
         self._url = url
         self._jpeg = _jpeg
+        self.header = header
         self.signals = SeqVideoSignals()
         self._start = None
         self._end = None
@@ -237,18 +251,29 @@ class SeqVideoWorker(QRunnable):
             if self._start is not None and self._jpeg:
                 # Set the current frame position to the requested frame
                 seqfile.seek(self._start)
-                imdata = seqfile.read()
+                imdata = seqfile.read(self._end-self._start)
                 # Read the frame
                 jpg_image = bytearray()
-                jpg_image += imdata[self._start:self._end+1]
+                jpg_image += imdata
                 if self._current_start != self._start:
-                    frame = np.asarray(cv2.imdecode(jpg_image, 0))
-                    height, width, _ = frame.shape
+                    frame = np.asarray(jpg_image, dtype="uint8")
+                    frame = cv2.imdecode(frame, 0)
+                    height, width = frame.shape
                     q_image = QImage(frame.data, width, height, QImage.Format_Grayscale8)
                     pixmap = QPixmap(q_image)
                     self.signals.frame_signal.emit(pixmap)
-                    self._current_frame_number = self._frame_number
-            elif self._start:
+                    self._current_start = self._start
+            elif self._start is not None:
+                seqfile.seek(self._start)
+                if self._current_start != self._start:
+                    _pixel_type = "uint8"
+                    _pixel_count = self.header["image_size_bytes"]
+                    _shape = (self.header["height"], int(_pixel_count/self.header["height"]))
+                    frame = np.fromfile(seqfile,_pixel_type,_pixel_count).reshape(_shape)
+                    q_image = QImage(frame.data, _shape[1], _shape[0],QImage.Format_Grayscale8)
+                    pixmap = QPixmap(q_image)
+                    self.signals.frame_signal.emit(pixmap)
+                    self._current_start = self._start
                 
         seqfile.close()
   

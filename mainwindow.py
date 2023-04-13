@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
 from state import GuiState
-from video import BehavVideo
+from video import BehavVideo, SeqBehavVideo
 from data import Annotation
 from dataview import (
     BehaviorTableModel,
@@ -61,6 +61,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
+        self.actionAdd_seq.triggered.connect(self.add_seq)
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
         self.actionSave_annotation.triggered.connect(self.save_annotation)
         self.actionSave_config.triggered.connect(self.save_config)
@@ -265,6 +266,48 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
+    def add_seq(self):
+        fileDialog = QFileDialog()
+        fileDialog.setFileMode(QFileDialog.ExistingFile)
+        video_path, _ = fileDialog.getOpenFileName(
+            self,
+            caption="Open single seq behavior video",
+            filter="Video files (*.seq)",
+        )
+        if not video_path:
+            return False
+        bvideo = SeqBehavVideo(video_path)
+        self.vids.append(bvideo)
+        self.state["video"] += 1
+        if self.state["video"] == 1:
+            bvideo.signals.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
+            self.state["FPS"] = bvideo.frame_rate()
+        else:
+            new_view = BehavVideoView()
+            bvideo.signals.new_frame_fetched.connect(new_view.updatePixmap)
+            self.vid_views.append(new_view)
+            if self.state["video_layout"] != "Grid":
+                self.video_layout.addWidget(new_view)
+            else:
+                n_row = np.floor(np.sqrt(self.state["video"]))
+                n_col = np.ceil(self.state["video"] / n_row)
+                if (
+                    n_row == self.video_layout.rowCount()
+                    and n_col == self.video_layout.columnCount()
+                ):
+                    self.video_layout.addWidget(
+                        new_view,
+                        (self.state["video"] - 1) // n_col,
+                        (self.state["video"] - 1) % n_col,
+                    )
+                else:
+                    # Rebuild the gridlayout
+                    self.update_gui(["video_layout"])
+            new_view.show()
+
+        self.video_slider.setMinimum(1)
+        self.curframe_spinBox.setMinimum(1)
+
     def open_annotation(self):
         fileDialog = QFileDialog()
         fileDialog.setFileMode(QFileDialog.ExistingFile)
@@ -355,7 +398,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         videos = self.vids
         if videos:
             for video in videos:
-                video.get_pixmap(frameN)
+                video.get_pixmap(int(frameN))
             return True
         else:
             return False
