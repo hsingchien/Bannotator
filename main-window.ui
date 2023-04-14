@@ -260,7 +260,7 @@ QSlider::handle:horizontal {
      <x>0</x>
      <y>0</y>
      <width>1366</width>
-     <height>22</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuVideo">
@@ -306,6 +306,8 @@ QSlider::handle:horizontal {
     <addaction name="actionFull_annotation"/>
     <addaction name="actionBehavior_table"/>
     <addaction name="actionEpoch_table"/>
+    <addaction name="separator"/>
+    <addaction name="actionTrack_epoch"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuVideo"/>
@@ -645,6 +647,17 @@ QSlider::handle:horizontal {
   <action name="actionAdd_seq">
    <property name="text">
     <string>Add seq</string>
+   </property>
+  </action>
+  <action name="actionTrack_epoch">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Track epoch</string>
    </property>
   </action>
  </widget>

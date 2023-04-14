@@ -60,6 +60,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.curframe_spinBox.valueChanged.connect(self.set_frame)
         self.track_window_spinbox.valueChanged.connect(self.set_track_window)
         self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
+
         # Connect menu bar actions
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionAdd_seq.triggered.connect(self.add_seq)
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 lambda: self.update_gui(["video_ui"]),
             ],
         )
+
         self.state.connect(
             "track_window",
             [self.update_slider_box],
@@ -380,6 +382,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stream_labels[ID] = behav_label
             self.state.connect("current_frame", stream.get_behavior_by_idx)
             stream.cur_behavior_name.connect(behav_label.set_behavior)
+            # Connect video slider and frame spinbox to the stream to track the current epoch
+            self.state.connect("current_frame", stream.get_epoch_by_idx)
+            stream.get_epoch_by_idx(self.state["current_frame"])
 
         self.update_slider_box()
         self.plot_tracks()

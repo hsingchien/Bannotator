@@ -13,6 +13,8 @@ import re
 
 
 class GenericTableModel(QAbstractTableModel):
+    activated_row_changed = QtCore.Signal(int)
+
     def __init__(
         self,
         items: Optional[list] = None,
@@ -72,10 +74,10 @@ class GenericTableModel(QAbstractTableModel):
 
         return None
 
-    def get_item_index(self, target, prop):
+    def get_item_index(self, target):
         # Return row number of the target item
         for i, item in enumerate(self.item_list):
-            if item[prop] is target:
+            if item is target:
                 return i
         return None
 
@@ -176,6 +178,7 @@ class StreamTableModel(GenericTableModel):
     def __init__(self, stream: Stream = None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.stream = stream
+        stream.cur_epoch.connect(self.set_activated_epoch)
         self.item_list = stream.get_epochs()
 
     def headerData(self, idx: int, orientation: Qt.Orientation, role=Qt.DisplayRole):
@@ -197,6 +200,19 @@ class StreamTableModel(GenericTableModel):
                 return None
         return None
 
+    def set_activated_epoch(self, epoch):
+        cur_epoch_idx = self.get_item_index(epoch)
+        if cur_epoch_idx != self._activated_index:
+            self._activated_index = cur_epoch_idx
+            self.activated_row_changed.emit(cur_epoch_idx)
+
+    def data(self, index, role):
+        row_idx = index.row()
+        if role == Qt.BackgroundRole and row_idx == self._activated_index:
+            return QtGui.QBrush(QtGui.QColor(250, 220, 180))
+        else:
+            return super().data(index, role)
+
 
 class GenericTableView(QTableView):
     def __init__(self, *args, **kwargs):
@@ -211,6 +227,10 @@ class GenericTableView(QTableView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         # self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.installEventFilter(self)
+
+    def setModel(self, model) -> None:
+        model.activated_row_changed.connect(self.scroll_to_idx)
+        return super().setModel(model)
 
     def getSelectedRowItem(self):
         idx = self.currentIndex()
@@ -227,3 +247,9 @@ class GenericTableView(QTableView):
         for column in columns:
             self.horizontalHeader().setSectionResizeMode(column, QHeaderView.Fixed)
         self.resizeColumnsToContents()
+
+    def scroll_to_idx(self, idx):
+        if idx is not None:
+            self.scrollTo(self.model().index(idx, 0), QAbstractItemView.EnsureVisible)
+            self.repaint_table()
+        return True

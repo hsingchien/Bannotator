@@ -207,8 +207,10 @@ class Stream(QtCore.QObject):
     data_changed = QtCore.Signal(object)
     # Color changed signal, emit updated color dictionary
     color_changed = QtCore.Signal(object)
-    # Behavior signal, link to the behavior label
+    # Current behavior signal, link to the behavior label
     cur_behavior_name = QtCore.Signal(object)
+    # Current epoch signal, link to the stream table highlight and scrolling
+    cur_epoch = QtCore.Signal(object)
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -315,7 +317,7 @@ class Stream(QtCore.QObject):
     def get_epochs(self):
         return self.epochs
 
-    def get_epoch_by_idx(self, idx: int):
+    def get_epoch_by_idx(self, idx: int, allow_emit=True):
         # Index is frame index, start from 0
         idx = idx + 1
         epochs = self.epochs
@@ -330,10 +332,12 @@ class Stream(QtCore.QObject):
             elif epoch.end < idx:
                 epochs = epochs[int(1 / 2 * len(epochs)) : len(epochs)]
                 epoch = epochs[int(1 / 2 * len(epochs))]
+        if allow_emit:
+            self.cur_epoch.emit(epoch)
         return epoch
-    
-    def get_behavior_by_idx(self, idx:int):
-        epoch = self.get_epoch_by_idx(idx)
+
+    def get_behavior_by_idx(self, idx: int):
+        epoch = self.get_epoch_by_idx(idx, False)
         self.cur_behavior_name.emit(epoch.get_behavior())
         return epoch.get_behavior()
 
@@ -570,7 +574,7 @@ class Annotation(QtCore.QObject):
             for epoch in stream.get_epochs():
                 lines.append(
                     "   \t"
-                    + "\t".join([str(epoch.start),str(epoch.end),epoch.name])
+                    + "\t".join([str(epoch.start), str(epoch.end), epoch.name])
                     + "\n"
                 )
             lines.append("  \n")
