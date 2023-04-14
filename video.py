@@ -81,6 +81,8 @@ class VideoWorker(QRunnable):
 
         while self._run:
             if self._frame_number is not None :
+                print(f"requested {self._frame_number}")
+                print(f"fulfilled {self._current_frame_number}")
                 cap.set(cv2.CAP_PROP_POS_FRAMES, self._frame_number)
                 # Read the frame
                 ret, frame = cap.read()

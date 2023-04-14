@@ -374,6 +374,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             stream.data_changed.connect(stream_table_view.repaint_table)
             self.stream_tables[ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
+            stream_table.jump_to_frame.connect(
+                lambda x: self.state.set("current_frame", x)
+            )
             # Create behavior label, add to the full track widget
             behav_label = BehavLabel(
                 behav=stream.get_behavior_by_idx(self.state["current_frame"]),

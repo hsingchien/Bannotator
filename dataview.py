@@ -175,6 +175,7 @@ class StatsTableModel(GenericTableModel):
 
 
 class StreamTableModel(GenericTableModel):
+    jump_to_frame = QtCore.Signal(int)
     def __init__(self, stream: Stream = None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.stream = stream
@@ -204,6 +205,7 @@ class StreamTableModel(GenericTableModel):
         cur_epoch_idx = self.get_item_index(epoch)
         if cur_epoch_idx != self._activated_index:
             self._activated_index = cur_epoch_idx
+            # Emit signal to scroll to make sure visible
             self.activated_row_changed.emit(cur_epoch_idx)
 
     def data(self, index, role):
@@ -212,12 +214,22 @@ class StreamTableModel(GenericTableModel):
             return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         else:
             return super().data(index, role)
+    
+    def set_activated_row(self, row_idx):
+        if self._activated_index != row_idx:
+            cur_epoch = self.item_list[row_idx]
+            self._activated_index = row_idx
+            # Connect to scroll to make sure visible (may not be necessary)
+            self.activated_row_changed.emit(row_idx)
+            # Connect to set the current frame to the start of this epoch
+            self.jump_to_frame.emit(cur_epoch.start-1)
+
 
 
 class GenericTableView(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         header_view = QHeaderView(Qt.Horizontal, self)
         header_view.setSectionsClickable(False)
@@ -225,8 +237,7 @@ class GenericTableView(QTableView):
         super().setHorizontalHeader(header_view)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.SizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.installEventFilter(self)
+        self.doubleClicked.connect(self.activate_selected)
 
     def setModel(self, model) -> None:
         model.activated_row_changed.connect(self.scroll_to_idx)
@@ -253,3 +264,9 @@ class GenericTableView(QTableView):
             self.scrollTo(self.model().index(idx, 0), QAbstractItemView.EnsureVisible)
             self.repaint_table()
         return True
+
+    def activate_selected(self):
+        idx = self.currentIndex().row()
+        self.model().set_activated_row(idx)
+        self.selectionModel().clear()
+        
