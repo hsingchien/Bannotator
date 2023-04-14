@@ -406,6 +406,7 @@ class Ui_MainWindow(object):
 
         self.cur_behav_layout = QHBoxLayout()
         self.cur_behav_layout.setObjectName(u"cur_behav_layout")
+        self.cur_behav_layout.setContentsMargins(10, -1, 10, -1)
 
         self.verticalLayout_5.addLayout(self.cur_behav_layout)
 

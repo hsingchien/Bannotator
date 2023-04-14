@@ -537,7 +537,14 @@ QSlider::handle:horizontal {
       <layout class="QVBoxLayout" name="full_tracks_layout"/>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="cur_behav_layout"/>
+      <layout class="QHBoxLayout" name="cur_behav_layout">
+       <property name="leftMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>10</number>
+       </property>
+      </layout>
      </item>
     </layout>
    </widget>
