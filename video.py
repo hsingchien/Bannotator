@@ -142,6 +142,7 @@ class SeqBehavVideo(NorpixSeq):
         self._file = open(filename, 'rb')
         self.header_dict = self._read_header(HEADER_FIELDS)
         self.threadpool = QThreadPool()
+        self.signals = SeqVideoSignals()
         # self.worker = Worker()
         if self.header_dict["compression_format"] == 0:
             # If the seq file is uncompressed, let pims NorpixSeq handle the file read and load
@@ -150,29 +151,19 @@ class SeqBehavVideo(NorpixSeq):
         elif self.header_dict["compression_format"] == 1:
             self._jpeg = True
             # Jpeg compression, search for frames by looking for the head and tail signatures
-            if self.header_dict['version'] >= 5:  # StreamPix version 6
-                self._image_offset = 8192
-                # Timestamp = 4-byte unsigned long + 2-byte unsigned short (ms)
-                #   + 2-byte unsigned short (us)
-                self._timestamp_struct = struct.Struct('<LHH')
-                self._timestamp_micro = True
-            else:  # Older versions
-                self._image_offset = 1024
-                self._timestamp_struct = struct.Struct('<LH')
-                self._timestamp_micro = False
-
+            self._image_offset = 1024
+            self._timestamp_struct = struct.Struct('<LH')
+            self._timestamp_micro = False
             self._imstarts, self._imends = self.find_jpeg_blocks()
-            self._image_count = len(self._imstarts)
-            # self._image_count = self.header_dict["allocated_frames"]
-            # if len(self._imstarts) != self._image_count:
-            #     raise IOError("Number of frames does not match header data")
+            self._image_count = self.header_dict["allocated_frames"]
+            if len(self._imstarts) != self._image_count:
+                raise IOError("Number of frames does not match header data")
             self._width = self.header_dict['width']
             self._height = self.header_dict['height']
         else:
             raise IOError("Only uncompressed or JPEG images are supported at this point")
         self._file.close()
         self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
-        self.signals = SeqVideoSignals()
         self.signals.fetch_index.connect(self.worker.receive_read_position)
         self.signals.run_worker.connect(self.worker.receive_run_state)
         self.worker.signals.frame_signal.connect(self.emit_new_frame)
@@ -189,14 +180,13 @@ class SeqBehavVideo(NorpixSeq):
             if start < 0:
                 break
             _from = start
-            end = imdata.find(jpg_byte_end, _from)
+            end = imdata.find(jpg_byte_end,_from)
             _from = end
             im_starts.append(start+self._image_offset)
-            im_ends.append(end+self._image_offset+2) # The length of jpeg ending mark is 2
-            progress = len(im_ends)*100//self.header_dict["allocated_frames"]
-            if progress % 5 == 0:
-                self.signals.progress_signal.emit(progress)
-                
+            im_ends.append(end+2+self._image_offset) 
+            # The length of jpeg ending mark is 2
+            progress = round(len(im_ends)*100/self.header_dict["allocated_frames"],2)
+            print(f"Finding frames: {progress}%", end="\r") 
         return (im_starts, im_ends)
             
             
@@ -207,7 +197,7 @@ class SeqBehavVideo(NorpixSeq):
         if self._jpeg:
             this_start = self._imstarts[i]
             this_end = self._imends[i]
-            next_start = None # Edit this
+            next_start = None # Edit this for time stamp
         else:
             this_start = self._image_block_size*i+self._image_offset
             this_end = this_start + self._image_block_size+self._image_offset
@@ -228,7 +218,6 @@ class SeqBehavVideo(NorpixSeq):
     
     def header(self):
         return self.header_dict
-        
             
 class SeqVideoWorker(QRunnable):
     @Slot()
@@ -282,8 +271,7 @@ class SeqVideoWorker(QRunnable):
                     self._current_start = self._start
                 
         seqfile.close()
-  
-        
+
     
     
             

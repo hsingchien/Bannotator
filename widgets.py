@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (
     QGraphicsPixmapItem,
     QGraphicsView,
     QGraphicsScene,
-    QDockWidget
+    QDockWidget,
 )
 from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QBrush
 from PySide6.QtCore import Slot, QSize, Qt, QEvent, Signal, QRect
@@ -166,6 +166,7 @@ class TrackBar(QWidget):
         parent=None,
     ):
         super().__init__(parent)
+        self.setMinimumHeight(8)
         self.full_data = data
         self.color_dict = color_dict
         self.selected = False
@@ -345,8 +346,10 @@ class TrackBar(QWidget):
 
         return super().resizeEvent(event)
 
+
 class DockWidget(QDockWidget):
     closed = Signal(bool)
+
     def closeEvent(self, event):
         super().closeEvent(event)
         self.closed.emit(False)

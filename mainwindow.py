@@ -267,6 +267,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.curframe_spinBox.setMinimum(1)
 
     def add_seq(self):
+        self.statusbar.showMessage(
+            "Opening .seq file. If this file is compressed (jpeg), it may take a few minutes...",
+            0,
+        )
         fileDialog = QFileDialog()
         fileDialog.setFileMode(QFileDialog.ExistingFile)
         video_path, _ = fileDialog.getOpenFileName(
@@ -276,6 +280,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
         if not video_path:
             return False
+        self.statusbar.clearMessage()
         bvideo = SeqBehavVideo(video_path)
         self.vids.append(bvideo)
         self.state["video"] += 1
@@ -470,7 +475,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.state.connect("slider_box", track.set_slider_box)
             self.track_layout.addWidget(track)
             # Make full length track widgets
-            self.tracks_dock.resize(self.width(), 100)
             full_track = TrackBar(
                 stream_vect,
                 color_dict,
