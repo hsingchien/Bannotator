@@ -281,7 +281,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not video_path:
             return False
         self.statusbar.clearMessage()
-        bvideo = SeqBehavVideo(video_path)
+        bvideo = SeqBehavVideo(video_path, self.statusbar)
+        bvideo.signals.run_worker.connect(
+            lambda: self.go_to_frame(self.state["current_frame"])
+        )
         self.vids.append(bvideo)
         self.state["video"] += 1
         if self.state["video"] == 1:
