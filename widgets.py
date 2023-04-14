@@ -10,8 +10,8 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QDockWidget,
 )
-from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QBrush
-from PySide6.QtCore import Slot, QSize, Qt, QEvent, Signal, QRect
+from PySide6.QtGui import QPainter, QPen, QPixmap, QColor
+from PySide6.QtCore import Slot, QSize, Qt, Signal, QRect
 import numpy as np
 from typing import Dict
 
@@ -47,15 +47,6 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps * self.step_ratio)
         else:
             return super().stepBy(steps)
-
-    def event(self, event):
-        if event.type() == QEvent.KeyPress and event.key() in range(
-            Qt.Key_0, Qt.Key_9 + 1
-        ):
-            return True
-        else:
-            return super().event(event)
-
 
 class VideoSlider(QSlider):
     @Slot(int, int)
