@@ -9,8 +9,9 @@ from PySide6.QtWidgets import (
     QGraphicsView,
     QGraphicsScene,
     QDockWidget,
+    QLabel,
 )
-from PySide6.QtGui import QPainter, QPen, QPixmap, QColor
+from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont
 from PySide6.QtCore import Slot, QSize, Qt, Signal, QRect
 import numpy as np
 from typing import Dict
@@ -47,6 +48,7 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps * self.step_ratio)
         else:
             return super().stepBy(steps)
+
 
 class VideoSlider(QSlider):
     @Slot(int, int)
@@ -418,3 +420,30 @@ class BehavVideoView(QGraphicsView):
 
     def fitPixItem(self):
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
+
+
+class BehavLabel(QLabel):
+    def __init__(self, behav=None):
+        super().__init__()
+        self.setAlignment(Qt.AlignCenter)
+        self.setFont(QFont("Helvetica [Cronyx]", 12, QFont.Bold))
+        self._selected = False
+        self.behavior = behav
+        self.update_text()
+
+    @Slot()
+    def set_behavior(self, new_behavior):
+        self.behavior = new_behavior
+        self.update_text()
+
+    def set_selected(self, selected):
+        self._selected = selected
+        self.update_text()
+
+    def update_text(self):
+        if self._selected:
+            bname = "[" + self.behavior.name + "]"
+        else:
+            bname = self.behavior.name
+        self.setText(bname)
+        self.setStyleSheet("color: {0}".format(self.behavior.color))

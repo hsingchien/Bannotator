@@ -207,6 +207,8 @@ class Stream(QtCore.QObject):
     data_changed = QtCore.Signal(object)
     # Color changed signal, emit updated color dictionary
     color_changed = QtCore.Signal(object)
+    # Behavior signal, link to the behavior label
+    cur_behavior_name = QtCore.Signal(object)
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -329,6 +331,11 @@ class Stream(QtCore.QObject):
                 epochs = epochs[int(1 / 2 * len(epochs)) : len(epochs)]
                 epoch = epochs[int(1 / 2 * len(epochs))]
         return epoch
+    
+    def get_behavior_by_idx(self, idx:int):
+        epoch = self.get_epoch_by_idx(idx)
+        self.cur_behavior_name.emit(epoch.get_behavior())
+        return epoch.get_behavior()
 
     def get_length(self):
         if self.epochs:

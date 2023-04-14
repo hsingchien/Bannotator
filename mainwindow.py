@@ -17,7 +17,7 @@ from dataview import (
     GenericTableView,
     StatsTableModel,
 )
-from widgets import TrackBar, BehavVideoView
+from widgets import TrackBar, BehavVideoView, BehavLabel
 import numpy as np
 
 
@@ -40,6 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Container for dynamically generated widgets
         self.tracks = dict()
         self.full_tracks = dict()
+        self.stream_labels = dict()
         # Key = ID, item = TrackBar widget
         self.stream_tables = dict()
         # Key = ID, item = stream table model
@@ -113,11 +114,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.state["slider_box"][0] + 1, self.state["slider_box"][1] + 1
                 )  # "slider_box" index from 0, video_slider index from 1
         if "tracks" in topics:
+            # Update tracks highlight and behavior label (selected with a bracket)
             for _, stream in self.state["annot"].get_streams().items():
                 if self.state["current_stream"] is stream:
                     self.tracks[stream.ID].set_selected(True)
+                    self.stream_labels[stream.ID].set_selected(True)
                 else:
                     self.tracks[stream.ID].set_selected(False)
+                    self.stream_labels[stream.ID].set_selected(False)
             # Update background of the slider to be the current stream
             self.video_slider.set_color_track(
                 self.state["current_stream"].get_stream_vect(),
@@ -368,8 +372,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             stream.data_changed.connect(stream_table_view.repaint_table)
             self.stream_tables[ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
+            # Create behavior label, add to the full track widget
+            behav_label = BehavLabel(
+                behav=stream.get_behavior_by_idx(self.state["current_frame"]),
+            )
+            self.cur_behav_layout.addWidget(behav_label)
+            self.stream_labels[ID] = behav_label
+            self.state.connect("current_frame", stream.get_behavior_by_idx)
+            stream.cur_behavior_name.connect(behav_label.set_behavior)
+
         self.update_slider_box()
         self.plot_tracks()
+
         # Set the first stream as current stream
         IDs = sorted(list(streams.keys()))
         self.state["current_stream"] = streams[IDs[0]]
@@ -451,7 +465,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return True
 
     def plot_tracks(self):
-        this_start, this_end = self.state["slider_box"]
         annot = self.state["annot"]
         streams = annot.get_streams()
         # Generate tracks for streams

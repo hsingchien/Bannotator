@@ -395,14 +395,19 @@ class Ui_MainWindow(object):
         self.tracks_dock.setAllowedAreas(Qt.BottomDockWidgetArea|Qt.TopDockWidgetArea)
         self.dockWidgetContents_4 = QWidget()
         self.dockWidgetContents_4.setObjectName(u"dockWidgetContents_4")
-        self.horizontalLayout_5 = QHBoxLayout(self.dockWidgetContents_4)
-        self.horizontalLayout_5.setSpacing(3)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(-1, 2, -1, 2)
+        self.verticalLayout_5 = QVBoxLayout(self.dockWidgetContents_4)
+        self.verticalLayout_5.setSpacing(3)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(-1, 2, -1, 2)
         self.full_tracks_layout = QVBoxLayout()
         self.full_tracks_layout.setObjectName(u"full_tracks_layout")
 
-        self.horizontalLayout_5.addLayout(self.full_tracks_layout)
+        self.verticalLayout_5.addLayout(self.full_tracks_layout)
+
+        self.cur_behav_layout = QHBoxLayout()
+        self.cur_behav_layout.setObjectName(u"cur_behav_layout")
+
+        self.verticalLayout_5.addLayout(self.cur_behav_layout)
 
         self.tracks_dock.setWidget(self.dockWidgetContents_4)
         MainWindow.addDockWidget(Qt.TopDockWidgetArea, self.tracks_dock)
