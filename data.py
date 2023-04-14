@@ -525,7 +525,7 @@ class Annotation(QtCore.QObject):
     def save_to_file(self, filename):
         try:
             with open(filename, "w") as f:
-                f.write("Behavior Annotator - Annotation File\n")
+                f.write("Caltech Behavior Annotator - Annotation File\n")
                 f.write("\nConfiguration file:\n")
                 self.write_behavior(f)
                 f.write("\n")
@@ -558,16 +558,12 @@ class Annotation(QtCore.QObject):
         lines = []
         for _, stream in self.streams.items():
             lines.append("S" + str(stream.ID) + ":\tstart\tend\ttype\n")
-            lines.append("-" * 25 + "\n")
+            lines.append("-" * 29 + "\n")
             stream.sort_epoch()
             for epoch in stream.get_epochs():
                 lines.append(
                     "   \t"
-                    + str(epoch.start)
-                    + "\t"
-                    + str(epoch.end)
-                    + "\t"
-                    + epoch.name
+                    + "\t".join([str(epoch.start),str(epoch.end),epoch.name])
                     + "\n"
                 )
             lines.append("  \n")
