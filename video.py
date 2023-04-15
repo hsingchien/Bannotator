@@ -12,8 +12,6 @@ class BehavVideo(QObject):
     
     @Slot()
     def emit_new_frame(self,new_frame):
-        frame_n,_ = new_frame
-        print(f"emitted from video obj {frame_n}")
         self.new_frame_fetched.emit(new_frame)
         
     def __init__(self, video_path) -> None:
@@ -73,7 +71,8 @@ class VideoWorker(QRunnable):
         self.signals = VideoSignals()
         self._frame_number = 0
         self._run = True
-        self._current_frame_number = None
+        self._current_frame_number = 0
+        
     @Slot()
     def run(self):
         cap = cv2.VideoCapture(self.url)
@@ -88,15 +87,15 @@ class VideoWorker(QRunnable):
                 cap.set(cv2.CAP_PROP_POS_FRAMES, self._frame_number)
                 # Read the frame
                 ret, frame = cap.read()
-                if ret and self._frame_number != self._current_frame_number:
+                # if ret and self._frame_number != self._current_frame_number:
+                if ret:
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     height, width, _ = frame.shape
                     bytes_per_line = 3*width
                     q_image = QImage(frame.data, width, height, bytes_per_line,QImage.Format_RGB888)
                     pixmap = QPixmap.fromImage(q_image)
-                    self.signals.frame_signal.emit((self._frame_number,pixmap))
-                    print(f"emited from runnable {self._frame_number}, {pixmap}")
-                    self._current_frame_number = self._frame_number
+                    self.signals.frame_signal.emit(pixmap)
+                    # self._current_frame_number = self._frame_number
         cap.release()
 
 

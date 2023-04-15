@@ -407,17 +407,11 @@ class BehavVideoView(QGraphicsView):
         self.pixItem = QGraphicsPixmapItem()
         self.scene().addItem(self.pixItem)
         self.scene().sceneRectChanged.connect(self.fitPixItem)
-        self.scene().changed.connect(lambda: print("scene changed"))
 
     @Slot()
     def updatePixmap(self, new_pixmap):
-        frame_n, new_pixmap = new_pixmap
-
-        if isinstance(new_pixmap, QPixmap):
-            self.pixItem.setPixmap(new_pixmap)
-            self.frame_updated.emit()
-            self.update()
-            print(f"updated frame {frame_n},{new_pixmap}")
+        self.pixItem.setPixmap(new_pixmap)
+        self.frame_updated.emit()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
