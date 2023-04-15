@@ -413,6 +413,8 @@ class BehavVideoView(QGraphicsView):
         if isinstance(new_pixmap, QPixmap):
             self.pixItem.setPixmap(new_pixmap)
             self.frame_updated.emit()
+            self.scene().update()
+            print("updated")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

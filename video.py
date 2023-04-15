@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import struct
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtCore import QRunnable, Signal, Slot, QObject, QThreadPool
+from PySide6.QtCore import QRunnable, Signal, Slot, QObject, QThreadPool, Qt
 from pims.norpix_reader import NorpixSeq
 
 class BehavVideo(QObject):
@@ -69,9 +69,9 @@ class VideoWorker(QRunnable):
         super(VideoWorker, self).__init__()
         self.url = url
         self.signals = VideoSignals()
-        self._frame_number = None
+        self._frame_number = 0
         self._run = True
-        self._current_frame_number = -10
+        self._current_frame_number = None
     @Slot()
     def run(self):
         cap = cv2.VideoCapture(self.url)
@@ -81,8 +81,8 @@ class VideoWorker(QRunnable):
 
         while self._run:
             if self._frame_number is not None :
-                print(f"requested {self._frame_number}")
-                print(f"fulfilled {self._current_frame_number}")
+                # print(f"requested {self._frame_number}")
+                # print(f"fulfilled {self._current_frame_number}")
                 cap.set(cv2.CAP_PROP_POS_FRAMES, self._frame_number)
                 # Read the frame
                 ret, frame = cap.read()
@@ -93,6 +93,7 @@ class VideoWorker(QRunnable):
                     q_image = QImage(frame.data, width, height, bytes_per_line,QImage.Format_RGB888)
                     pixmap = QPixmap.fromImage(q_image)
                     self.signals.frame_signal.emit(pixmap)
+                    print("emited")
                     self._current_frame_number = self._frame_number
         cap.release()
 
@@ -272,7 +273,7 @@ class SeqVideoWorker(QRunnable):
         self._end = None
         self._next_start = None
         self._run = True
-        self._current_start = -10
+        self._current_start = None
     @Slot()
     def run(self):
         seqfile = open(self._url, "rb")
