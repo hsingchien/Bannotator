@@ -1,4 +1,5 @@
 from PySide6.QtWidgets import (
+    QMainWindow,
     QDoubleSpinBox,
     QTabWidget,
     QWidget,
@@ -446,3 +447,12 @@ class BehavLabel(QLabel):
             bname = self.behavior.name
         self.setText(bname)
         self.setStyleSheet("color: {0}".format(self.behavior.color))
+
+
+class AnnotatorMainWindow(QMainWindow):
+    def __init__(self, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.setCorner(Qt.TopLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
+        self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
+        self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)

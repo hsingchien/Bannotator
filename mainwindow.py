@@ -17,11 +17,11 @@ from dataview import (
     GenericTableView,
     StatsTableModel,
 )
-from widgets import TrackBar, BehavVideoView, BehavLabel
+from widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
 
 
-class MainWindow(QMainWindow, Ui_MainWindow):
+class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
