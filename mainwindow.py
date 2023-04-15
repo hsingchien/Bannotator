@@ -56,9 +56,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
         self.speed_doubleSpinBox.valueChanged.connect(self.set_play_speed)
-        self.video_slider.valueChanged.connect(self.set_frame)
-        self.curframe_spinBox.valueChanged.connect(self.set_frame)
-        self.track_window_spinbox.valueChanged.connect(self.set_track_window)
+        self.video_slider.valueChanged.connect(
+            lambda x: self.state.set("current_frame", x - 1)
+        )
+        self.curframe_spinBox.valueChanged.connect(
+            lambda x: self.state.set("current_frame", x - 1)
+        )
+        self.track_window_spinbox.valueChanged.connect(
+            lambda x: self.state.set("track_window", x)
+        )
         self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
 
         # Connect menu bar actions
@@ -199,10 +205,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.behav_table_dock.setVisible(self.actionBehavior_table.isChecked())
             self.epoch_dock.setVisible(self.actionEpoch_table.isChecked())
             self.tracks_dock.setVisible(self.actionFull_annotation.isChecked())
-
-    def set_frame(self, frameN):
-        # Called by frame slider and spinbox
-        self.state["current_frame"] = frameN - 1
 
     def set_track_window(self, value):
         self.state["track_window"] = value
