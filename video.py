@@ -3,7 +3,7 @@ import numpy as np
 import struct
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QRunnable, Signal, Slot, QObject, QThreadPool, QThread, QTimer
-from pims.norpix_reader import NorpixSeq
+
 
 class BehavVideo(QObject):
     fetch_frame_number = Signal(object)
@@ -28,8 +28,8 @@ class BehavVideo(QObject):
         self.fetch_frame_number.connect(self.worker.receive_frame_number)
         # Run/Stop worker
         self.run_worker.connect(self.worker.receive_run_state)
-        # Worker send fram through frame_signal, connect it to the self signal to the mainwindow
-        self.worker.signals.frame_signal.connect(self.emit_new_frame)
+        # Worker send fram through result_signal, connect it to the self signal to the mainwindow
+        self.worker.signals.result_signal.connect(self.emit_new_frame)
         # A gate keeper for fetcher thread emitting, to avoid fetcher taking too much resource
         self.request_fetch.connect(self.worker.request_emit)
         # Use a timer to periodically request emission
@@ -61,13 +61,10 @@ class BehavVideo(QObject):
         self.threadpool.clear()
 
 class VideoSignals(QObject):
-    frame_signal = Signal(object)
-    fetch_index = Signal(object)
-    run_worker = Signal(bool)
-    new_frame_fetched = Signal(object)
+    result_signal = Signal(object)
     progress_signal = Signal(int)
     finished_signal = Signal()
-    request_fetch = Signal()
+    
     
 class VideoWorker(QRunnable):
     @Slot()
@@ -106,7 +103,7 @@ class VideoWorker(QRunnable):
                     bytes_per_line = 3*width
                     q_image = QImage(frame.data, width, height, bytes_per_line,QImage.Format_RGB888)
                     pixmap = QPixmap.fromImage(q_image)
-                    self.signals.frame_signal.emit(pixmap)
+                    self.signals.result_signal.emit(pixmap)
                     # self._current_frame_number = self._frame_number
                     self._emit_flag = False
                 else:
@@ -156,19 +153,30 @@ jpg_byte_end = b'\xff\xd9'
 
     
 
-class SeqBehavVideo(NorpixSeq):
-    def __init__(self, filename, outlet=None):
+class SeqBehavVideo(QObject):
+    finished_signal = Signal()
+    fetch_index = Signal(object)
+    run_worker = Signal(bool)
+    request_fetch = Signal()
+    new_frame_fetched = Signal(object)
+    
+    def __init__(self, filename, outlet=None, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
         self.outlet = outlet
         self._filename = filename
         self._file = open(filename, 'rb')
-        self.header_dict = self._read_header(HEADER_FIELDS)
+        self.header_dict = self.read_header(HEADER_FIELDS)
+        self._frame_num = self.header_dict["allocated_frames"]
+        self._width = self.header_dict['width']
+        self._height = self.header_dict['height']
         self.threadpool = QThreadPool()
-        self.signals = VideoSignals()
         # self.worker = Worker()
         if self.header_dict["compression_format"] == 0:
             # If the seq file is uncompressed, let pims NorpixSeq handle the file read and load
-            super().__init__(filename, True)
+            # super().__init__(filename, True)
             self._jpeg = False
+            self._image_block_size = self.header_dict["true_image_size"]
+            self._image_offset = 8192
             self.start_frame_fetcher()
         elif self.header_dict["compression_format"] == 1:
             self._jpeg = True
@@ -177,13 +185,10 @@ class SeqBehavVideo(NorpixSeq):
             # Jpeg compression, search for frames by looking for the head and tail signatures
             self._timestamp_struct = struct.Struct('<LH')
             self._timestamp_micro = False
-            self._image_count = self.header_dict["allocated_frames"]
-            self._width = self.header_dict['width']
-            self._height = self.header_dict['height']
             # Use a separate thread to find starts and ends
-            frame_finder = FindingFrameWorker(self._filename, self._image_count)
+            frame_finder = FindingFrameWorker(self._filename, self._frame_num)
             # Signal to find start and end
-            frame_finder.signals.fetch_index.connect(self.set_im_indices)
+            frame_finder.signals.result_signal.connect(self.set_im_indices)
             # Emit progress and display in the statusbar
             frame_finder.signals.progress_signal.connect(self.update_progress)
             # Done searching through the file, can start the frame fetcher now
@@ -193,33 +198,46 @@ class SeqBehavVideo(NorpixSeq):
             raise IOError("Only uncompressed or JPEG images are supported at this point")
         self._file.close()
         
-        
-        
     def start_frame_fetcher(self):
         # At this point should have imstart and imend
-        if self._jpeg and len(self._imstarts) != self._image_count:
+        if self._jpeg and len(self._imstarts) != self._frame_num:
                 raise IOError("Number of frames does not match header data")
         self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
         # Signal to send the fetching instruction (start, end, next_start)
-        self.signals.fetch_index.connect(self.worker.receive_read_position)
+        self.fetch_index.connect(self.worker.receive_read_position)
         # Run/Stop signal
-        self.signals.run_worker.connect(self.worker.receive_run_state)
+        self.run_worker.connect(self.worker.receive_run_state)
         # Receive emitted frame from the fetcher
-        self.worker.signals.frame_signal.connect(self.emit_new_frame)
+        self.worker.signals.result_signal.connect(self.emit_new_frame)
         # Gate keeper for fetcher emission
-        self.signals.request_fetch.connect(self.worker.request_emit)
+        self.request_fetch.connect(self.worker.request_emit)
         # Set a timer to regulate emit frequency
         self.timer = QTimer()
-        self.timer.timeout.connect(lambda: self.signals.request_fetch.emit())
+        self.timer.timeout.connect(lambda: self.request_fetch.emit())
         self.threadpool.start(self.worker)
         
         # Start the worker
         self.threadpool.start(self.worker)
         # Start the loop
-        self.signals.run_worker.emit(True)
+        self.run_worker.emit(True)
         # Set refreshing rate at 60Hz
         self.timer.start(1000/60)
-        
+    
+    def read_header(self,header_fields):
+        self._file.seek(0)
+        header = dict()
+        for name, format in header_fields:
+            value = self._unpack(format)
+            header[name] = value
+        return header
+    
+    def _unpack(self, fs):
+        s = struct.Struct("<"+fs)
+        values = s.unpack(self._file.read(s.size))
+        if len(values) == 1:
+            return values[0]
+        else:
+            return values
 
     def set_im_indices(self, output):
         self._imstarts, self._imends = output
@@ -229,30 +247,30 @@ class SeqBehavVideo(NorpixSeq):
         self.outlet.showMessage(f"Finding frames, {value}%...",2000)
             
     def emit_new_frame(self, new_frame):
-        self.signals.new_frame_fetched.emit(new_frame)
+        self.new_frame_fetched.emit(new_frame)
              
     def get_pixmap(self, i):
-        if i >= self._image_count:
+        if i >= self._frame_num:
             return False
         
         if self._jpeg and self._imstarts is not None:
             this_start = self._imstarts[i]
             this_end = self._imends[i]
             next_start = None # Edit this for time stamp
-            self.signals.fetch_index.emit((this_start,this_end,next_start))
+            self.fetch_index.emit((this_start,this_end,next_start))
         elif not self._jpeg:
             this_start = self._image_block_size*i+self._image_offset
             this_end = this_start + self._image_block_size+self._image_offset
             next_start = None
-            self.signals.fetch_index.emit((this_start,this_end,next_start))
+            self.fetch_index.emit((this_start,this_end,next_start))
             
     def stop_worker(self):
-        self.signals.run_worker.emit(False)
+        self.run_worker.emit(False)
         self.threadpool.waitForDone()
         self.threadpool.clear()
 
     def num_frame(self):
-        return self._image_count
+        return self._frame_num
 
     def frame_rate(self):
         return self.header_dict["suggested_frame_rate"]        
@@ -287,10 +305,9 @@ class FindingFrameWorker(QRunnable):
             progress = round(len(im_ends)*100/self.total_frame)
             if progress % 2:
                 self.signals.progress_signal.emit(progress) 
-        self.signals.fetch_index.emit((im_starts, im_ends))
+        self.signals.result_signal.emit((im_starts, im_ends))
         self.signals.finished_signal.emit()
-        
-import time       
+             
 class SeqVideoWorker(QRunnable):
     @Slot()
     def receive_read_position(self, idices):
@@ -328,7 +345,7 @@ class SeqVideoWorker(QRunnable):
                 except Exception as err:
                     print(f"Failed fetching frame! {err}")
 
-                self.signals.frame_signal.emit(pixmap)
+                self.signals.result_signal.emit(pixmap)
                 self._emit_flag = False
                 # # Use cv2 to decode binary jpeg
                 # imdata = seqfile.read(self._end-self._start)
@@ -354,7 +371,7 @@ class SeqVideoWorker(QRunnable):
                 except Exception as err:
                     print(f"Failed fetching frame! {err}")
                     
-                self.signals.frame_signal.emit(pixmap)
+                self.signals.result_signal.emit(pixmap)
                 self._emit_flag = False
             else:
                 QThread.msleep(20)

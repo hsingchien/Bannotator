@@ -69,6 +69,10 @@ class Ui_MainWindow(object):
         self.actionTips.setObjectName(u"actionTips")
         self.actionAdd_seq = QAction(MainWindow)
         self.actionAdd_seq.setObjectName(u"actionAdd_seq")
+        self.actionTrack_epoch = QAction(MainWindow)
+        self.actionTrack_epoch.setObjectName(u"actionTrack_epoch")
+        self.actionTrack_epoch.setCheckable(True)
+        self.actionTrack_epoch.setChecked(True)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -437,6 +441,8 @@ class Ui_MainWindow(object):
         self.menuWindows.addAction(self.actionFull_annotation)
         self.menuWindows.addAction(self.actionBehavior_table)
         self.menuWindows.addAction(self.actionEpoch_table)
+        self.menuWindows.addSeparator()
+        self.menuWindows.addAction(self.actionTrack_epoch)
 
         self.retranslateUi(MainWindow)
 
@@ -465,6 +471,7 @@ class Ui_MainWindow(object):
         self.actionReset.setText(QCoreApplication.translate("MainWindow", u"Reset", None))
         self.actionTips.setText(QCoreApplication.translate("MainWindow", u"Tips", None))
         self.actionAdd_seq.setText(QCoreApplication.translate("MainWindow", u"Add seq", None))
+        self.actionTrack_epoch.setText(QCoreApplication.translate("MainWindow", u"Track epoch", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))

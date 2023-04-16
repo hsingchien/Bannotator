@@ -32,13 +32,23 @@ class GuiState(object):
         else:
             for callback in callbacks:
                 self._connect_callback(key, callback)
+    
+    def disconnect(self, key:str, callbacks: Union[Callable, List[Callable]]):
+        if key not in self._call_backs:
+            raise ValueError("not a valid state key")
+        if callable(callbacks):
+            self._call_backs[key].remove(callbacks)
+        else:
+            for callback in callbacks:
+                self._call_backs[key].remove(callback)
 
     def _connect_callback(self, key: str, callback: Callable):
         if not callable(callback):
             raise ValueError("callback must be callable")
         if key not in self._call_backs:
             self._call_backs[key] = []
-        self._call_backs[key].append(callback)
+        if callback not in self._call_backs[key]:
+            self._call_backs[key].append(callback)
 
     def emit(self, key: str):
         if key in self._state_vars and key in self._call_backs:

@@ -74,17 +74,21 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionSave_annotation.triggered.connect(self.save_annotation)
         self.actionSave_config.triggered.connect(self.save_config)
         self.actionFull_annotation.toggled.connect(
-            lambda: self.update_gui(["dock_widgets"])
+            lambda: self.update_gui(["view_options"])
         )
         self.actionBehavior_table.toggled.connect(
-            lambda: self.update_gui(["dock_widgets"])
+            lambda: self.update_gui(["view_options"])
         )
         self.actionEpoch_table.toggled.connect(
-            lambda: self.update_gui(["dock_widgets"])
+            lambda: self.update_gui(["view_options"])
         )
         self.behav_table_dock.closed.connect(self.actionBehavior_table.setChecked)
         self.epoch_dock.closed.connect(self.actionEpoch_table.setChecked)
         self.tracks_dock.closed.connect(self.actionFull_annotation.setChecked)
+
+        self.actionTrack_epoch.toggled.connect(
+            lambda: self.update_gui(["view_options"])
+        )
         # Connect state change
         self.state.connect(
             "current_frame",
@@ -201,13 +205,18 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.display_layout.removeItem(current_layout)
             self.display_layout.insertLayout(index, new_layout, stretch_factor)
 
-        if "dock_widgets" in topics:
+        if "view_options" in topics:
             self.behav_table_dock.setVisible(self.actionBehavior_table.isChecked())
             self.epoch_dock.setVisible(self.actionEpoch_table.isChecked())
             self.tracks_dock.setVisible(self.actionFull_annotation.isChecked())
-
-    def set_track_window(self, value):
-        self.state["track_window"] = value
+            # Set the epoch tracking state
+            if self.actionTrack_epoch.isChecked() and self.stream_tables:
+                for ID,stream in self.state["annot"].get_streams().items():
+                    self.stream_tables[ID].connect_scroll()
+                    stream.get_epoch_by_idx(self.state["current_frame"])
+            elif self.stream_tables:
+                for ID in self.state["annot"].get_streams():
+                    self.stream_tables[ID].disconnect_scroll()
 
     def update_slider_box(self):
         try:
@@ -290,17 +299,15 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         self.statusbar.clearMessage()
         bvideo = SeqBehavVideo(video_path, self.statusbar)
-        bvideo.signals.run_worker.connect(
-            lambda: self.go_to_frame(self.state["current_frame"])
-        )
+        bvideo.run_worker.connect(lambda: self.go_to_frame(self.state["current_frame"]))
         self.vids.append(bvideo)
         self.state["video"] += 1
         if self.state["video"] == 1:
-            bvideo.signals.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
+            bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
             new_view = BehavVideoView()
-            bvideo.signals.new_frame_fetched.connect(new_view.updatePixmap)
+            bvideo.new_frame_fetched.connect(new_view.updatePixmap)
             self.vid_views.append(new_view)
             if self.state["video_layout"] != "Grid":
                 self.video_layout.addWidget(new_view)
@@ -389,6 +396,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             stream.cur_behavior_name.connect(behav_label.set_behavior)
             # Connect video slider and frame spinbox to the stream to track the current epoch
             self.state.connect("current_frame", stream.get_epoch_by_idx)
+            if self.actionTrack_epoch.isChecked():
+                stream_table_view.connect_scroll()
             stream.get_epoch_by_idx(self.state["current_frame"])
 
         self.update_slider_box()

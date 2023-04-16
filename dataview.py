@@ -203,10 +203,10 @@ class StreamTableModel(GenericTableModel):
 
     def set_activated_epoch(self, epoch):
         cur_epoch_idx = self.get_item_index(epoch)
-        if cur_epoch_idx != self._activated_index:
-            self._activated_index = cur_epoch_idx
-            # Emit signal to scroll to make sure visible
-            self.activated_row_changed.emit(cur_epoch_idx)
+        # if cur_epoch_idx != self._activated_index:
+        self._activated_index = cur_epoch_idx
+        # Emit signal to scroll to make sure visible
+        self.activated_row_changed.emit(cur_epoch_idx)
 
     def data(self, index, role):
         row_idx = index.row()
@@ -238,10 +238,14 @@ class GenericTableView(QTableView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.doubleClicked.connect(self.activate_selected)
-
-    def setModel(self, model) -> None:
-        model.activated_row_changed.connect(self.scroll_to_idx)
-        return super().setModel(model)
+    
+    def disconnect_scroll(self):
+        self.model().activated_row_changed.disconnect(self.scroll_to_idx)
+        self.model().activated_row_changed.connect(self.repaint_table)
+    
+    def connect_scroll(self):
+        self.model().activated_row_changed.connect(self.scroll_to_idx)
+        self.model().activated_row_changed.connect(self.repaint_table)
 
     def getSelectedRowItem(self):
         idx = self.currentIndex()
@@ -262,8 +266,6 @@ class GenericTableView(QTableView):
     def scroll_to_idx(self, idx):
         if idx is not None:
             self.scrollTo(self.model().index(idx, 0), QAbstractItemView.EnsureVisible)
-            self.repaint_table()
-        return True
 
     def activate_selected(self):
         idx = self.currentIndex().row()
