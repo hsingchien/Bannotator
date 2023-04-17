@@ -82,7 +82,19 @@ class GenericTableModel(QAbstractTableModel):
                 return i
         # Return -1 if not found
         return -1
-
+    
+    def get_property_index(self, target, key):
+        # Return row number of the item with the target property
+        for i, item in enumerate(self.item_list):
+            if isinstance(item, dict) and item.get(key,None) == target:
+                return i
+            if hasattr(item, key) and getattr(item,key,None) == target:
+                return i
+        return -1
+            
+    
+    def repaint(self):
+        self.dataChanged.emit(self.index(0, 0),self.index(self.rowCount(), self.columnCount()))
 
 class BehaviorTableModel(GenericTableModel):
     activated_behavior_changed = QtCore.Signal(str)
@@ -105,7 +117,7 @@ class BehaviorTableModel(GenericTableModel):
         return super().data(index, role)
 
     def flags(self, index: QModelIndex):
-        if self.properties[index.column()] in ["color", "keybind"]:
+        if self.properties[index.column()] in ["color", "keybind", "name"]:
             # Keybind and Color are editable
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
         elif self.properties[index.column()] == "ID":
@@ -143,12 +155,29 @@ class BehaviorTableModel(GenericTableModel):
             for stream_behav in self.all_behaviors:
                 stream_behav[index.row()].set_keybind(value)
             return True
+        if self.properties[index.column()] == "name":
+            # Verify if the input is a valid name
+            value = value.lower()
+            if value in [behav.name for behav in self.item_list]:
+                # Reject name that is already used
+                return False
+            else:
+                for stream_behav in self.all_behaviors:
+                    stream_behav[index.row()].name = value
+                return True
     
-    def set_activated_row(self, row_idx):
+    def set_activated_row(self, row_idx, colum_idx = None):
+        if colum_idx == 0:
+            # Only clicking ID column activates the row, otherwise edit the entry
+            self._activated_index = row_idx
+            self.activated_behavior_changed.emit(self.item_list[row_idx].name)
+            self.repaint()
+            
+    def receive_activate_behavior(self, behav_name):
+        row_idx = self.get_property_index(behav_name,"name")
         self._activated_index = row_idx
-        self.activated_behavior_changed.emit(self.item_list[row_idx].name)
-        self.dataChanged.emit(self.index(0, 0),
-            self.index(self.rowCount(), self.columnCount()),)
+        self.repaint()
+        
     
 
 class StatsTableModel(GenericTableModel):
@@ -187,11 +216,16 @@ class StatsTableModel(GenericTableModel):
         if role == Qt.BackgroundRole and idx == self._activated_index and key != "name":
             return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         return super().data(index, role)
-    def set_activated_row(self, row_idx):
+    
+    def set_activated_row(self, row_idx, column_idx=None):
         self._activated_index = row_idx
         self.activated_behavior_changed.emit(self.item_list[row_idx].name)
-        self.dataChanged.emit(self.index(0, 0),
-            self.index(self.rowCount(), self.columnCount()))
+        self.repaint()
+    
+    def receive_activate_behavior(self, behav_name):
+        row_idx = self.get_property_index(behav_name,"name")
+        self._activated_index = row_idx
+        self.repaint()
 
 
 class StreamTableModel(GenericTableModel):
@@ -199,6 +233,7 @@ class StreamTableModel(GenericTableModel):
     def __init__(self, stream: Stream = None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.stream = stream
+        stream.behavior_name_changed.connect(self.repaint)
         stream.cur_epoch.connect(self.set_activated_epoch)
         self.item_list = stream.get_epochs()
 
@@ -233,7 +268,7 @@ class StreamTableModel(GenericTableModel):
         else:
             return super().data(index, role)
     
-    def set_activated_row(self, row_idx):
+    def set_activated_row(self, row_idx, column_idx = None):
         if self._activated_index != row_idx:
             cur_epoch = self.item_list[row_idx]
             self._activated_index = row_idx
@@ -249,6 +284,7 @@ class BehavEpochTableModel(GenericTableModel):
         self.stream = stream
         behaviors = stream.get_behavior_dict()
         self.stream.cur_epoch.connect(self.set_activated_epoch)
+        self.stream.behavior_name_changed.connect(self.repaint)
         if behavior_name in behaviors:
             self.behavior = behaviors[behavior_name]
         else:
@@ -257,7 +293,6 @@ class BehavEpochTableModel(GenericTableModel):
             self.item_list = self.behavior.get_epochs()
         else:
             self.item_list = []
-            
             
     @QtCore.Slot()
     def set_behavior(self, new_behavior_name):
@@ -292,7 +327,7 @@ class BehavEpochTableModel(GenericTableModel):
         else:
             return super().data(index, role)
     
-    def set_activated_row(self, row_idx):
+    def set_activated_row(self, row_idx, column_idx=None):
         # Called when row is double-clicked
         if self._activated_index != row_idx:
             cur_epoch = self.item_list[row_idx]
@@ -351,7 +386,6 @@ class GenericTableView(QTableView):
             self.scrollTo(self.model().index(idx, 0), QAbstractItemView.EnsureVisible)
 
     def activate_selected(self):
-        idx = self.currentIndex().row()
-        self.model().set_activated_row(idx)
+        self.model().set_activated_row(self.currentIndex().row(),self.currentIndex().column())
         self.selectionModel().clear()
         

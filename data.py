@@ -103,6 +103,7 @@ class Behavior(QtCore.QObject):
     keybind_changed = QtCore.Signal()
     color_changed = QtCore.Signal()
     epoch_changed = QtCore.Signal()
+    name_changed = QtCore.Signal(object)
 
     # Defines behaviors
     def __init__(
@@ -128,7 +129,10 @@ class Behavior(QtCore.QObject):
 
     @name.setter
     def name(self, new_name):
-        self._name = new_name
+        if self._name != new_name:
+            old_name = self._name
+            self._name = new_name
+            self.name_changed.emit((old_name, new_name))
 
     @property
     def ID(self):
@@ -204,9 +208,9 @@ class Behavior(QtCore.QObject):
         dur = self.duration()
         stream_length = self.stream.get_length()
         return dur / stream_length
-    
+
     def get_epochs(self):
-        self.epochs.sort(key= lambda x: x.start)
+        self.epochs.sort(key=lambda x: x.start)
         return self.epochs
 
 
@@ -219,6 +223,8 @@ class Stream(QtCore.QObject):
     cur_behavior_name = QtCore.Signal(object)
     # Current epoch signal, link to the stream table highlight and scrolling
     cur_epoch = QtCore.Signal(object)
+    # Behavior name changed, emit to Annotation to reconstruct its color_dict
+    behavior_name_changed = QtCore.Signal(object)
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -234,6 +240,8 @@ class Stream(QtCore.QObject):
             for _, be in self.behaviors.items():
                 be.keybind_changed.connect(self.map_behav_key)
                 be.color_changed.connect(lambda: self.color_changed.emit())
+                be.name_changed.connect(self.reconstruct_behavior_dict)
+                be.name_changed.connect(lambda x: self.behavior_name_changed.emit(x))
 
     @property
     def length(self):
@@ -246,6 +254,12 @@ class Stream(QtCore.QObject):
     def sort_epoch(self):
         self.epochs.sort(reverse=False)
         return True
+
+    def reconstruct_behavior_dict(self):
+        behav_list = [behav for _, behav in self.behaviors.items()]
+        behav_list.sort(key=lambda x: x.ID)
+        new_dict = {behav.name: behav for behav in behav_list}
+        self.behaviors = new_dict
 
     def validate_epoch(self):
         # Validate epochs to make sure no overlap, no repetitive behavior
@@ -281,6 +295,10 @@ class Stream(QtCore.QObject):
             self.behaviors[behav_name].color_changed.connect(
                 lambda: self.color_changed.emit(self.get_color_dict())
             )
+            self.behaviors[behav_name].name_changed.connect(
+                self.reconstruct_behavior_dict
+            )
+            self.behaviors[behav_name].name_changed.connect(lambda x: self.behavior_name_changed.emit(x))
         self.map_behav_key()
 
     def get_stream_vect(self):
@@ -321,10 +339,10 @@ class Stream(QtCore.QObject):
         behavior_list = [behavior for _, behavior in self.behaviors.items()]
         behavior_list.sort(reverse=False, key=lambda x: x.ID)
         return behavior_list
-    
+
     def get_behavior_dict(self):
         return self.behaviors
-    
+
     def get_epochs(self):
         return self.epochs
 
@@ -427,8 +445,16 @@ class Annotation(QtCore.QObject):
         for _, stream in self.streams:
             stream.data_changed.connect(self.streams_changed)
             stream.color_changed.connect(self.streams_changed)
+            # stream.behavior_name_changed.connect(self.streams_changed)
+            stream.behavior_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
         self.behav_color = dict()
+    
+    def rename_color_dict_key(self, names):
+        old_name = names[0]
+        new_name = names[1]
+        if old_name in self.behav_color.keys():
+            self.behav_color[new_name] = self.behav_color.pop(old_name)
 
     def read_from_file(self, txt_path):
         config = []

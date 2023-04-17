@@ -178,13 +178,6 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     self.video_layout_comboBox.findText("Grid")
                 )
 
-        if "tables" in topics:
-            # Repaint all tables
-            self.behavior_table.repaint_table()
-            self.stats_table.repaint_table()
-            for _, table in self.stream_tables.items():
-                table.repaint_table()
-
         if "video_layout" in topics:
             # Convert video layout
             current_layout = self.video_layout
@@ -377,6 +370,13 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         self.stats_table.setModel(stats_tablemodel)
         annotation.content_changed.connect(self.stats_table.repaint_table)
+        # Connect behavior and stats table to sync the activated row display
+        behavior_tablemodel.activated_behavior_changed.connect(
+            stats_tablemodel.receive_activate_behavior
+        )
+        stats_tablemodel.activated_behavior_changed.connect(
+            behavior_tablemodel.receive_activate_behavior
+        )
         # Set up epochs table for each stream
         streams = annotation.get_streams()
         for ID, stream in streams.items():

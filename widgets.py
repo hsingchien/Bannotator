@@ -429,11 +429,15 @@ class BehavLabel(QLabel):
         self.setFont(QFont("Helvetica [Cronyx]", 12, QFont.Bold))
         self._selected = False
         self.behavior = behav
+        behav.name_changed.connect(self.update_text)
+        behav.color_changed.connect(self.update_text)
         self.update_text()
 
     @Slot()
     def set_behavior(self, new_behavior):
         self.behavior = new_behavior
+        new_behavior.name_changed.connect(self.update_text)
+        new_behavior.color_changed.connect(self.update_text)
         self.update_text()
 
     def set_selected(self, selected):
