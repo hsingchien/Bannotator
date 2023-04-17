@@ -70,16 +70,10 @@ class Epoch(object):
     def get_stream(self):
         return self.stream
 
-    def set_behavior(self, new_behavior: "Behavior" = None):
-        if new_behavior is None:
-            return False
-        else:
-            old_behavior = self.behavior
-            old_behavior.remove_epoch(self)
-            self.behavior = new_behavior
-            new_behavior.append_epoch(self)
+    def set_stream(self, stream):
+        self.stream = stream
 
-    def change_behavior(self, new_behavior: "Behavior" = None):
+    def set_behavior(self, new_behavior: "Behavior" = None):
         if new_behavior is None:
             return False
         if new_behavior is not self.behavior:
@@ -94,9 +88,6 @@ class Epoch(object):
         if end is not None:
             self.end = end
         return True
-
-    def get_behavior(self):
-        return self.behavior
 
 
 class Behavior(QtCore.QObject):
@@ -262,16 +253,45 @@ class Stream(QtCore.QObject):
         self.behaviors = new_dict
 
     def validate_epoch(self):
-        # Validate epochs to make sure no overlap, no repetitive behavior
+        # Validate epochs to make sure no overlap, no repetitive behavior and no blank
         self.sort_epoch()
+        if self.epochs[0].start != 1:
+            return False
         for i in range(len(self.epochs) - 1):
             epoch1 = self.epochs[i]
             epoch2 = self.epochs[i + 1]
-            if epoch1.end >= epoch2.start:
-                return False
             if epoch1.name == epoch2.name:
                 return False
+            if epoch2.start - epoch1.end != 1:
+                return False
         return True
+
+    def add_behavior(self, behavior):
+        if behavior.name not in self.behaviors:
+            self.behaviors[behavior.name] = behavior
+            return True
+        else:
+            return False
+
+    def remove_behavior(self, behavior, replace_behavior):
+        # Remove behavior and merge its epochs with other behaviors
+        pass
+
+    def add_epoch(self, epoch):
+        if epoch not in self.epochs:
+            self.epochs.append(epoch)
+            if self.validate_epoch():
+                self._length = self.get_length()
+                return True
+            else:
+                self.epochs.remove(epoch)
+                return False
+        else:
+            return True
+
+    def remove_epoch(self, epoch):
+        # Remove epoch and replace its behavior with default behavior(with merge)
+        pass
 
     def map_behav_key(self):
         try:
@@ -309,6 +329,21 @@ class Stream(QtCore.QObject):
                 lambda x: self.behavior_name_changed.emit(x)
             )
         self.map_behav_key()
+
+    def fill_stream(self, behav, length=100):
+        if isinstance(behav, str):
+            behavior = self.behaviors.get(behav)
+        elif isinstance(behav, int):
+            behavior = self.get_behaviors()[behav]
+        elif behav is None:
+            behavior = self.get_behaviors()[0]
+
+        epoch = Epoch(stream=self, behavior=behavior, start=1, end=length)
+        self.epochs.clear()
+        self.epochs.append(epoch)
+        behavior.append_epoch(epoch)
+        self._length = self.get_length()
+        self.data_changed.emit(self.get_stream_vect())
 
     def get_stream_vect(self):
         # Returns 1 x stream length vector with each entry being behavior ID
@@ -388,6 +423,7 @@ class Stream(QtCore.QObject):
             return 0
 
     def set_behavior(self, fidx: int = None, keypressed: str = None):
+        # Set behavior upon user keypress
         if not keypressed in self.keymap.keys():
             return False
         epoch = self.get_epoch_by_idx(fidx)
@@ -401,7 +437,7 @@ class Stream(QtCore.QObject):
             new_behavior = self.keymap[keypressed]
             prev_epoch = self.get_epoch_by_idx(fidx - 1)
             next_epoch = self.get_epoch_by_idx(epoch.end)
-            epoch.change_behavior(new_behavior)
+            epoch.set_behavior(new_behavior)
             if prev_epoch and epoch.name == prev_epoch.name:
                 epoch.set_start_end(prev_epoch.start, epoch.end)
                 # Del prev_epoch references
@@ -433,7 +469,7 @@ class Stream(QtCore.QObject):
         validated = self.validate_epoch()
         if not validated:
             raise Exception(
-                f"Stream-{self.ID} has problematic epochs (overlapped epoch or repetitive behaviors)!"
+                f"Stream-{self.ID} has problematic epochs (overlapped epoch, repetitive behaviors or unfilled spaces)!"
             )
         self.data_changed.emit(self.get_stream_vect())
 
@@ -485,6 +521,10 @@ class Annotation(QtCore.QObject):
             self.streams[i] = Stream(ID=i, epochs=[], behaviors={})
             self.streams[i].construct_behavior_from_config(config)
             self.streams[i].data_changed.connect(self.streams_changed)
+
+    def set_length(self, length):
+        for _, stream in self.streams.items():
+            stream.fill_stream(None, length)
 
     def read_from_file(self, txt_path):
         config = []

@@ -24,7 +24,7 @@
     <item>
      <layout class="QVBoxLayout" name="display_layout" stretch="1,16,0,4">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1">
+       <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1,0,0">
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
@@ -177,6 +177,16 @@
            </property>
           </item>
          </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Default Behaivor</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox"/>
         </item>
        </layout>
       </item>

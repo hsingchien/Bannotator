@@ -453,6 +453,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         annotation.read_config_from_file(config_path)
+        if self.state["video"] > 0:
+            annotation.set_length(self.vids[0].num_frame())
+        else:
+            annotation.set_length(self.video_slider.maximum())
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
         # Set up table views
@@ -546,8 +550,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["current_stream"] = streams[IDs[0]]
 
         return True
-        
-    
+
     def save_annotation(self):
         self.state["annot"].saved_in_file.connect(
             lambda x: self.statusbar.showMessage(x, 5000)
