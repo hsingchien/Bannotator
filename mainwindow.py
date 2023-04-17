@@ -110,7 +110,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         self.state.connect("slider_box", [lambda: self.update_gui(["video_ui"])])
         self.state.connect(
-            "annot", [self.update_slider_box, lambda: self.update_gui(["gui"])]
+            "annot", [self.setup_table_models, lambda: self.update_gui(["gui"])]
         )
         self.state.connect(
             "video",
@@ -347,8 +347,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         annotation.read_from_file(anno_path)
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
+
+    def setup_table_models(self):
         # Set up table views
         # Set up behavior tableview
+        annotation = self.state["annot"]
         behavior_tablemodel = BehaviorTableModel(
             behav_list=annotation.get_behaviors(),
             properties=["ID", "name", "keybind", "color"],
@@ -362,6 +365,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.behavior_table.clearSelection
         )
         annotation.content_changed.connect(self.behavior_table.repaint_table)
+        annotation.content_layout_changed.connect(self.behavior_table.change_layout)
         # Set up Statstableview
         stats_tablemodel = StatsTableModel(
             behav_lists=annotation.get_behaviors(),
@@ -371,6 +375,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         self.stats_table.setModel(stats_tablemodel)
         annotation.content_changed.connect(self.stats_table.repaint_table)
+        annotation.content_layout_changed.connect(self.stats_table.change_layout)
         # Connect behavior and stats table to sync the activated row display
         behavior_tablemodel.activated_behavior_changed.connect(
             stats_tablemodel.receive_activate_behavior
@@ -389,6 +394,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             stream_table_view.setModel(stream_table)
             stream_table_view.set_columns_fixed([1, 2])
             stream.data_changed.connect(stream_table_view.repaint_table)
+            stream.epoch_number_changed.connect(stream_table_view.change_layout)
             self.stream_tables[ID] = stream_table_view
             self.stream_table_layout.addWidget(stream_table_view)
             stream_table.jump_to_frame.connect(
@@ -459,98 +465,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             annotation.set_length(self.video_slider.maximum())
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
-        # Set up table views
-        # Set up behavior tableview
-        behavior_tablemodel = BehaviorTableModel(
-            behav_list=annotation.get_behaviors(),
-            properties=["ID", "name", "keybind", "color"],
-            state=self.state,
-            items=[],
-        )
-        self.behavior_table.setModel(behavior_tablemodel)
-        self.behavior_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.behavior_table.setSelectionBehavior(QAbstractItemView.SelectItems)
-        self.behavior_table.model().dataChanged.connect(
-            self.behavior_table.clearSelection
-        )
-        annotation.content_changed.connect(self.behavior_table.repaint_table)
-        # Set up Statstableview
-        stats_tablemodel = StatsTableModel(
-            behav_lists=annotation.get_behaviors(),
-            properties=["ID", "name"],
-            state=self.state,
-            items=[],
-        )
-        self.stats_table.setModel(stats_tablemodel)
-        annotation.content_changed.connect(self.stats_table.repaint_table)
-        # Connect behavior and stats table to sync the activated row display
-        behavior_tablemodel.activated_behavior_changed.connect(
-            stats_tablemodel.receive_activate_behavior
-        )
-        stats_tablemodel.activated_behavior_changed.connect(
-            behavior_tablemodel.receive_activate_behavior
-        )
-        # Set up epochs table for each stream
-        streams = annotation.get_streams()
-        for ID, stream in streams.items():
-            # Create stream tables
-            stream_table = StreamTableModel(
-                stream=stream, properties=["name", "start", "end"], state=self.state
-            )
-            stream_table_view = GenericTableView()
-            stream_table_view.setModel(stream_table)
-            stream_table_view.set_columns_fixed([1, 2])
-            stream.data_changed.connect(stream_table_view.repaint_table)
-            self.stream_tables[ID] = stream_table_view
-            self.stream_table_layout.addWidget(stream_table_view)
-            stream_table.jump_to_frame.connect(
-                lambda x: self.state.set("current_frame", x)
-            )
-            # Create behavior label, add to the full track widget
-            behav_label = BehavLabel(
-                behav=stream.get_behavior_by_idx(self.state["current_frame"]),
-            )
-            self.cur_behav_layout.addWidget(behav_label)
-            self.stream_labels[ID] = behav_label
-            self.state.connect("current_frame", stream.get_behavior_by_idx)
-            stream.cur_behavior_name.connect(behav_label.set_behavior)
-            # Connect video slider and frame spinbox to the stream to track the current epoch
-            self.state.connect("current_frame", stream.get_epoch_by_idx)
-            # Scroll to current epoch if action is checked
-            if self.actionTrack_epoch.isChecked():
-                stream_table_view.connect_scroll()
-            # Create empty behavior epoch tables
-            behav_epoch_table = BehavEpochTableModel(
-                stream=stream, properties=["name", "start", "end"], state=self.state
-            )
-            behavior_tablemodel.activated_behavior_changed.connect(
-                behav_epoch_table.set_behavior
-            )
-            stats_tablemodel.activated_behavior_changed.connect(
-                behav_epoch_table.set_behavior
-            )
-            behav_epoch_table.jump_to_frame.connect(
-                lambda x: self.state.set("current_frame", x)
-            )
-            behav_epoch_table_view = GenericTableView()
-            behav_epoch_table_view.setModel(behav_epoch_table)
-            self.behav_epoch_tables[ID] = behav_epoch_table_view
-            self.behav_epoch_table_layout.addWidget(behav_epoch_table_view)
-            if self.actionTrack_epoch.isChecked():
-                behav_epoch_table_view.connect_scroll()
-            # Emit the cur_epoch signal from the stream after all tables are set up to
-            # highlight the current epoch
-            stream.get_epoch_by_idx(self.state["current_frame"])
-
-        self.update_slider_box()
-        self.plot_tracks()
-
-        # Set the first stream as current stream
-        IDs = sorted(list(streams.keys()))
-        self.state["current_stream"] = streams[IDs[0]]
-
-        return True
-
+        
     def save_annotation(self):
         self.state["annot"].saved_in_file.connect(
             lambda x: self.statusbar.showMessage(x, 5000)

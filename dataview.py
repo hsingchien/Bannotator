@@ -96,6 +96,10 @@ class GenericTableModel(QAbstractTableModel):
     def repaint(self):
         self.dataChanged.emit(self.index(0, 0),self.index(self.rowCount(), self.columnCount()))
 
+    def change_layout(self):
+        self.layoutChanged.emit()
+
+
 class BehaviorTableModel(GenericTableModel):
     activated_behavior_changed = QtCore.Signal(str)
     def __init__(self, behav_list: List = [], *arg, **kwarg):
@@ -285,6 +289,7 @@ class BehavEpochTableModel(GenericTableModel):
         behaviors = stream.get_behavior_dict()
         self.stream.cur_epoch.connect(self.set_activated_epoch)
         self.stream.behavior_name_changed.connect(self.repaint)
+        self.stream.epoch_number_changed.connect(self.change_layout)
         if behavior_name in behaviors:
             self.behavior = behaviors[behavior_name]
         else:
@@ -375,6 +380,9 @@ class GenericTableView(QTableView):
             self.model().index(0, 0),
             self.model().index(self.model().rowCount(), self.model().columnCount()),
         )
+    
+    def change_layout(self):
+        self.model().layoutChanged.emit()
 
     def set_columns_fixed(self, columns: List = []):
         for column in columns:

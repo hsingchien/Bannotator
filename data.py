@@ -216,6 +216,11 @@ class Stream(QtCore.QObject):
     cur_epoch = QtCore.Signal(object)
     # Behavior name changed, emit to Annotation to reconstruct its color_dict
     behavior_name_changed = QtCore.Signal(object)
+    # Layout change signal, when the NUMBER of epochs/behavior changes
+    # Emit to instruct the table to reform the layout
+    epoch_number_changed = QtCore.Signal()
+    behav_number_changed = QtCore.Signal()
+
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -423,6 +428,7 @@ class Stream(QtCore.QObject):
             return 0
 
     def set_behavior(self, fidx: int = None, keypressed: str = None):
+        old_length = len(self.epochs)
         # Set behavior upon user keypress
         if not keypressed in self.keymap.keys():
             return False
@@ -471,17 +477,24 @@ class Stream(QtCore.QObject):
             raise Exception(
                 f"Stream-{self.ID} has problematic epochs (overlapped epoch, repetitive behaviors or unfilled spaces)!"
             )
+        if len(self.epochs) != old_length:
+            self.epoch_number_changed.emit()
         self.data_changed.emit(self.get_stream_vect())
 
 
 class Annotation(QtCore.QObject):
     construct_from_file = QtCore.Signal(str)
     content_changed = QtCore.Signal()
+    content_layout_changed = QtCore.Signal()
     saved_in_file = QtCore.Signal(str)
 
     @QtCore.Slot()
     def streams_changed(self):
         self.content_changed.emit()
+
+    @QtCore.Slot()
+    def change_layout(self):
+        self.content_layout_changed.emit()
 
     def __init__(self, streams: Dict = {}):
         super().__init__()
@@ -490,8 +503,9 @@ class Annotation(QtCore.QObject):
         for _, stream in self.streams:
             stream.data_changed.connect(self.streams_changed)
             stream.color_changed.connect(self.streams_changed)
+            stream.behavior_number_changed.connect(self.content_layout_changed)
             # stream.behavior_name_changed.connect(self.streams_changed)
-            stream.behavior_name_changed.connect(self.rename_color_dict_key)
+            stream.behav_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
         self.behav_color = dict()
 
