@@ -282,7 +282,6 @@ QSlider::handle:horizontal {
     <addaction name="separator"/>
     <addaction name="actionOpen_config"/>
     <addaction name="actionSave_config"/>
-    <addaction name="actionNew_config"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -297,7 +296,7 @@ QSlider::handle:horizontal {
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
-    <addaction name="actionTips"/>
+    <addaction name="actionHelp"/>
    </widget>
    <widget class="QMenu" name="menuWindows">
     <property name="title">
@@ -456,7 +455,7 @@ QSlider::handle:horizontal {
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="elideMode">
         <enum>Qt::ElideLeft</enum>
@@ -662,6 +661,11 @@ QSlider::handle:horizontal {
    </property>
    <property name="text">
     <string>Track epoch</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
    </property>
   </action>
  </widget>

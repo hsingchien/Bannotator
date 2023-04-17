@@ -281,8 +281,15 @@ class Stream(QtCore.QObject):
             self.keymap = dict()
 
     def construct_behavior_from_config(self, config):
+        behav_names = []
+        keybinds = []
         for i, behav in enumerate(config):
             behav_name, keybind = behav.split()
+            if behav_name in behav_names or keybind in keybinds:
+                raise ValueError("conflict behavior name/keybind assignment")
+            behav_names.append(behav_name)
+            keybinds.append(keybind)
+
             self.behaviors[behav_name] = Behavior(
                 name=behav_name,
                 keybind=keybind,
@@ -298,7 +305,9 @@ class Stream(QtCore.QObject):
             self.behaviors[behav_name].name_changed.connect(
                 self.reconstruct_behavior_dict
             )
-            self.behaviors[behav_name].name_changed.connect(lambda x: self.behavior_name_changed.emit(x))
+            self.behaviors[behav_name].name_changed.connect(
+                lambda x: self.behavior_name_changed.emit(x)
+            )
         self.map_behav_key()
 
     def get_stream_vect(self):
@@ -449,12 +458,33 @@ class Annotation(QtCore.QObject):
             stream.behavior_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
         self.behav_color = dict()
-    
+
     def rename_color_dict_key(self, names):
         old_name = names[0]
         new_name = names[1]
         if old_name in self.behav_color.keys():
             self.behav_color[new_name] = self.behav_color.pop(old_name)
+
+    def read_config_from_file(self, config_path):
+        config = []
+        with open(config_path) as file:
+            while True:
+                k = file.readline()
+                if not k:
+                    break
+                if "nStream" in k:
+                    match = re.search(r"nStream\s*(\d+)", k)
+                    if match:
+                        n_streams = int(match.group(1))
+                    else:
+                        raise ValueError("invalid stream number in the config file")
+                else:
+                    config.append(k.strip())
+        # Construct empty streams
+        for i in range(n_streams):
+            self.streams[i] = Stream(ID=i, epochs=[], behaviors={})
+            self.streams[i].construct_behavior_from_config(config)
+            self.streams[i].data_changed.connect(self.streams_changed)
 
     def read_from_file(self, txt_path):
         config = []
