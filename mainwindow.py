@@ -16,6 +16,7 @@ from dataview import (
     StreamTableModel,
     GenericTableView,
     StatsTableModel,
+    BehavEpochTableModel,
 )
 from widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
@@ -38,12 +39,15 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["current_stream"] = None
 
         # Container for dynamically generated widgets
+        # Key = stream ID, item = TrackBar widget
         self.tracks = dict()
         self.full_tracks = dict()
+        # Key = stream ID, item = stream QLabel for current behavior
         self.stream_labels = dict()
-        # Key = ID, item = TrackBar widget
+        # Key = stream ID, item = stream table model
         self.stream_tables = dict()
-        # Key = ID, item = stream table model
+        # Key = ID, item = behavior epoch table model
+        self.behav_epoch_tables = dict()
 
         # Group video viewers into list
         self.vid_views = [self.vid1_view]
@@ -211,7 +215,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.tracks_dock.setVisible(self.actionFull_annotation.isChecked())
             # Set the epoch tracking state
             if self.actionTrack_epoch.isChecked() and self.stream_tables:
-                for ID,stream in self.state["annot"].get_streams().items():
+                for ID, stream in self.state["annot"].get_streams().items():
                     self.stream_tables[ID].connect_scroll()
                     stream.get_epoch_by_idx(self.state["current_frame"])
             elif self.stream_tables:
@@ -374,6 +378,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Set up epochs table for each stream
         streams = annotation.get_streams()
         for ID, stream in streams.items():
+            # Create stream tables
             stream_table = StreamTableModel(
                 stream=stream, properties=["name", "start", "end"], state=self.state
             )
@@ -396,8 +401,27 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             stream.cur_behavior_name.connect(behav_label.set_behavior)
             # Connect video slider and frame spinbox to the stream to track the current epoch
             self.state.connect("current_frame", stream.get_epoch_by_idx)
+            # Scroll to current epoch if action is checked
             if self.actionTrack_epoch.isChecked():
                 stream_table_view.connect_scroll()
+            # Create empty behavior epoch tables
+            behav_epoch_table = BehavEpochTableModel(
+                stream=stream, properties=["name", "start", "end"], state=self.state
+            )
+            behavior_tablemodel.activated_behavior_changed.connect(
+                behav_epoch_table.set_behavior
+            )
+            behav_epoch_table.jump_to_frame.connect(
+                lambda x: self.state.set("current_frame", x)
+            )
+            behav_epoch_table_view = GenericTableView()
+            behav_epoch_table_view.setModel(behav_epoch_table)
+            self.behav_epoch_tables[ID] = behav_epoch_table_view
+            self.behav_epoch_table_layout.addWidget(behav_epoch_table_view)
+            if self.actionTrack_epoch.isChecked():
+                behav_epoch_table_view.connect_scroll()
+            # Emit the cur_epoch signal from the stream after all tables are set up to 
+            # highlight the current epoch
             stream.get_epoch_by_idx(self.state["current_frame"])
 
         self.update_slider_box()

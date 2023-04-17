@@ -102,6 +102,7 @@ class Epoch(object):
 class Behavior(QtCore.QObject):
     keybind_changed = QtCore.Signal()
     color_changed = QtCore.Signal()
+    epoch_changed = QtCore.Signal()
 
     # Defines behaviors
     def __init__(
@@ -192,14 +193,21 @@ class Behavior(QtCore.QObject):
 
     def append_epoch(self, epoch: Epoch = None):
         self.epochs.append(epoch)
+        self.epochs.sort(key=lambda x: x.start)
+        self.epoch_changed.emit()
 
     def remove_epoch(self, epoch: Epoch = None):
         self.epochs.remove(epoch)
+        self.epoch_changed.emit()
 
     def get_percentage(self):
         dur = self.duration()
         stream_length = self.stream.get_length()
         return dur / stream_length
+    
+    def get_epochs(self):
+        self.epochs.sort(key= lambda x: x.start)
+        return self.epochs
 
 
 class Stream(QtCore.QObject):
@@ -313,7 +321,10 @@ class Stream(QtCore.QObject):
         behavior_list = [behavior for _, behavior in self.behaviors.items()]
         behavior_list.sort(reverse=False, key=lambda x: x.ID)
         return behavior_list
-
+    
+    def get_behavior_dict(self):
+        return self.behaviors
+    
     def get_epochs(self):
         return self.epochs
 

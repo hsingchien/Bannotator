@@ -8,7 +8,7 @@ from PySide6 import QtGui, QtCore
 from typing import Optional, List
 from state import GuiState
 import numpy as np
-from data import Stream
+from data import Stream, Behavior
 import re
 
 
@@ -83,6 +83,7 @@ class GenericTableModel(QAbstractTableModel):
 
 
 class BehaviorTableModel(GenericTableModel):
+    activated_behavior_changed = QtCore.Signal(str)
     def __init__(self, behav_list: List = [], *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.item_list = behav_list[0]
@@ -97,12 +98,16 @@ class BehaviorTableModel(GenericTableModel):
         # Color background for color column
         if role == Qt.BackgroundRole and key == "color":
             return QtGui.QBrush(data_item.get_color())
+        if role == Qt.BackgroundRole and key == "ID" and idx == self._activated_index:
+            return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         return super().data(index, role)
 
     def flags(self, index: QModelIndex):
         if self.properties[index.column()] in ["color", "keybind"]:
             # Keybind and Color are editable
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
+        elif self.properties[index.column()] == "ID":
+            flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             flags = Qt.ItemIsEnabled
         return flags
@@ -136,7 +141,13 @@ class BehaviorTableModel(GenericTableModel):
             for stream_behav in self.all_behaviors:
                 stream_behav[index.row()].set_keybind(value)
             return True
-
+    
+    def set_activated_row(self, row_idx):
+        self._activated_index = row_idx
+        self.activated_behavior_changed.emit(self.item_list[row_idx].name)
+        self.dataChanged.emit(self.index(0, 0),
+            self.index(self.rowCount(), self.columnCount()),)
+    
 
 class StatsTableModel(GenericTableModel):
     def __init__(self, behav_lists: List = [], *arg, **kwarg):
@@ -203,9 +214,7 @@ class StreamTableModel(GenericTableModel):
 
     def set_activated_epoch(self, epoch):
         cur_epoch_idx = self.get_item_index(epoch)
-        # if cur_epoch_idx != self._activated_index:
         self._activated_index = cur_epoch_idx
-        # Emit signal to scroll to make sure visible
         self.activated_row_changed.emit(cur_epoch_idx)
 
     def data(self, index, role):
@@ -224,7 +233,72 @@ class StreamTableModel(GenericTableModel):
             # Connect to set the current frame to the start of this epoch
             self.jump_to_frame.emit(cur_epoch.start-1)
 
-
+class BehavEpochTableModel(GenericTableModel):
+    jump_to_frame = QtCore.Signal(int)
+    def __init__(self, stream: Stream=None, behavior_name = None, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.stream = stream
+        behaviors = stream.get_behavior_dict()
+        self.stream.cur_epoch.connect(self.set_activated_epoch)
+        if behavior_name in behaviors:
+            self.behavior = behaviors[behavior_name]
+        else:
+            self.behavior = None
+        if isinstance(self.behavior, Behavior):
+            self.item_list = self.behavior.get_epochs()
+        else:
+            self.item_list = []
+            
+            
+    @QtCore.Slot()
+    def set_behavior(self, new_behavior_name):
+        self.behavior = self.stream.get_behavior_dict()[new_behavior_name]
+        self.item_list = self.behavior.get_epochs()
+        self.layoutChanged.emit()
+        self.stream.get_epoch_by_idx(self.state["current_frame"])
+        
+    def headerData(self, idx: int, orientation: Qt.Orientation, role=Qt.DisplayRole):
+        # Override horizontal header to show stream ID
+        streamID = self.stream.ID
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                col_str = self.properties[idx]
+                # Add stream ID to the middle column
+                if idx == 1:
+                    col_str = "S-" + str(streamID) + "\n" + col_str
+                else:
+                    col_str = "\n" + col_str
+                return col_str
+            elif orientation == Qt.Vertical:
+                # Add 1 to the row index so that we index from 1 instead of 0
+                if self.show_row_numbers:
+                    return str(idx + 1)
+                return None
+        return None
+    
+    def data(self, index, role):
+        row_idx = index.row()
+        if role == Qt.BackgroundRole and row_idx == self._activated_index:
+            return QtGui.QBrush(QtGui.QColor(250, 220, 180))
+        else:
+            return super().data(index, role)
+    
+    def set_activated_row(self, row_idx):
+        # Called when row is double-clicked
+        if self._activated_index != row_idx:
+            cur_epoch = self.item_list[row_idx]
+            self._activated_index = row_idx
+            # Connect to scroll to make sure visible (may not be necessary)
+            self.activated_row_changed.emit(row_idx)
+            # Connect to set the current frame to the start of this epoch
+            self.jump_to_frame.emit(cur_epoch.start-1)
+    
+    def set_activated_epoch(self, epoch):
+        cur_epoch_idx = self.get_item_index(epoch)
+        self._activated_index = cur_epoch_idx
+        self.activated_row_changed.emit(cur_epoch_idx)
+            
+        
 
 class GenericTableView(QTableView):
     def __init__(self, *args, **kwargs):
