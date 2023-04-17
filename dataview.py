@@ -12,6 +12,7 @@ from data import Stream, Behavior
 import re
 
 
+
 class GenericTableModel(QAbstractTableModel):
     activated_row_changed = QtCore.Signal(int)
 
@@ -79,7 +80,8 @@ class GenericTableModel(QAbstractTableModel):
         for i, item in enumerate(self.item_list):
             if item is target:
                 return i
-        return None
+        # Return -1 if not found
+        return -1
 
 
 class BehaviorTableModel(GenericTableModel):
@@ -150,6 +152,7 @@ class BehaviorTableModel(GenericTableModel):
     
 
 class StatsTableModel(GenericTableModel):
+    activated_behavior_changed = QtCore.Signal(str)
     def __init__(self, behav_lists: List = [], *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         # Reorganize behav_list into item_list
@@ -181,8 +184,14 @@ class StatsTableModel(GenericTableModel):
         if role == Qt.DisplayRole and "-epochs" in key:
             cur_behav = self.blist_dict[key.split("-")[0]][idx]
             return cur_behav.num_epochs()
-
+        if role == Qt.BackgroundRole and idx == self._activated_index and key != "name":
+            return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         return super().data(index, role)
+    def set_activated_row(self, row_idx):
+        self._activated_index = row_idx
+        self.activated_behavior_changed.emit(self.item_list[row_idx].name)
+        self.dataChanged.emit(self.index(0, 0),
+            self.index(self.rowCount(), self.columnCount()))
 
 
 class StreamTableModel(GenericTableModel):
@@ -338,7 +347,7 @@ class GenericTableView(QTableView):
         self.resizeColumnsToContents()
 
     def scroll_to_idx(self, idx):
-        if idx is not None:
+        if idx != -1:
             self.scrollTo(self.model().index(idx, 0), QAbstractItemView.EnsureVisible)
 
     def activate_selected(self):

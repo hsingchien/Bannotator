@@ -217,10 +217,12 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.actionTrack_epoch.isChecked() and self.stream_tables:
                 for ID, stream in self.state["annot"].get_streams().items():
                     self.stream_tables[ID].connect_scroll()
+                    self.behav_epoch_tables[ID].connect_scroll()
                     stream.get_epoch_by_idx(self.state["current_frame"])
             elif self.stream_tables:
                 for ID in self.state["annot"].get_streams():
                     self.stream_tables[ID].disconnect_scroll()
+                    self.behav_epoch_tables[ID].disconnect_scroll()
 
     def update_slider_box(self):
         try:
@@ -411,6 +413,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             behavior_tablemodel.activated_behavior_changed.connect(
                 behav_epoch_table.set_behavior
             )
+            stats_tablemodel.activated_behavior_changed.connect(
+                behav_epoch_table.set_behavior
+            )
             behav_epoch_table.jump_to_frame.connect(
                 lambda x: self.state.set("current_frame", x)
             )
@@ -420,7 +425,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.behav_epoch_table_layout.addWidget(behav_epoch_table_view)
             if self.actionTrack_epoch.isChecked():
                 behav_epoch_table_view.connect_scroll()
-            # Emit the cur_epoch signal from the stream after all tables are set up to 
+            # Emit the cur_epoch signal from the stream after all tables are set up to
             # highlight the current epoch
             stream.get_epoch_by_idx(self.state["current_frame"])
 
