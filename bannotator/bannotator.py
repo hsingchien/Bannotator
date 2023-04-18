@@ -1,4 +1,4 @@
-from .mainwindow import MainWindow
+from bannotator.mainwindow import MainWindow
 import sys
 from PySide6.QtWidgets import QApplication
 
