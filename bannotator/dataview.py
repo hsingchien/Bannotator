@@ -6,9 +6,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6 import QtGui, QtCore
 from typing import Optional, List
-from state import GuiState
-import numpy as np
-from data import Stream, Behavior
+from .state import GuiState
+from .data import Stream, Behavior
 import re
 
 

@@ -1,6 +1,5 @@
-from ui_mainwindow import Ui_MainWindow
+from .ui_mainwindow import Ui_MainWindow
 from PySide6.QtWidgets import (
-    QMainWindow,
     QFileDialog,
     QAbstractItemView,
     QVBoxLayout,
@@ -9,17 +8,17 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
-from state import GuiState
-from video import BehavVideo, SeqBehavVideo
-from data import Annotation
-from dataview import (
+from .state import GuiState
+from .video import BehavVideo, SeqBehavVideo
+from .data import Annotation
+from .dataview import (
     BehaviorTableModel,
     StreamTableModel,
     GenericTableView,
     StatsTableModel,
     BehavEpochTableModel,
 )
-from widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
+from .widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
 import os
 

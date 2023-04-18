@@ -22,8 +22,8 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
     QSizePolicy, QSlider, QSpacerItem, QSpinBox,
     QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
-from dataview import GenericTableView
-from widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, TabWidget,
+from .dataview import GenericTableView
+from .widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, TabWidget,
     VideoSlider)
 
 class Ui_MainWindow(object):
@@ -84,6 +84,8 @@ class Ui_MainWindow(object):
         self.actionAuto_save_annotation.setObjectName(u"actionAuto_save_annotation")
         self.actionAuto_save_annotation.setCheckable(True)
         self.actionAuto_save_annotation.setChecked(True)
+        self.actionMerge_behavior = QAction(MainWindow)
+        self.actionMerge_behavior.setObjectName(u"actionMerge_behavior")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -182,16 +184,6 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.video_layout_comboBox)
 
-        self.label_6 = QLabel(self.centralwidget)
-        self.label_6.setObjectName(u"label_6")
-
-        self.horizontalLayout_12.addWidget(self.label_6)
-
-        self.comboBox = QComboBox(self.centralwidget)
-        self.comboBox.setObjectName(u"comboBox")
-
-        self.horizontalLayout_12.addWidget(self.comboBox)
-
         self.horizontalLayout_12.setStretch(1, 1)
         self.horizontalLayout_12.setStretch(3, 1)
         self.horizontalLayout_12.setStretch(4, 1)
@@ -278,6 +270,8 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName(u"menuHelp")
         self.menuWindows = QMenu(self.menubar)
         self.menuWindows.setObjectName(u"menuWindows")
+        self.menuEdit = QMenu(self.menubar)
+        self.menuEdit.setObjectName(u"menuEdit")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -442,6 +436,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuVideo.menuAction())
         self.menubar.addAction(self.menuAnnotation.menuAction())
+        self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuWindows.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuVideo.addAction(self.actionOpen_video)
@@ -466,6 +461,7 @@ class Ui_MainWindow(object):
         self.menuWindows.addAction(self.actionEpoch_table)
         self.menuWindows.addSeparator()
         self.menuWindows.addAction(self.actionTrack_epoch)
+        self.menuEdit.addAction(self.actionMerge_behavior)
 
         self.retranslateUi(MainWindow)
 
@@ -498,6 +494,7 @@ class Ui_MainWindow(object):
         self.actionHelp.setText(QCoreApplication.translate("MainWindow", u"Help", None))
         self.actionMerge_behaviors.setText(QCoreApplication.translate("MainWindow", u"Merge behaviors", None))
         self.actionAuto_save_annotation.setText(QCoreApplication.translate("MainWindow", u"Auto save annotation", None))
+        self.actionMerge_behavior.setText(QCoreApplication.translate("MainWindow", u"Merge behavior", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
@@ -509,12 +506,12 @@ class Ui_MainWindow(object):
         self.video_layout_comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Side by Side", None))
         self.video_layout_comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Stacked", None))
 
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"Default Behaivor", None))
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
+        self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
         self.behav_table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
