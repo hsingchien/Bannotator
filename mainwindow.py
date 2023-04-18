@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
+    QMessageBox,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
 from state import GuiState
@@ -20,6 +21,7 @@ from dataview import (
 )
 from widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
+import os
 
 
 class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
@@ -52,10 +54,12 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Group video viewers into list
         self.vid_views = [self.vid1_view]
         self.vids = []
-        # Set up timer
+        # Set up timers
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.play_video_update_frame)
-
+        self.auto_save_timer = QTimer(self)
+        self.auto_save_timer.timeout.connect(self.save_annotation_copy)
+        self.auto_save_timer.start(2000)
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
@@ -72,12 +76,19 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
 
         # Connect menu bar actions
+        # Video menu
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionAdd_seq.triggered.connect(self.add_seq)
+        # Annotation menu
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
         self.actionSave_annotation.triggered.connect(self.save_annotation)
         self.actionOpen_config.triggered.connect(self.open_config)
         self.actionSave_config.triggered.connect(self.save_config)
+        self.actionAuto_save_annotation.toggled.connect(
+            lambda x: self.auto_save_timer.start(2000)
+            if x
+            else self.auto_save_timer.stop()
+        )
         self.actionFull_annotation.toggled.connect(
             lambda: self.update_gui(["view_options"])
         )
@@ -178,6 +189,17 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.video_layout_comboBox.removeItem(
                     self.video_layout_comboBox.findText("Grid")
                 )
+            if self.state["annot"] is not None:
+                # Enable annotation options
+                self.actionSave_annotation.setEnabled(True)
+                self.actionSave_config.setEnabled(True)
+            else:
+                self.actionSave_annotation.setEnabled(False)
+                self.actionSave_config.setEnabled(False)
+            if self.state["video"] > 0:
+                self.actionOpen_config.setEnabled(True)
+            else:
+                self.actionOpen_config.setEnabled(False)
 
         if "video_layout" in topics:
             # Convert video layout
@@ -252,6 +274,22 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if not video_path:
             return False
         bvideo = BehavVideo(video_path)
+        # Check if the length of the video is significantly different from annotation
+        if (
+            self.state["annot"]
+            and self.state["annot"].get_length() != bvideo.num_frame()
+        ):
+            warning_dialog = QMessageBox.warning(
+                self,
+                "Is this the correct video?",
+                "The video length does not match the annotation.\nOK to proceed. Cancel to abort.",
+                QMessageBox.Ok,
+                QMessageBox.Cancel,
+            )
+            if warning_dialog != QMessageBox.Ok:
+                # If user click anything else but OK, reject input
+                bvideo.stop_worker()
+                return False
         self.vids.append(bvideo)
         self.state["video"] += 1
         if self.state["video"] == 1:
@@ -299,6 +337,23 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         self.statusbar.clearMessage()
         bvideo = SeqBehavVideo(video_path, self.statusbar)
+        # Check if the length of the video is significantly different from annotation
+        if (
+            self.state["annot"]
+            and self.state["annot"].get_length() != bvideo.num_frame()
+        ):
+            warning_dialog = QMessageBox.warning(
+                self,
+                "Is this the correct video?",
+                "The video length does not match the annotation.\nOK to proceed. Cancel to abort.",
+                QMessageBox.Ok,
+                QMessageBox.Cancel,
+            )
+            if warning_dialog != QMessageBox.Ok:
+                # If user click anything else but OK, reject input
+                bvideo.stop_worker()
+                return False
+        bvideo.start_frame_fetcher()
         bvideo.run_worker.connect(lambda: self.go_to_frame(self.state["current_frame"]))
         self.vids.append(bvideo)
         self.state["video"] += 1
@@ -345,6 +400,27 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         annotation.read_from_file(anno_path)
+        annotation.assign_behavior_color()
+        self.state["annot"] = annotation
+
+    def open_config(self):
+        fileDialog = QFileDialog()
+        fileDialog.setFileMode(QFileDialog.ExistingFile)
+        config_path, _ = fileDialog.getOpenFileName(
+            self, caption="Open configuration file", filter="Text files (*.txt)"
+        )
+        if not config_path:
+            return False
+        # Create behaviors and empty streams
+        annotation = Annotation({})
+        annotation.construct_from_file.connect(
+            lambda x: self.statusbar.showMessage(x, 5000)
+        )
+        annotation.read_config_from_file(config_path)
+        if self.state["video"] > 0:
+            annotation.set_length(self.vids[0].num_frame())
+        else:
+            annotation.set_length(self.video_slider.maximum())
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
 
@@ -445,27 +521,6 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         return True
 
-    def open_config(self):
-        fileDialog = QFileDialog()
-        fileDialog.setFileMode(QFileDialog.ExistingFile)
-        config_path, _ = fileDialog.getOpenFileName(
-            self, caption="Open configuration file", filter="Text files (*.txt)"
-        )
-        if not config_path:
-            return False
-        # Create behaviors and empty streams
-        annotation = Annotation({})
-        annotation.construct_from_file.connect(
-            lambda x: self.statusbar.showMessage(x, 5000)
-        )
-        annotation.read_config_from_file(config_path)
-        if self.state["video"] > 0:
-            annotation.set_length(self.vids[0].num_frame())
-        else:
-            annotation.set_length(self.video_slider.maximum())
-        annotation.assign_behavior_color()
-        self.state["annot"] = annotation
-        
     def save_annotation(self):
         self.state["annot"].saved_in_file.connect(
             lambda x: self.statusbar.showMessage(x, 5000)
@@ -478,6 +533,17 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         self.statusbar.clearMessage()
         return self.state["annot"].save_to_file(filename)
+
+    def save_annotation_copy(self):
+        try:
+            annot_path = self.state["annot"].get_file_path()
+            if annot_path is None:
+                filename = os.path.join(os.getcwd(), "annotation_copy.txt")
+            else:
+                filename = annot_path.replace(".txt", "_copy.txt")
+            return self.state["annot"].save_to_file(filename, True)
+        except Exception:
+            pass
 
     def save_config(self):
         self.state["annot"].saved_in_file.connect(
@@ -714,6 +780,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         return False
 
     def closeEvent(self, event):
-        for video in self.vids:
-            video.stop_worker()
+        reply = QMessageBox.question(
+            self,
+            "Confirm Exit",
+            "Are you sure you want to exit?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if reply == QMessageBox.Yes:
+            for video in self.vids:
+                video.stop_worker()
             event.accept()
+        else:
+            event.ignore()

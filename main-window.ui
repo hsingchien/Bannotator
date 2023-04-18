@@ -292,6 +292,8 @@ QSlider::handle:horizontal {
     <addaction name="separator"/>
     <addaction name="actionOpen_config"/>
     <addaction name="actionSave_config"/>
+    <addaction name="separator"/>
+    <addaction name="actionAuto_save_annotation"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -570,11 +572,17 @@ QSlider::handle:horizontal {
    </property>
   </action>
   <action name="actionOpen_config">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Open config</string>
    </property>
   </action>
   <action name="actionSave_config">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Save config</string>
    </property>
@@ -585,6 +593,9 @@ QSlider::handle:horizontal {
    </property>
   </action>
   <action name="actionSave_annotation">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Save annotation</string>
    </property>
@@ -676,6 +687,22 @@ QSlider::handle:horizontal {
   <action name="actionHelp">
    <property name="text">
     <string>Help</string>
+   </property>
+  </action>
+  <action name="actionMerge_behaviors">
+   <property name="text">
+    <string>Merge behaviors</string>
+   </property>
+  </action>
+  <action name="actionAuto_save_annotation">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto save annotation</string>
    </property>
   </action>
  </widget>

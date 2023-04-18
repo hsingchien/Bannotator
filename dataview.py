@@ -152,9 +152,8 @@ class BehaviorTableModel(GenericTableModel):
                 return False
             # Check if the keybind is occupied
             all_keysbinds = [behav.keybind for behav in self.item_list]
-            for i, keybind in enumerate(all_keysbinds):
-                if value == keybind:
-                    return False
+            if value in all_keysbinds:
+                return False
             # Accept the change
             for stream_behav in self.all_behaviors:
                 stream_behav[index.row()].set_keybind(value)

@@ -169,6 +169,7 @@ class SeqBehavVideo(QObject):
         self._frame_num = self.header_dict["allocated_frames"]
         self._width = self.header_dict['width']
         self._height = self.header_dict['height']
+        self._can_start_fetching = True
         self.threadpool = QThreadPool()
         # self.worker = Worker()
         if self.header_dict["compression_format"] == 0:
@@ -177,9 +178,9 @@ class SeqBehavVideo(QObject):
             self._jpeg = False
             self._image_block_size = self.header_dict["true_image_size"]
             self._image_offset = 8192
-            self.start_frame_fetcher()
         elif self.header_dict["compression_format"] == 1:
             self._jpeg = True
+            self._can_start_fetching = False
             self._imstarts = None
             self._imends = None
             # Jpeg compression, search for frames by looking for the head and tail signatures
@@ -192,36 +193,43 @@ class SeqBehavVideo(QObject):
             # Emit progress and display in the statusbar
             frame_finder.signals.progress_signal.connect(self.update_progress)
             # Done searching through the file, can start the frame fetcher now
-            frame_finder.signals.finished_signal.connect(self.start_frame_fetcher)
+            frame_finder.signals.finished_signal.connect(self.can_start_fetching)
+            # Connect run state signal to frame fetcher
+            self.run_worker.connect(frame_finder.receive_run_state)
             self.threadpool.start(frame_finder)
         else:
             raise IOError("Only uncompressed or JPEG images are supported at this point")
         self._file.close()
-        
+    
+    def can_start_fetching(self):
+        self._can_start_fetching = True
+    
     def start_frame_fetcher(self):
         # At this point should have imstart and imend
-        if self._jpeg and len(self._imstarts) != self._frame_num:
+        thread_done = self.threadpool.waitForDone()
+        if thread_done and self._can_start_fetching:
+            if self._jpeg and len(self._imstarts) != self._frame_num:
                 raise IOError("Number of frames does not match header data")
-        self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
-        # Signal to send the fetching instruction (start, end, next_start)
-        self.fetch_index.connect(self.worker.receive_read_position)
-        # Run/Stop signal
-        self.run_worker.connect(self.worker.receive_run_state)
-        # Receive emitted frame from the fetcher
-        self.worker.signals.result_signal.connect(self.emit_new_frame)
-        # Gate keeper for fetcher emission
-        self.request_fetch.connect(self.worker.request_emit)
-        # Set a timer to regulate emit frequency
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda: self.request_fetch.emit())
-        self.threadpool.start(self.worker)
-        
-        # Start the worker
-        self.threadpool.start(self.worker)
-        # Start the loop
-        self.run_worker.emit(True)
-        # Set refreshing rate at 60Hz
-        self.timer.start(1000/60)
+            self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
+            # Signal to send the fetching instruction (start, end, next_start)
+            self.fetch_index.connect(self.worker.receive_read_position)
+            # Run/Stop signal
+            self.run_worker.connect(self.worker.receive_run_state)
+            # Receive emitted frame from the fetcher
+            self.worker.signals.result_signal.connect(self.emit_new_frame)
+            # Gate keeper for fetcher emission
+            self.request_fetch.connect(self.worker.request_emit)
+            # Set a timer to regulate emit frequency
+            self.timer = QTimer(self)
+            self.timer.timeout.connect(lambda: self.request_fetch.emit())
+            self.threadpool.start(self.worker)
+            
+            # Start the worker
+            self.threadpool.start(self.worker)
+            # Start the loop
+            self.run_worker.emit(True)
+            # Set refreshing rate at 60Hz
+            self.timer.start(1000/60)
     
     def read_header(self,header_fields):
         self._file.seek(0)
@@ -230,6 +238,9 @@ class SeqBehavVideo(QObject):
             value = self._unpack(format)
             header[name] = value
         return header
+    
+    def is_jpeg(self):
+        return self._jpeg
     
     def _unpack(self, fs):
         s = struct.Struct("<"+fs)
@@ -284,6 +295,10 @@ class FindingFrameWorker(QRunnable):
         self.signals = VideoSignals()
         self.url = url
         self.total_frame = total_frames
+        self._run = True
+    @Slot()
+    def receive_run_state(self, running:bool):
+        self._run = running
     @Slot()
     def run(self):
         seqfile = open(self.url, "rb")
@@ -292,7 +307,7 @@ class FindingFrameWorker(QRunnable):
         seqfile.seek(0)
         imdata = seqfile.read()
         _from = 0
-        while True:
+        while self._run:
             start = imdata.find(jpg_byte_start, _from)
             if start < 0:
                 break
@@ -304,9 +319,12 @@ class FindingFrameWorker(QRunnable):
             # The length of jpeg ending mark is 2
             progress = round(len(im_ends)*100/self.total_frame)
             if progress % 2:
-                self.signals.progress_signal.emit(progress) 
-        self.signals.result_signal.emit((im_starts, im_ends))
-        self.signals.finished_signal.emit()
+                self.signals.progress_signal.emit(progress)
+        if self._run:
+            # Finding successfully finished and is not aborted
+            self.signals.result_signal.emit((im_starts, im_ends))
+            self.signals.finished_signal.emit()
+        
              
 class SeqVideoWorker(QRunnable):
     @Slot()

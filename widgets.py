@@ -426,7 +426,7 @@ class BehavLabel(QLabel):
     def __init__(self, behav=None):
         super().__init__()
         self.setAlignment(Qt.AlignCenter)
-        self.setFont(QFont("Helvetica [Cronyx]", 12, QFont.Bold))
+        self.setFont(QFont("Helvetica [Cronyx]", 16, QFont.Bold))
         self._selected = False
         self.behavior = behav
         behav.name_changed.connect(self.update_text)

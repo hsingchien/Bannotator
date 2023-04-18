@@ -3,6 +3,7 @@ from PySide6 import QtCore
 from typing import List, Dict
 import re
 import numpy as np
+import os
 
 
 class Epoch(object):
@@ -152,6 +153,7 @@ class Behavior(QtCore.QObject):
 
     def set_keybind(self, new_keybind: str = None):
         if self.keybind != new_keybind:
+            self.keybind = new_keybind
             self.keybind_changed.emit()
             return True
         else:
@@ -220,7 +222,6 @@ class Stream(QtCore.QObject):
     # Emit to instruct the table to reform the layout
     epoch_number_changed = QtCore.Signal()
     behav_number_changed = QtCore.Signal()
-
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -508,6 +509,7 @@ class Annotation(QtCore.QObject):
             stream.behav_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
         self.behav_color = dict()
+        self.file_path = os.path.join(os.getcwd(), 'annotation.txt')
 
     def rename_color_dict_key(self, names):
         old_name = names[0]
@@ -573,6 +575,7 @@ class Annotation(QtCore.QObject):
                     annots[current_anno].append(k.strip())
         success = self.construct_streams(config, annots)
         if success:
+            self.file_path = txt_path
             self.construct_from_file.emit(
                 "Annotation successfully contructed from file"
             )
@@ -654,7 +657,7 @@ class Annotation(QtCore.QObject):
             length = max(i.length, length)
         return length
 
-    def save_to_file(self, filename):
+    def save_to_file(self, filename, auto_save=False):
         try:
             with open(filename, "w") as f:
                 f.write("Caltech Behavior Annotator - Annotation File\n")
@@ -662,7 +665,11 @@ class Annotation(QtCore.QObject):
                 self.write_behavior(f)
                 f.write("\n")
                 self.write_streams(f)
-            self.saved_in_file.emit(f"Saved annotation to {filename} successfully!")
+                self.saved_in_file.emit(f"Saved annotation to {filename} successfully!")
+            if not auto_save:
+                
+                # If save is not from auto save, set the annotation path to the saved path
+                self.file_path = filename
             return True
         except Exception:
             return False
@@ -701,3 +708,6 @@ class Annotation(QtCore.QObject):
             lines.append("  \n")
         if f:
             f.writelines(lines)
+
+    def get_file_path(self):
+        return self.file_path
