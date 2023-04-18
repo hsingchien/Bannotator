@@ -59,7 +59,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(self.play_video_update_frame)
         self.auto_save_timer = QTimer(self)
         self.auto_save_timer.timeout.connect(self.save_annotation_copy)
-        self.auto_save_timer.start(2000)
+        self.auto_save_timer.start(60000)
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
@@ -85,7 +85,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionOpen_config.triggered.connect(self.open_config)
         self.actionSave_config.triggered.connect(self.save_config)
         self.actionAuto_save_annotation.toggled.connect(
-            lambda x: self.auto_save_timer.start(2000)
+            lambda x: self.auto_save_timer.start(60000)
             if x
             else self.auto_save_timer.stop()
         )
