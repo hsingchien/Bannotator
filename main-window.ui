@@ -24,7 +24,7 @@
     <item>
      <layout class="QVBoxLayout" name="display_layout" stretch="1,16,0,4">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1,0,0">
+       <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1">
         <item>
          <widget class="QLabel" name="label_4">
           <property name="text">
@@ -178,16 +178,6 @@
           </item>
          </widget>
         </item>
-        <item>
-         <widget class="QLabel" name="label_6">
-          <property name="text">
-           <string>Default Behaivor</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="comboBox"/>
-        </item>
        </layout>
       </item>
       <item>
@@ -320,9 +310,16 @@ QSlider::handle:horizontal {
     <addaction name="separator"/>
     <addaction name="actionTrack_epoch"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionMerge_behavior"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuVideo"/>
    <addaction name="menuAnnotation"/>
+   <addaction name="menuEdit"/>
    <addaction name="menuWindows"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -703,6 +700,11 @@ QSlider::handle:horizontal {
    </property>
    <property name="text">
     <string>Auto save annotation</string>
+   </property>
+  </action>
+  <action name="actionMerge_behavior">
+   <property name="text">
+    <string>Merge behavior</string>
    </property>
   </action>
  </widget>
