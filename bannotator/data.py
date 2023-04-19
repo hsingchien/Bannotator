@@ -312,6 +312,7 @@ class Stream(QtCore.QObject):
 
     def map_behav_key(self):
         try:
+            self.keymap = dict()
             for _, behav in self.behaviors.items():
                 self.keymap[behav.keybind] = behav
         except Exception:

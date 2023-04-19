@@ -737,6 +737,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         else:
             cur_stream.set_behavior(cur_idx, keypressed)
+            cur_stream.get_behavior_by_idx(self.state["current_frame"])
             return True
 
     def assign_current_stream(self, keyint: int):

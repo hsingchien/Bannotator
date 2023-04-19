@@ -3,7 +3,8 @@ from PySide6.QtWidgets import (
     QTableView,
     QAbstractItemView,
     QHeaderView,
-    QColorDialog
+    QColorDialog,
+    QInputDialog
 )
 from PySide6 import QtGui, QtCore
 from typing import Optional, List
@@ -121,10 +122,10 @@ class BehaviorTableModel(GenericTableModel):
         return super().data(index, role)
 
     def flags(self, index: QModelIndex):
-        if self.properties[index.column()] in ["keybind", "name"]:
+        if self.properties[index.column()] in ["name"]:
             # Keybind and Color are editable
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
-        elif self.properties[index.column()] in ["ID","color"]:
+        elif self.properties[index.column()] in ["ID","color","keybind"]:
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             flags = Qt.ItemIsEnabled
@@ -133,21 +134,6 @@ class BehaviorTableModel(GenericTableModel):
     def setData(self, index, value, role=Qt.EditRole):
         if role != Qt.EditRole:
             return False
-        if self.properties[index.column()] == "keybind":
-            # Verify if the input is a single letter
-            pattern = r"^[a-zA-Z]$"
-            if bool(re.match(pattern, value)):
-                value = value.lower()
-            else:
-                return False
-            # Check if the keybind is occupied
-            all_keysbinds = [behav.keybind for behav in self.item_list]
-            if value in all_keysbinds:
-                return False
-            # Accept the change
-            for stream_behav in self.all_behaviors:
-                stream_behav[index.row()].set_keybind(value)
-            return True
         if self.properties[index.column()] == "name":
             # Verify if the input is a valid name
             value = value.lower()
@@ -173,7 +159,18 @@ class BehaviorTableModel(GenericTableModel):
                 for stream_behav in self.all_behaviors:
                     stream_behav[row_idx].set_color(new_color)
                 self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
-      
+        if colum_idx == 2:
+            data_item = self.item_list[row_idx]
+            current_key = data_item.get_keybind()
+            all_key_binds = [behav.get_keybind() for behav in self.item_list]
+            letters = [chr(i) for i in range(ord('a'), ord('z')+1)]
+            available_strokes = [current_key] + [l for l in letters if l not in all_key_binds] + [" "]
+            new_keybind, ok = QInputDialog.getItem(None,"Select a new key", "key",available_strokes,0,False)
+            if ok and new_keybind:
+                for stream_behav in self.all_behaviors:
+                    stream_behav[row_idx].set_keybind(new_keybind)
+            self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
+        
     def receive_activate_behavior(self, behav_name):
         row_idx = self.get_property_index(behav_name,"name")
         self._activated_index = row_idx
