@@ -18,6 +18,7 @@ from bannotator.dataview import (
     StatsTableModel,
     BehavEpochTableModel,
 )
+from bannotator.dialog import CropAnnotationDialog
 from bannotator.widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
 import os
@@ -457,7 +458,22 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         annotation.read_from_file(anno_path)
         annotation.assign_behavior_color()
         annot_length = annotation.get_length()
-        self.state["current_frame"] = annot_length-1
+        if self.vids and annot_length < self.vids[0].num_frame():
+            warning_dialog = QMessageBox.warning(self, "Is this the correct annotation?",
+                                "Annotation is shorter than video 1!\nOk to pad with default behavior. Cancel to abort",
+                                QMessageBox.Ok, QMessageBox.Cancel)
+            if warning_dialog != QMessageBox.Ok:
+                return False
+            else:
+                annotation.set_length(self.vids[0].num_frame())
+
+        elif self.vids and annot_length > self.vids[0].num_frame():
+            # Guide user to shrink the annotation
+            crop_from, ok = CropAnnotationDialog(annot_length, self.vids[0].num_frame()).showDialog()
+            if crop_from and ok:
+                annotation.truncate(start = crop_from, length = self.vids[0].num_frame())
+            else:
+                return False
         self.state["annot"] = annotation
         
 

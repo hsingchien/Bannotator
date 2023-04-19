@@ -44,6 +44,10 @@ class Epoch(object):
     @property
     def color(self):
         return self.behavior.get_color()
+    
+    @property
+    def streamID(self):
+        return self.stream.ID
 
     def __str__(self) -> str:
         return (
@@ -89,7 +93,11 @@ class Epoch(object):
         if end is not None:
             self.end = end
         return True
-
+    
+    def set_start(self, start:int=None):
+        self.start = start
+    def set_end(self, end:int=None):
+        self.end=end
 
 class Behavior(QtCore.QObject):
     keybind_changed = QtCore.Signal()
@@ -114,6 +122,9 @@ class Behavior(QtCore.QObject):
         self._color = color
         self.epochs = epochs
         self.stream = stream
+    
+    def __del__(self):
+        print("destroyed")
 
     @property
     def name(self):
@@ -343,13 +354,47 @@ class Stream(QtCore.QObject):
             behavior = self.get_behaviors()[behav]
         elif behav is None:
             behavior = self.get_behaviors()[0]
-
-        epoch = Epoch(stream=self, behavior=behavior, start=1, end=length)
-        self.epochs.clear()
+        if self.epochs:
+            self.sort_epoch()
+            last_epoch = self.epochs[len(self.epochs)-1]
+            epoch = Epoch(stream=self, behavior=behavior, start=last_epoch.end+1, end=length)
+        else:
+            self.epochs.clear()
+            epoch = Epoch(stream=self, behavior=behavior, start=1, end=length)
         self.epochs.append(epoch)
         behavior.append_epoch(epoch)
         self._length = self.get_length()
         self.data_changed.emit(self.get_stream_vect())
+    
+    def truncate(self, start, length):
+        end = start+length-1
+        self.sort_epoch()
+        # Find the last epoch and its index in the epoch list
+        last_epoch = self.get_epoch_by_idx(end-1,False)
+        last_epoch_index = self.epochs.index(last_epoch)
+        # Change the end of last epoch
+        last_epoch.set_end(end)
+        # Find the first epoch and its index in the epoch list
+        first_epoch = self.get_epoch_by_idx(start-1, False)
+        first_epoch_index = self.epochs.index(first_epoch)
+        # Change the start of the first epoch
+        first_epoch.set_start(start)
+        # Remove the excessive epochs
+        epoch_to_remove = self.epochs[0:first_epoch_index]+self.epochs[last_epoch_index+1:len(self.epochs)]
+        for epoch in epoch_to_remove:
+            behavior = epoch.get_behavior()
+            behavior.remove_epoch(epoch)
+            self.epochs.remove(epoch)
+        for epoch in self.epochs:
+            epoch.set_start(epoch.start-start+1)
+            epoch.set_end(epoch.end-start+1)
+        self.validate_epoch()
+        self._length = self.get_length()
+        if self.length == length:
+            self.epoch_number_changed.emit()
+            return True
+        else:
+            raise IndexError("Failed to truncate stream")
 
     def get_stream_vect(self):
         # Returns 1 x stream length vector with each entry being behavior ID
@@ -541,6 +586,10 @@ class Annotation(QtCore.QObject):
     def set_length(self, length):
         for _, stream in self.streams.items():
             stream.fill_stream(None, length)
+    
+    def truncate(self, start, length):
+        for _, stream in self.streams.items():
+            stream.truncate(start, length)
 
     def read_from_file(self, txt_path):
         config = []
