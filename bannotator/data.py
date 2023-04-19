@@ -665,9 +665,8 @@ class Annotation(QtCore.QObject):
                 self.write_behavior(f)
                 f.write("\n")
                 self.write_streams(f)
-                self.saved_in_file.emit(f"Saved annotation to {filename} successfully!")
             if not auto_save:
-                
+                self.saved_in_file.emit(f"Saved annotation to {filename} successfully!")
                 # If save is not from auto save, set the annotation path to the saved path
                 self.file_path = filename
             return True

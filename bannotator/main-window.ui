@@ -712,7 +712,7 @@ QSlider::handle:horizontal {
   <customwidget>
    <class>PlaySpeedSpinBox</class>
    <extends>QDoubleSpinBox</extends>
-   <header>.widgets</header>
+   <header>bannotator.widgets</header>
   </customwidget>
   <customwidget>
    <class>GenericTableView</class>
@@ -728,17 +728,17 @@ QSlider::handle:horizontal {
   <customwidget>
    <class>VideoSlider</class>
    <extends>QSlider</extends>
-   <header>.widgets</header>
+   <header>bannotator.widgets</header>
   </customwidget>
   <customwidget>
    <class>BehavVideoView</class>
    <extends>QGraphicsView</extends>
-   <header>.widgets</header>
+   <header>bannotator.widgets</header>
   </customwidget>
   <customwidget>
    <class>DockWidget</class>
    <extends>QDockWidget</extends>
-   <header>.widgets</header>
+   <header>bannotator.widgets</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

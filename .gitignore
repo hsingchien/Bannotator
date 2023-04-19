@@ -7,7 +7,6 @@ build/
 bannotator.egg-info/
 *.txt
 *.DS_Store
-.vscode/
 *.mat
 *.pdf
 .vscode/

@@ -1,4 +1,4 @@
-from .ui_mainwindow import Ui_MainWindow
+from bannotator.ui_mainwindow import Ui_MainWindow
 from PySide6.QtWidgets import (
     QFileDialog,
     QAbstractItemView,
@@ -8,17 +8,17 @@ from PySide6.QtWidgets import (
     QMessageBox,
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
-from .state import GuiState
-from .video import BehavVideo, SeqBehavVideo
-from .data import Annotation
-from .dataview import (
+from bannotator.state import GuiState
+from bannotator.video import BehavVideo, SeqBehavVideo
+from bannotator.data import Annotation
+from bannotator.dataview import (
     BehaviorTableModel,
     StreamTableModel,
     GenericTableView,
     StatsTableModel,
     BehavEpochTableModel,
 )
-from .widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
+from bannotator.widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
 import os
 
@@ -53,12 +53,13 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Group video viewers into list
         self.vid_views = [self.vid1_view]
         self.vids = []
+        self.vids_stretch_factor = []
         # Set up timers
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.play_video_update_frame)
         self.auto_save_timer = QTimer(self)
         self.auto_save_timer.timeout.connect(self.save_annotation_copy)
-        self.auto_save_timer.start(60000)
+        self.auto_save_timer.start(30000)
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
@@ -84,7 +85,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionOpen_config.triggered.connect(self.open_config)
         self.actionSave_config.triggered.connect(self.save_config)
         self.actionAuto_save_annotation.toggled.connect(
-            lambda x: self.auto_save_timer.start(60000)
+            lambda x: self.auto_save_timer.start(30000)
             if x
             else self.auto_save_timer.stop()
         )
@@ -273,6 +274,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if not video_path:
             return False
         bvideo = BehavVideo(video_path)
+        valid_video = False
         # Check if the length of the video is significantly different from annotation
         if (
             self.state["annot"]
@@ -289,7 +291,34 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 # If user click anything else but OK, reject input
                 bvideo.stop_worker()
                 return False
+            else:
+                valid_video = True
+            
+        # Check if the video is significantly different from video 0
+        if (self.state["video"] > 0 
+            and not valid_video 
+            and np.abs(bvideo.num_frame()-self.vids[0].num_frame()) > 0.05 * self.vids[0].num_frame()):
+            warning_dialog = QMessageBox.warning(
+                self,
+                "Is this the correct video?",
+                "The video length significantly differs from video 1.\nOK to proceed. Cancel to abort.",
+                QMessageBox.Ok,
+                QMessageBox.Cancel,
+            )
+            if warning_dialog != QMessageBox.Ok:
+                # If user click anything else but OK, reject input
+                bvideo.stop_worker()
+                return False
+            else:
+                valid_video = True
+
+        
         self.vids.append(bvideo)
+        if self.state["video"] == 0:
+            self.vids_stretch_factor = [1]
+        else:
+            self.vids_stretch_factor.append(bvideo.num_frame()/self.vids[0].num_frame())
+
         self.state["video"] += 1
         if self.state["video"] == 1:
             bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
@@ -336,6 +365,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         self.statusbar.clearMessage()
         bvideo = SeqBehavVideo(video_path, self.statusbar)
+        valid_video = False
         # Check if the length of the video is significantly different from annotation
         if (
             self.state["annot"]
@@ -352,6 +382,32 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 # If user click anything else but OK, reject input
                 bvideo.stop_worker()
                 return False
+            else:
+                valid_video = True
+        # Check if the video is significantly different from video 0
+        if (self.state["video"] > 0 
+            and not valid_video 
+            and np.abs(bvideo.num_frame()-self.vids[0].num_frame()) > 0.05 * self.vids[0].num_frame()):
+            warning_dialog = QMessageBox.warning(
+                self,
+                "Is this the correct video?",
+                "The video length significantly differs from video 1.\nOK to proceed. Cancel to abort.",
+                QMessageBox.Ok,
+                QMessageBox.Cancel,
+            )
+            if warning_dialog != QMessageBox.Ok:
+                # If user click anything else but OK, reject input
+                bvideo.stop_worker()
+                return False
+            else:
+                valid_video = True
+
+        # Stretch factor for current video relative to the video 0
+        if self.state["video"] == 0:
+            self.vids_stretch_factor = [1]
+        else:
+            self.vids_stretch_factor.append(bvideo.num_frame()/self.vids[0].num_frame())
+            
         bvideo.start_frame_fetcher()
         bvideo.run_worker.connect(lambda: self.go_to_frame(self.state["current_frame"]))
         self.vids.append(bvideo)
@@ -400,7 +456,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         annotation.read_from_file(anno_path)
         annotation.assign_behavior_color()
+        annot_length = annotation.get_length()
+        self.state["current_frame"] = annot_length-1
         self.state["annot"] = annotation
+        
 
     def open_config(self):
         fileDialog = QFileDialog()
@@ -537,11 +596,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         try:
             annot_path = self.state["annot"].get_file_path()
             if annot_path is None:
-                filename = os.path.join(os.getcwd(), "annotation_copy.txt")
+                filename = os.path.join(os.getcwd(), "annotation_backup.txt")
             else:
-                filename = annot_path.replace(".txt", "_copy.txt")
-            return self.state["annot"].save_to_file(filename, True)
+                filename = annot_path.replace(".txt", "_backup.txt")
+            if self.state["annot"].save_to_file(filename, True):
+                self.statusbar.clearMessage()
+                self.statusbar.showMessage("Automatically saved annotaion backup.", 1000)
         except Exception:
+            if self.state["annot"] is not None:
+                self.statusbar.clearMessage()
+                self.statusbar.showMessage("Autosave failed! Try manually save the annotation and auto-save will succeed next time.", 4000)
             pass
 
     def save_config(self):
@@ -560,8 +624,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     def go_to_frame(self, frameN):
         videos = self.vids
         if videos:
-            for video in videos:
-                video.get_pixmap(int(frameN))
+            for i, video in enumerate(videos):
+                this_frameN = frameN * self.vids_stretch_factor[i]
+                video.get_pixmap(int(this_frameN))
             return True
         else:
             return False

@@ -6,8 +6,8 @@ from PySide6.QtWidgets import (
 )
 from PySide6 import QtGui, QtCore
 from typing import Optional, List
-from .state import GuiState
-from .data import Stream, Behavior
+from bannotator.state import GuiState
+from bannotator.data import Stream, Behavior
 import re
 
 

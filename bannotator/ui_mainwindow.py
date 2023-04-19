@@ -23,8 +23,8 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
     QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
 from .dataview import GenericTableView
-from .widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, TabWidget,
-    VideoSlider)
+from .widgets import TabWidget
+from bannotator.widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, VideoSlider)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):

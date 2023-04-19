@@ -9,8 +9,8 @@ def main():
     app.installEventFilter(mainwindow)
     app.setApplicationName("Bannotator")
     mainwindow.show()
+    print("Happy annotating!")
     app.exec()
-
 
 if __name__ == "__main__":
     main()
