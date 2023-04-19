@@ -122,9 +122,6 @@ class Behavior(QtCore.QObject):
         self._color = color
         self.epochs = epochs
         self.stream = stream
-    
-    def __del__(self):
-        print("destroyed")
 
     @property
     def name(self):

@@ -279,6 +279,7 @@ QSlider::handle:horizontal {
     <addaction name="actionOpen_annotation"/>
     <addaction name="actionSave_annotation"/>
     <addaction name="actionNew_annotation"/>
+    <addaction name="actionClose_annotation"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_config"/>
     <addaction name="actionSave_config"/>
@@ -705,6 +706,11 @@ QSlider::handle:horizontal {
   <action name="actionMerge_behavior">
    <property name="text">
     <string>Merge behavior</string>
+   </property>
+  </action>
+  <action name="actionClose_annotation">
+   <property name="text">
+    <string>Close annotation</string>
    </property>
   </action>
  </widget>
