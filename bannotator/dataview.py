@@ -3,6 +3,7 @@ from PySide6.QtWidgets import (
     QTableView,
     QAbstractItemView,
     QHeaderView,
+    QColorDialog
 )
 from PySide6 import QtGui, QtCore
 from typing import Optional, List
@@ -120,10 +121,10 @@ class BehaviorTableModel(GenericTableModel):
         return super().data(index, role)
 
     def flags(self, index: QModelIndex):
-        if self.properties[index.column()] in ["color", "keybind", "name"]:
+        if self.properties[index.column()] in ["keybind", "name"]:
             # Keybind and Color are editable
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
-        elif self.properties[index.column()] == "ID":
+        elif self.properties[index.column()] in ["ID","color"]:
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             flags = Qt.ItemIsEnabled
@@ -132,16 +133,6 @@ class BehaviorTableModel(GenericTableModel):
     def setData(self, index, value, role=Qt.EditRole):
         if role != Qt.EditRole:
             return False
-        if self.properties[index.column()] == "color":
-            # Verify if the input is a valid hex code
-            pattern = re.compile("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$")
-            if bool(pattern.match(value)):
-                for stream_behav in self.all_behaviors:
-                    stream_behav[index.row()].set_color(QtGui.QColor(value))
-                self.dataChanged.emit(index, index)
-                return True
-            else:
-                return False
         if self.properties[index.column()] == "keybind":
             # Verify if the input is a single letter
             pattern = r"^[a-zA-Z]$"
@@ -168,13 +159,21 @@ class BehaviorTableModel(GenericTableModel):
                     stream_behav[index.row()].name = value
                 return True
     
-    def set_activated_row(self, row_idx, colum_idx = None):
+    def double_click_action(self, row_idx, colum_idx = None):
         if colum_idx == 0:
             # Only clicking ID column activates the row, otherwise edit the entry
             self._activated_index = row_idx
             self.activated_behavior_changed.emit(self.item_list[row_idx].name)
             self.repaint()
-            
+        if colum_idx == 3:
+            data_item = self.item_list[row_idx]
+            current_color = data_item.get_color()
+            new_color = QColorDialog.getColor(current_color,None,"Pick a color for this behavior")
+            if new_color.isValid():
+                for stream_behav in self.all_behaviors:
+                    stream_behav[row_idx].set_color(new_color)
+                self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
+      
     def receive_activate_behavior(self, behav_name):
         row_idx = self.get_property_index(behav_name,"name")
         self._activated_index = row_idx
@@ -219,7 +218,7 @@ class StatsTableModel(GenericTableModel):
             return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         return super().data(index, role)
     
-    def set_activated_row(self, row_idx, column_idx=None):
+    def double_click_action(self, row_idx, column_idx=None):
         self._activated_index = row_idx
         self.activated_behavior_changed.emit(self.item_list[row_idx].name)
         self.repaint()
@@ -270,7 +269,7 @@ class StreamTableModel(GenericTableModel):
         else:
             return super().data(index, role)
     
-    def set_activated_row(self, row_idx, column_idx = None):
+    def double_click_action(self, row_idx, column_idx = None):
         if self._activated_index != row_idx:
             cur_epoch = self.item_list[row_idx]
             self._activated_index = row_idx
@@ -330,7 +329,7 @@ class BehavEpochTableModel(GenericTableModel):
         else:
             return super().data(index, role)
     
-    def set_activated_row(self, row_idx, column_idx=None):
+    def double_click_action(self, row_idx, column_idx=None):
         # Called when row is double-clicked
         if self._activated_index != row_idx:
             cur_epoch = self.item_list[row_idx]
@@ -392,6 +391,6 @@ class GenericTableView(QTableView):
             self.scrollTo(self.model().index(idx, 0), QAbstractItemView.EnsureVisible)
 
     def activate_selected(self):
-        self.model().set_activated_row(self.currentIndex().row(),self.currentIndex().column())
+        self.model().double_click_action(self.currentIndex().row(),self.currentIndex().column())
         self.selectionModel().clear()
         

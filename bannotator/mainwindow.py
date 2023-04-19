@@ -18,7 +18,7 @@ from bannotator.dataview import (
     StatsTableModel,
     BehavEpochTableModel,
 )
-from bannotator.dialog import CropAnnotationDialog
+from bannotator.dialog import *
 from bannotator.widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 import numpy as np
 import os
@@ -469,7 +469,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         elif self.vids and annot_length > self.vids[0].num_frame():
             # Guide user to shrink the annotation
-            crop_from, ok = CropAnnotationDialog(annot_length, self.vids[0].num_frame()).showDialog()
+            crop_from, ok = CropAnnotationDialog(annot_length, self.vids[0].num_frame(),parent=self).showDialog()
             if crop_from and ok:
                 annotation.truncate(start = crop_from, length = self.vids[0].num_frame())
             else:
