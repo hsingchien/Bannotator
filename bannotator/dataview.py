@@ -117,7 +117,7 @@ class BehaviorTableModel(GenericTableModel):
         # Color background for color column
         if role == Qt.BackgroundRole and key == "color":
             return QtGui.QBrush(data_item.get_color())
-        if role == Qt.BackgroundRole and key == "ID" and idx == self._activated_index:
+        if role == Qt.BackgroundRole and key != "color" and idx == self._activated_index:
             return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         return super().data(index, role)
 
