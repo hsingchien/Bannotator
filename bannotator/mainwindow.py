@@ -520,7 +520,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.behavior_table.clearSelection
         )
         annotation.content_changed.connect(self.behavior_table.repaint_table)
-        annotation.content_layout_changed.connect(behavior_tablemodel.refresh_item_list)
+        annotation.content_layout_changed.connect(behavior_tablemodel.change_layout)
         # Set up Statstableview
         stats_tablemodel = StatsTableModel(
             annotation=annotation,
@@ -530,7 +530,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         self.stats_table.setModel(stats_tablemodel)
         annotation.content_changed.connect(self.stats_table.repaint_table)
-        annotation.content_layout_changed.connect(stats_tablemodel.refresh_item_list)
+        annotation.content_layout_changed.connect(stats_tablemodel.change_layout)
         # Connect behavior and stats table to sync the activated row display
         behavior_tablemodel.activated_behavior_changed.connect(
             stats_tablemodel.receive_activate_behavior

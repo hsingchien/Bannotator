@@ -360,9 +360,12 @@ QSlider::handle:horizontal {
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_11">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>2</number>
+     </property>
      <item>
-      <layout class="QVBoxLayout" name="control_layout" stretch="3">
+      <layout class="QVBoxLayout" name="control_layout" stretch="0">
        <property name="sizeConstraint">
         <enum>QLayout::SetFixedSize</enum>
        </property>
@@ -384,10 +387,7 @@ QSlider::handle:horizontal {
           <attribute name="title">
            <string>Behaviors</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <property name="sizeConstraint">
-            <enum>QLayout::SetDefaultConstraint</enum>
-           </property>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
            <item>
             <widget class="GenericTableView" name="behavior_table">
              <property name="sizePolicy">
@@ -407,24 +407,6 @@ QSlider::handle:horizontal {
              </attribute>
             </widget>
            </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QPushButton" name="add_behavior_button">
-               <property name="text">
-                <string>Add behavior</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="delete_behavior_button">
-               <property name="text">
-                <string>Delete behavior</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
           </layout>
          </widget>
          <widget class="QWidget" name="stats_tab">
@@ -437,6 +419,24 @@ QSlider::handle:horizontal {
            </item>
           </layout>
          </widget>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="add_behavior_button">
+         <property name="text">
+          <string>Add behavior</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="delete_behavior_button">
+         <property name="text">
+          <string>Delete behavior</string>
+         </property>
         </widget>
        </item>
       </layout>

@@ -296,8 +296,9 @@ class Ui_MainWindow(object):
         sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.dockWidgetContents.sizePolicy().hasHeightForWidth())
         self.dockWidgetContents.setSizePolicy(sizePolicy3)
-        self.horizontalLayout_11 = QHBoxLayout(self.dockWidgetContents)
-        self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.verticalLayout_2 = QVBoxLayout(self.dockWidgetContents)
+        self.verticalLayout_2.setSpacing(2)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.control_layout = QVBoxLayout()
         self.control_layout.setObjectName(u"control_layout")
         self.control_layout.setSizeConstraint(QLayout.SetFixedSize)
@@ -308,9 +309,8 @@ class Ui_MainWindow(object):
         self.annotation_tabs.setMovable(True)
         self.behav_tab = QWidget()
         self.behav_tab.setObjectName(u"behav_tab")
-        self.verticalLayout_2 = QVBoxLayout(self.behav_tab)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setSizeConstraint(QLayout.SetDefaultConstraint)
+        self.verticalLayout_6 = QVBoxLayout(self.behav_tab)
+        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
         self.behavior_table = GenericTableView(self.behav_tab)
         self.behavior_table.setObjectName(u"behavior_table")
         sizePolicy1.setHeightForWidth(self.behavior_table.sizePolicy().hasHeightForWidth())
@@ -319,22 +319,7 @@ class Ui_MainWindow(object):
         self.behavior_table.horizontalHeader().setMinimumSectionSize(20)
         self.behavior_table.verticalHeader().setVisible(False)
 
-        self.verticalLayout_2.addWidget(self.behavior_table)
-
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.add_behavior_button = QPushButton(self.behav_tab)
-        self.add_behavior_button.setObjectName(u"add_behavior_button")
-
-        self.horizontalLayout.addWidget(self.add_behavior_button)
-
-        self.delete_behavior_button = QPushButton(self.behav_tab)
-        self.delete_behavior_button.setObjectName(u"delete_behavior_button")
-
-        self.horizontalLayout.addWidget(self.delete_behavior_button)
-
-
-        self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.verticalLayout_6.addWidget(self.behavior_table)
 
         self.annotation_tabs.addTab(self.behav_tab, "")
         self.stats_tab = QWidget()
@@ -350,9 +335,23 @@ class Ui_MainWindow(object):
 
         self.control_layout.addWidget(self.annotation_tabs)
 
-        self.control_layout.setStretch(0, 3)
 
-        self.horizontalLayout_11.addLayout(self.control_layout)
+        self.verticalLayout_2.addLayout(self.control_layout)
+
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.add_behavior_button = QPushButton(self.dockWidgetContents)
+        self.add_behavior_button.setObjectName(u"add_behavior_button")
+
+        self.horizontalLayout.addWidget(self.add_behavior_button)
+
+        self.delete_behavior_button = QPushButton(self.dockWidgetContents)
+        self.delete_behavior_button.setObjectName(u"delete_behavior_button")
+
+        self.horizontalLayout.addWidget(self.delete_behavior_button)
+
+
+        self.verticalLayout_2.addLayout(self.horizontalLayout)
 
         self.behav_table_dock.setWidget(self.dockWidgetContents)
         MainWindow.addDockWidget(Qt.RightDockWidgetArea, self.behav_table_dock)
@@ -517,10 +516,10 @@ class Ui_MainWindow(object):
         self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
         self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
         self.behav_table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
-        self.add_behavior_button.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
-        self.delete_behavior_button.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
+        self.add_behavior_button.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
+        self.delete_behavior_button.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.epoch_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Epochs", None))
         self.add_stream_button.setText(QCoreApplication.translate("MainWindow", u"Add stream", None))
         self.delete_stream_button.setText(QCoreApplication.translate("MainWindow", u"Delete stream", None))

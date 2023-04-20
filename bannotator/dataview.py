@@ -99,6 +99,7 @@ class GenericTableModel(QAbstractTableModel):
 
     def change_layout(self):
         self.layoutChanged.emit()
+        
 
 
 class BehaviorTableModel(GenericTableModel):
@@ -125,7 +126,10 @@ class BehaviorTableModel(GenericTableModel):
     def refresh_item_list(self):
         self.all_behaviors = self.annotation.get_behaviors()
         self.item_list = self.all_behaviors[0]
-        self.layoutChanged.emit()
+    
+    def change_layout(self):
+        self.refresh_item_list()
+        return super().change_layout()
 
     def flags(self, index: QModelIndex):
         if self.properties[index.column()] in ["name"]:
@@ -211,6 +215,10 @@ class StatsTableModel(GenericTableModel):
         for behav_list in behav_lists:
             self.blist_dict["S" + str(behav_list[0].get_stream_ID())] = behav_list
         self.layoutChanged.emit()
+    
+    def change_layout(self):
+        self.refresh_item_list()
+        return super().change_layout()
 
     def data(self, index, role):
         key = self.properties[index.column()]
@@ -325,8 +333,7 @@ class BehavEpochTableModel(GenericTableModel):
             self.behavior.epoch_changed.disconnect(self.change_layout)
         self.behavior = self.stream.get_behavior_dict()[new_behavior_name]
         self.behavior.epoch_changed.connect(self.change_layout)
-        self.item_list = self.behavior.get_epochs()
-        self.layoutChanged.emit()
+        self.change_layout()
         self.stream.get_epoch_by_idx(self.state["current_frame"])
         
     def headerData(self, idx: int, orientation: Qt.Orientation, role=Qt.DisplayRole):
@@ -369,6 +376,13 @@ class BehavEpochTableModel(GenericTableModel):
         cur_epoch_idx = self.get_item_index(epoch)
         self._activated_index = cur_epoch_idx
         self.activated_row_changed.emit(cur_epoch_idx)
+    
+    def change_layout(self):
+        self.refresh_item_list()
+        return super().change_layout()
+    
+    def refresh_item_list(self):
+        self.item_list = self.behavior.get_epochs()
             
         
 

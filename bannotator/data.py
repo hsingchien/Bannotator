@@ -214,28 +214,23 @@ class Behavior(QtCore.QObject):
         self.epochs.sort(key=lambda x: x.start)
         return self.epochs
     
-    def merge_redundant_epochs(self, epochs_list=[]):
-        result = []
-        merged = False
-        i=0
-        while i < len(epochs_list):
-            if i != len(epochs_list)-1 and epochs_list[i].end+1 == epochs_list[i+1].start:
-                epochs_list[i].set_end(epochs_list[i+1].end)
-                result.append(epochs_list[i])
-                epochs_list[i].get_stream().remove_epoch(epochs_list[i+1])
-                i += 2
-                merged = True
-            else:
-                result.append(epochs_list[i])
-                i+=1
-        if not merged:
-            return result
-        else:
-            return self.merge_redundant_epochs(result)
-    
     def remove_redundant_epochs(self):
-        self.epochs = self.merge_redundant_epochs(self.epochs)
-        
+        def merge_redundant_epochs(e_list):
+            if len(e_list) <= 1:
+                return e_list
+            else:
+                epoch0 = e_list[0]
+                the_rest  = merge_redundant_epochs(e_list[1:])
+                epoch1 = the_rest[0]
+                if epoch1.start - epoch0.end == 1:
+                    # Merge 1 and 0
+                    epoch1.set_start(epoch0.start)
+                    epoch1.get_stream().remove_epoch(epoch0)
+                    return the_rest
+                else:
+                    return [epoch0]+the_rest
+        self.epochs = merge_redundant_epochs(self.epochs)
+        self.epoch_changed.emit()
 
 
 class Stream(QtCore.QObject):
