@@ -1,14 +1,23 @@
 from PySide6.QtWidgets import QInputDialog, QDialog, QDialogButtonBox
 from bannotator.ui import *
-class CropAnnotationDialog(QInputDialog):
+class TruncateAnnotationDialog(QDialog, Ui_TruncateAnnotationDialog):
     def __init__(self, annot_length, vid_length, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
-        self.setInputMode(QInputDialog.IntInput)
-        self.setIntMinimum(1)
-        self.setIntMaximum(annot_length-vid_length+1)
-    def showDialog(self):
-        int_input, ok = self.getInt(self, "Is this the correct annotation?", "Annotation is longer than the video 1.\nTruncate the annotation from\n OK to proceed. Cancel to abort")
-        return int_input, ok
+        self.setupUi(self)
+        self.from_spinbox.setMaximum(annot_length-vid_length+1)
+        self.from_spinbox.setMinimum(1)
+        self.to_spinbox.setMinimum(vid_length)
+        self.to_spinbox.setMaximum(annot_length)
+        self.to_spinbox.valueChanged.connect(lambda x: self.from_spinbox.setValue(x-vid_length+1))
+        self.from_spinbox.valueChanged.connect(lambda x: self.to_spinbox.setValue(x+vid_length-1))
+    def get_input(self):
+        if self.exec() == QDialog.Accepted:
+            from_value = self.from_spinbox.value()
+            to_value = self.to_spinbox.value()
+            return (from_value, to_value)
+        else:
+            return (None,None)
+
 
 class AddBehaviorDialog(QDialog, Ui_AddBehaviorDialog):
     def __init__(self, annotation = None, *arg, **kwarg):

@@ -77,6 +77,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
 
         self.add_behavior_button.clicked.connect(self.add_behavior)
+        self.delete_behavior_button.clicked.connect(self.delete_behavior)
 
         self.dialog_state = False
         # Connect menu bar actions
@@ -472,9 +473,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         elif self.vids and annot_length > self.vids[0].num_frame():
             # Guide user to shrink the annotation
-            crop_from, ok = CropAnnotationDialog(annot_length, self.vids[0].num_frame(),parent=self).showDialog()
-            if crop_from and ok:
-                annotation.truncate(start = crop_from, length = self.vids[0].num_frame())
+            self.dialog_state = True
+            (from_value, to_value) = TruncateAnnotationDialog(annot_length, self.vids[0].num_frame(),parent=self).get_input()
+            if from_value is not None:
+                annotation.truncate(start = from_value, length = self.vids[0].num_frame())
             else:
                 return False
         self.state["annot"] = annotation
@@ -751,6 +753,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if name is not None and keybind is not None:
             self.state["annot"].add_behavior(name, keybind)
         self.dialog_state = False
+    
+    def delete_behavior(self):
+        self.dialog_state = True
+        pass
 
     def assign_current_stream(self, keyint: int):
         keyint = keyint - 49
