@@ -22,9 +22,9 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
     QSizePolicy, QSlider, QSpacerItem, QSpinBox,
     QStatusBar, QTabWidget, QVBoxLayout, QWidget)
 
-from .dataview import GenericTableView
-from .widgets import TabWidget
-from bannotator.widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, VideoSlider)
+from bannotator.dataview import GenericTableView
+from bannotator.widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, TabWidget,
+    VideoSlider)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -86,6 +86,8 @@ class Ui_MainWindow(object):
         self.actionAuto_save_annotation.setChecked(True)
         self.actionMerge_behavior = QAction(MainWindow)
         self.actionMerge_behavior.setObjectName(u"actionMerge_behavior")
+        self.actionClose_annotation = QAction(MainWindow)
+        self.actionClose_annotation.setObjectName(u"actionClose_annotation")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -321,15 +323,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.pushButton_2 = QPushButton(self.behav_tab)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.add_behavior_button = QPushButton(self.behav_tab)
+        self.add_behavior_button.setObjectName(u"add_behavior_button")
 
-        self.horizontalLayout.addWidget(self.pushButton_2)
+        self.horizontalLayout.addWidget(self.add_behavior_button)
 
-        self.pushButton = QPushButton(self.behav_tab)
-        self.pushButton.setObjectName(u"pushButton")
+        self.delete_behavior_button = QPushButton(self.behav_tab)
+        self.delete_behavior_button.setObjectName(u"delete_behavior_button")
 
-        self.horizontalLayout.addWidget(self.pushButton)
+        self.horizontalLayout.addWidget(self.delete_behavior_button)
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
@@ -379,15 +381,15 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9 = QHBoxLayout()
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.horizontalLayout_9.setSizeConstraint(QLayout.SetDefaultConstraint)
-        self.pushButton_4 = QPushButton(self.all_epoch)
-        self.pushButton_4.setObjectName(u"pushButton_4")
+        self.add_stream_button = QPushButton(self.all_epoch)
+        self.add_stream_button.setObjectName(u"add_stream_button")
 
-        self.horizontalLayout_9.addWidget(self.pushButton_4)
+        self.horizontalLayout_9.addWidget(self.add_stream_button)
 
-        self.pushButton_3 = QPushButton(self.all_epoch)
-        self.pushButton_3.setObjectName(u"pushButton_3")
+        self.delete_stream_button = QPushButton(self.all_epoch)
+        self.delete_stream_button.setObjectName(u"delete_stream_button")
 
-        self.horizontalLayout_9.addWidget(self.pushButton_3)
+        self.horizontalLayout_9.addWidget(self.delete_stream_button)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout_9)
@@ -446,6 +448,7 @@ class Ui_MainWindow(object):
         self.menuAnnotation.addAction(self.actionOpen_annotation)
         self.menuAnnotation.addAction(self.actionSave_annotation)
         self.menuAnnotation.addAction(self.actionNew_annotation)
+        self.menuAnnotation.addAction(self.actionClose_annotation)
         self.menuAnnotation.addSeparator()
         self.menuAnnotation.addAction(self.actionOpen_config)
         self.menuAnnotation.addAction(self.actionSave_config)
@@ -495,6 +498,7 @@ class Ui_MainWindow(object):
         self.actionMerge_behaviors.setText(QCoreApplication.translate("MainWindow", u"Merge behaviors", None))
         self.actionAuto_save_annotation.setText(QCoreApplication.translate("MainWindow", u"Auto save annotation", None))
         self.actionMerge_behavior.setText(QCoreApplication.translate("MainWindow", u"Merge behavior", None))
+        self.actionClose_annotation.setText(QCoreApplication.translate("MainWindow", u"Close annotation", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
@@ -513,13 +517,13 @@ class Ui_MainWindow(object):
         self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
         self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
         self.behav_table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
-        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
+        self.add_behavior_button.setText(QCoreApplication.translate("MainWindow", u"Add behavior", None))
+        self.delete_behavior_button.setText(QCoreApplication.translate("MainWindow", u"Delete behavior", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))
         self.epoch_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Epochs", None))
-        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"Add stream", None))
-        self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"Delete stream", None))
+        self.add_stream_button.setText(QCoreApplication.translate("MainWindow", u"Add stream", None))
+        self.delete_stream_button.setText(QCoreApplication.translate("MainWindow", u"Delete stream", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.all_epoch), QCoreApplication.translate("MainWindow", u"All Epochs", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.behavior_epoch), QCoreApplication.translate("MainWindow", u"Behavior Epochs", None))
         self.tracks_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Full annotation tracks", None))

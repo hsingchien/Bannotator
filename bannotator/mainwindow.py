@@ -1,4 +1,4 @@
-from bannotator.ui_mainwindow import Ui_MainWindow
+from bannotator.ui.ui_mainwindow import Ui_MainWindow
 from PySide6.QtWidgets import (
     QFileDialog,
     QAbstractItemView,
@@ -76,6 +76,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
 
+        self.add_behavior_button.clicked.connect(self.add_behavior)
+
+        self.dialog_state = False
         # Connect menu bar actions
         # Video menu
         self.actionOpen_video.triggered.connect(self.open_video)
@@ -503,7 +506,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Set up behavior tableview
         annotation = self.state["annot"]
         behavior_tablemodel = BehaviorTableModel(
-            behav_list=annotation.get_behaviors(),
+            annotation=annotation,
             properties=["ID", "name", "keybind", "color"],
             state=self.state,
             items=[],
@@ -515,17 +518,17 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.behavior_table.clearSelection
         )
         annotation.content_changed.connect(self.behavior_table.repaint_table)
-        annotation.content_layout_changed.connect(self.behavior_table.change_layout)
+        annotation.content_layout_changed.connect(behavior_tablemodel.refresh_item_list)
         # Set up Statstableview
         stats_tablemodel = StatsTableModel(
-            behav_lists=annotation.get_behaviors(),
+            annotation=annotation,
             properties=["ID", "name"],
             state=self.state,
             items=[],
         )
         self.stats_table.setModel(stats_tablemodel)
         annotation.content_changed.connect(self.stats_table.repaint_table)
-        annotation.content_layout_changed.connect(self.stats_table.change_layout)
+        annotation.content_layout_changed.connect(stats_tablemodel.refresh_item_list)
         # Connect behavior and stats table to sync the activated row display
         behavior_tablemodel.activated_behavior_changed.connect(
             stats_tablemodel.receive_activate_behavior
@@ -739,6 +742,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             cur_stream.set_behavior(cur_idx, keypressed)
             cur_stream.get_behavior_by_idx(self.state["current_frame"])
             return True
+    
+    def add_behavior(self):
+        self.dialog_state = True
+        newdialog = AddBehaviorDialog(parent=self,annotation = self.state["annot"])
+        name,keybind = newdialog.get_input()
+        if name is not None and keybind is not None:
+            self.state["annot"].add_behavior(name, keybind)
+        self.dialog_state = False
 
     def assign_current_stream(self, keyint: int):
         keyint = keyint - 49
@@ -858,6 +869,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         for _, table in self.stream_tables.items():
             if table.state() == QAbstractItemView.EditingState:
                 return True
+        if self.dialog_state:
+            return True
         return False
 
     def closeEvent(self, event):

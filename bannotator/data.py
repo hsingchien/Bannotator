@@ -229,7 +229,7 @@ class Stream(QtCore.QObject):
     # Layout change signal, when the NUMBER of epochs/behavior changes
     # Emit to instruct the table to reform the layout
     epoch_number_changed = QtCore.Signal()
-    behav_number_changed = QtCore.Signal()
+    behavior_number_changed = QtCore.Signal()
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -280,9 +280,18 @@ class Stream(QtCore.QObject):
                 return False
         return True
 
-    def add_behavior(self, behavior):
-        if behavior.name not in self.behaviors:
-            self.behaviors[behavior.name] = behavior
+    def add_behavior(self, name, keybind):
+        behav_list = [behav for _, behav in self.behaviors.items()]
+        behav_list.sort(key=lambda x: x.ID)
+        if name not in [behav.name for behav in behav_list]:
+            new_behavior = Behavior(name=name,keybind=keybind,ID=behav_list[-1].ID+1, color=QColor("black"),epochs=[],stream=self)
+            self.behaviors[new_behavior.name] = new_behavior
+            new_behavior.keybind_changed.connect(self.map_behav_key)
+            new_behavior.color_changed.connect(lambda: self.color_changed.emit())
+            new_behavior.name_changed.connect(self.reconstruct_behavior_dict)
+            new_behavior.name_changed.connect(lambda x: self.behavior_name_changed.emit(x))
+            self.map_behav_key()
+            self.color_changed.emit(self.get_color_dict())
             return True
         else:
             return False
@@ -547,7 +556,7 @@ class Annotation(QtCore.QObject):
         for _, stream in self.streams:
             stream.data_changed.connect(self.streams_changed)
             stream.color_changed.connect(self.streams_changed)
-            stream.behavior_number_changed.connect(self.content_layout_changed)
+            stream.behavior_number_changed.connect(self.change_layout)
             # stream.behavior_name_changed.connect(self.streams_changed)
             stream.behav_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
@@ -580,6 +589,9 @@ class Annotation(QtCore.QObject):
             self.streams[i] = Stream(ID=i, epochs=[], behaviors={})
             self.streams[i].construct_behavior_from_config(config)
             self.streams[i].data_changed.connect(self.streams_changed)
+            self.streams[i].color_changed.connect(self.streams_changed)
+            self.streams[i].behavior_number_changed.connect(self.change_layout)
+            self.streams[i].behav_name_changed.connect(self.rename_color_dict_key)
 
     def set_length(self, length):
         for _, stream in self.streams.items():
@@ -636,6 +648,7 @@ class Annotation(QtCore.QObject):
             self.streams[stream_id].construct_behavior_from_config(config)
             self.streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
             self.streams[stream_id].data_changed.connect(self.streams_changed)
+            self.streams[stream_id].behavior_number_changed.connect(self.change_layout)
         return True
 
     def validate_streams(self):
@@ -664,6 +677,12 @@ class Annotation(QtCore.QObject):
             return [self.streams[k].get_behaviors() for k in ks]
         else:
             raise Exception("Inconsisten behaviors across streams")
+    
+    def add_behavior(self, name, keybind):
+        for _,stream in self.streams.items():
+            stream.add_behavior(name, keybind)
+        self.behav_color[name] = QColor("black")
+        self.content_layout_changed.emit()
 
     def num_stream(self):
         return len(self.streams)

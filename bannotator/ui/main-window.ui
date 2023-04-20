@@ -410,14 +410,14 @@ QSlider::handle:horizontal {
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="QPushButton" name="pushButton_2">
+              <widget class="QPushButton" name="add_behavior_button">
                <property name="text">
                 <string>Add behavior</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="delete_behavior_button">
                <property name="text">
                 <string>Delete behavior</string>
                </property>
@@ -491,14 +491,14 @@ QSlider::handle:horizontal {
             <enum>QLayout::SetDefaultConstraint</enum>
            </property>
            <item>
-            <widget class="QPushButton" name="pushButton_4">
+            <widget class="QPushButton" name="add_stream_button">
              <property name="text">
               <string>Add stream</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton_3">
+            <widget class="QPushButton" name="delete_stream_button">
              <property name="text">
               <string>Delete stream</string>
              </property>
@@ -723,12 +723,12 @@ QSlider::handle:horizontal {
   <customwidget>
    <class>GenericTableView</class>
    <extends>QTableView</extends>
-   <header>.dataview</header>
+   <header>bannotator.dataview</header>
   </customwidget>
   <customwidget>
    <class>TabWidget</class>
    <extends>QTabWidget</extends>
-   <header>.widgets</header>
+   <header>bannotator.widgets</header>
    <container>1</container>
   </customwidget>
   <customwidget>

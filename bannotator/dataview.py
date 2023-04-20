@@ -103,10 +103,11 @@ class GenericTableModel(QAbstractTableModel):
 
 class BehaviorTableModel(GenericTableModel):
     activated_behavior_changed = QtCore.Signal(str)
-    def __init__(self, behav_list: List = [], *arg, **kwarg):
+    def __init__(self, annotation=None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
-        self.item_list = behav_list[0]
-        self.all_behaviors = behav_list
+        self.annotation = annotation
+        self.all_behaviors = self.annotation.get_behaviors()
+        self.item_list = self.all_behaviors[0]
 
     def data(self, index, role):
         key = self.properties[index.column()]
@@ -120,6 +121,11 @@ class BehaviorTableModel(GenericTableModel):
         if role == Qt.BackgroundRole and key != "color" and idx == self._activated_index:
             return QtGui.QBrush(QtGui.QColor(250, 220, 180))
         return super().data(index, role)
+    
+    def refresh_item_list(self):
+        self.all_behaviors = self.annotation.get_behaviors()
+        self.item_list = self.all_behaviors[0]
+        self.layoutChanged.emit()
 
     def flags(self, index: QModelIndex):
         if self.properties[index.column()] in ["name"]:
@@ -180,9 +186,11 @@ class BehaviorTableModel(GenericTableModel):
 
 class StatsTableModel(GenericTableModel):
     activated_behavior_changed = QtCore.Signal(str)
-    def __init__(self, behav_lists: List = [], *arg, **kwarg):
+    def __init__(self, annotation=None,behav_lists: List = [], *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         # Reorganize behav_list into item_list
+        self.annotation = annotation
+        behav_lists = self.annotation.get_behaviors()
         for i in range(len(behav_lists)):
             self.properties.append(
                 "S" + str(behav_lists[i][0].get_stream_ID()) + "-prct"
@@ -195,6 +203,16 @@ class StatsTableModel(GenericTableModel):
         for behav_list in behav_lists:
             self.blist_dict["S" + str(behav_list[0].get_stream_ID())] = behav_list
         self.item_list = behav_lists[0]
+    
+    def refresh_item_list(self):
+        behav_lists = self.annotation.get_behaviors()
+        self.item_list = behav_lists[0]
+        self.blist_dict = dict()
+        for behav_list in behav_lists:
+            self.blist_dict["S" + str(behav_list[0].get_stream_ID())] = behav_list
+        self.layoutChanged.emit()
+        print("refreshed")
+
 
     def data(self, index, role):
         key = self.properties[index.column()]
