@@ -10,6 +10,8 @@ class TruncateAnnotationDialog(QDialog, Ui_TruncateAnnotationDialog):
         self.to_spinbox.setMaximum(annot_length)
         self.to_spinbox.valueChanged.connect(lambda x: self.from_spinbox.setValue(x-vid_length+1))
         self.from_spinbox.valueChanged.connect(lambda x: self.to_spinbox.setValue(x+vid_length-1))
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
     def get_input(self):
         if self.exec() == QDialog.Accepted:
             from_value = self.from_spinbox.value()
@@ -49,5 +51,39 @@ class AddBehaviorDialog(QDialog, Ui_AddBehaviorDialog):
             self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
         else:
             self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+class DeleteBehaviorDialog(QDialog, Ui_DeleteBehaviorDialog):
+    def __init__(self, annotation = None, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.setupUi(self)
+        self.annotation = annotation
+        behavior_list = annotation.get_behaviors()
+        all_behavior_names = [behav.name for behav in behavior_list[0]]
+        self.behavior_combobox.addItems(all_behavior_names)
+        self.replace_behavior_combobox.addItems(all_behavior_names)
+        self.behavior_combobox.setCurrentIndex(0)
+        self.replace_behavior_combobox.setCurrentIndex(0)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.behavior_combobox.currentTextChanged.connect(self.validate_input)
+        self.replace_behavior_combobox.currentTextChanged.connect(self.validate_input)
+        
+    def validate_input(self):
+        if self.replace_behavior_combobox.currentText() == self.behavior_combobox.currentText():
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+        else:
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+            
+    def get_input(self):
+        if self.exec() == QDialog.Accepted:
+            to_delete = self.behavior_combobox.currentText()
+            replace = self.replace_behavior_combobox.currentText()
+            return (to_delete, replace)
+        else:
+            return (None, None)
+        
+        
+        
 
 

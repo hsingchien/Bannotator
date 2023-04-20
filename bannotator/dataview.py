@@ -236,11 +236,20 @@ class StatsTableModel(GenericTableModel):
         self.activated_behavior_changed.emit(self.item_list[row_idx].name)
         self.repaint()
     
+    def set_activate_by_name(self, behav_name):
+        idx = self.get_property_index(behav_name,"name")
+        self.double_click_action(idx)
+    
     def receive_activate_behavior(self, behav_name):
         row_idx = self.get_property_index(behav_name,"name")
         self._activated_index = row_idx
         self.repaint()
-
+    
+    def current_activate_property(self,prop):
+        if self._activated_index is not None:
+            return getattr(self.item_list[self._activated_index],prop)
+        else:
+            return None
 
 class StreamTableModel(GenericTableModel):
     jump_to_frame = QtCore.Signal(int)

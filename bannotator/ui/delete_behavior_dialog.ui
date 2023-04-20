@@ -24,17 +24,17 @@
       </widget>
      </item>
      <item row="0" column="1" colspan="2">
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QComboBox" name="behavior_combobox"/>
      </item>
      <item row="1" column="0" colspan="2">
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="epoch_info_label">
        <property name="text">
         <string>Its # epochs will be replaced with</string>
        </property>
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QComboBox" name="comboBox_2"/>
+      <widget class="QComboBox" name="replace_behavior_combobox"/>
      </item>
     </layout>
    </item>

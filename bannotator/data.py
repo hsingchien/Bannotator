@@ -213,6 +213,29 @@ class Behavior(QtCore.QObject):
     def get_epochs(self):
         self.epochs.sort(key=lambda x: x.start)
         return self.epochs
+    
+    def merge_redundant_epochs(self, epochs_list=[]):
+        result = []
+        merged = False
+        i=0
+        while i < len(epochs_list):
+            if i != len(epochs_list)-1 and epochs_list[i].end+1 == epochs_list[i+1].start:
+                epochs_list[i].set_end(epochs_list[i+1].end)
+                result.append(epochs_list[i])
+                epochs_list[i].get_stream().remove_epoch(epochs_list[i+1])
+                i += 2
+                merged = True
+            else:
+                result.append(epochs_list[i])
+                i+=1
+        if not merged:
+            return result
+        else:
+            return self.merge_redundant_epochs(result)
+    
+    def remove_redundant_epochs(self):
+        self.epochs = self.merge_redundant_epochs(self.epochs)
+        
 
 
 class Stream(QtCore.QObject):
@@ -229,7 +252,7 @@ class Stream(QtCore.QObject):
     # Layout change signal, when the NUMBER of epochs/behavior changes
     # Emit to instruct the table to reform the layout
     epoch_number_changed = QtCore.Signal()
-    behavior_number_changed = QtCore.Signal()
+
 
     # Defines class Stream to store annotation data
     def __init__(self, ID: int = None, epochs: List = [], behaviors: Dict = {}) -> None:
@@ -275,8 +298,14 @@ class Stream(QtCore.QObject):
             epoch1 = self.epochs[i]
             epoch2 = self.epochs[i + 1]
             if epoch1.name == epoch2.name:
+                print("repetitive behavior")
+                print(epoch1)
+                print(epoch2)
                 return False
             if epoch2.start - epoch1.end != 1:
+                print("overlap epoch or blank")
+                print(epoch1)
+                print(epoch2)
                 return False
         return True
 
@@ -296,9 +325,24 @@ class Stream(QtCore.QObject):
         else:
             return False
 
-    def remove_behavior(self, behavior, replace_behavior):
+    def delete_behavior(self, to_del, to_rep):
         # Remove behavior and merge its epochs with other behaviors
-        pass
+        del_behav = self.behaviors[to_del]
+        rep_behav = self.behaviors[to_rep]
+        # Move all the epochs from del to rep
+        for epoch in del_behav.get_epochs():
+            epoch.set_behavior(rep_behav)
+            rep_behav.append_epoch(epoch)
+        del_behav.get_epochs().clear()
+        # If there are neighbor epochs, merge them into one
+        rep_behav.remove_redundant_epochs()
+        # Remove behavior
+        self.behaviors.pop(to_del)
+        self.map_behav_key()
+        # Emit signal
+        self.data_changed.emit(self.get_stream_vect())
+        self.color_changed.emit(self.get_color_dict())
+        self.epoch_number_changed.emit()
 
     def add_epoch(self, epoch):
         if epoch not in self.epochs:
@@ -313,8 +357,8 @@ class Stream(QtCore.QObject):
             return True
 
     def remove_epoch(self, epoch):
-        # Remove epoch and replace its behavior with default behavior(with merge)
-        pass
+        # Simply remove epoch from epochs list
+        self.epochs.remove(epoch)
 
     def map_behav_key(self):
         try:
@@ -556,7 +600,6 @@ class Annotation(QtCore.QObject):
         for _, stream in self.streams:
             stream.data_changed.connect(self.streams_changed)
             stream.color_changed.connect(self.streams_changed)
-            stream.behavior_number_changed.connect(self.change_layout)
             # stream.behavior_name_changed.connect(self.streams_changed)
             stream.behav_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
@@ -590,7 +633,6 @@ class Annotation(QtCore.QObject):
             self.streams[i].construct_behavior_from_config(config)
             self.streams[i].data_changed.connect(self.streams_changed)
             self.streams[i].color_changed.connect(self.streams_changed)
-            self.streams[i].behavior_number_changed.connect(self.change_layout)
             self.streams[i].behav_name_changed.connect(self.rename_color_dict_key)
 
     def set_length(self, length):
@@ -648,7 +690,6 @@ class Annotation(QtCore.QObject):
             self.streams[stream_id].construct_behavior_from_config(config)
             self.streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
             self.streams[stream_id].data_changed.connect(self.streams_changed)
-            self.streams[stream_id].behavior_number_changed.connect(self.change_layout)
         return True
 
     def validate_streams(self):
@@ -682,6 +723,11 @@ class Annotation(QtCore.QObject):
         for _,stream in self.streams.items():
             stream.add_behavior(name, keybind)
         self.behav_color[name] = QColor("black")
+        self.content_layout_changed.emit()
+        
+    def delete_behavior(self, to_del, to_rep):
+        for _,stream in self.streams.items():
+            stream.delete_behavior(to_del, to_rep)
         self.content_layout_changed.emit()
 
     def num_stream(self):

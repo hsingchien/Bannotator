@@ -33,20 +33,20 @@ class Ui_DeleteBehaviorDialog(object):
 
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
-        self.comboBox = QComboBox(DeleteBehaviorDialog)
-        self.comboBox.setObjectName(u"comboBox")
+        self.behavior_combobox = QComboBox(DeleteBehaviorDialog)
+        self.behavior_combobox.setObjectName(u"behavior_combobox")
 
-        self.gridLayout.addWidget(self.comboBox, 0, 1, 1, 2)
+        self.gridLayout.addWidget(self.behavior_combobox, 0, 1, 1, 2)
 
-        self.label_3 = QLabel(DeleteBehaviorDialog)
-        self.label_3.setObjectName(u"label_3")
+        self.epoch_info_label = QLabel(DeleteBehaviorDialog)
+        self.epoch_info_label.setObjectName(u"epoch_info_label")
 
-        self.gridLayout.addWidget(self.label_3, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.epoch_info_label, 1, 0, 1, 2)
 
-        self.comboBox_2 = QComboBox(DeleteBehaviorDialog)
-        self.comboBox_2.setObjectName(u"comboBox_2")
+        self.replace_behavior_combobox = QComboBox(DeleteBehaviorDialog)
+        self.replace_behavior_combobox.setObjectName(u"replace_behavior_combobox")
 
-        self.gridLayout.addWidget(self.comboBox_2, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.replace_behavior_combobox, 1, 2, 1, 1)
 
 
         self.verticalLayout.addLayout(self.gridLayout)
@@ -69,6 +69,6 @@ class Ui_DeleteBehaviorDialog(object):
     def retranslateUi(self, DeleteBehaviorDialog):
         DeleteBehaviorDialog.setWindowTitle(QCoreApplication.translate("DeleteBehaviorDialog", u"Delete behavior", None))
         self.label.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"Delete", None))
-        self.label_3.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"Its # epochs will be replaced with", None))
+        self.epoch_info_label.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"Its # epochs will be replaced with", None))
     # retranslateUi
 

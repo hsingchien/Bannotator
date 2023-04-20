@@ -756,7 +756,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     
     def delete_behavior(self):
         self.dialog_state = True
-        pass
+        newdialog = DeleteBehaviorDialog(parent=self, annotation=self.state["annot"])
+        to_del, to_rep = newdialog.get_input()
+        if to_del is not None:
+            # If behavior_epoch tables are viewing the deleted behavior, set it to replace behavior
+            if self.stats_table.model().current_activate_property("name") == to_del:
+                self.stats_table.model().set_activate_by_name(to_rep)
+            self.state["annot"].delete_behavior(to_del, to_rep)
+        for _,stream in self.state["annot"].get_streams().items():
+            stream.get_epoch_by_idx(self.state["current_frame"])
+        self.dialog_state=False
 
     def assign_current_stream(self, keyint: int):
         keyint = keyint - 49
