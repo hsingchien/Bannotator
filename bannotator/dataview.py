@@ -211,8 +211,6 @@ class StatsTableModel(GenericTableModel):
         for behav_list in behav_lists:
             self.blist_dict["S" + str(behav_list[0].get_stream_ID())] = behav_list
         self.layoutChanged.emit()
-        print("refreshed")
-
 
     def data(self, index, role):
         key = self.properties[index.column()]
@@ -301,19 +299,23 @@ class BehavEpochTableModel(GenericTableModel):
         behaviors = stream.get_behavior_dict()
         self.stream.cur_epoch.connect(self.set_activated_epoch)
         self.stream.behavior_name_changed.connect(self.repaint)
-        self.stream.epoch_number_changed.connect(self.change_layout)
         if behavior_name in behaviors:
             self.behavior = behaviors[behavior_name]
+            self.behavior.epoch_changed.connect(self.change_layout)
         else:
             self.behavior = None
         if isinstance(self.behavior, Behavior):
             self.item_list = self.behavior.get_epochs()
+            
         else:
             self.item_list = []
             
     @QtCore.Slot()
     def set_behavior(self, new_behavior_name):
+        if self.behavior is not None:
+            self.behavior.epoch_changed.disconnect(self.change_layout)
         self.behavior = self.stream.get_behavior_dict()[new_behavior_name]
+        self.behavior.epoch_changed.connect(self.change_layout)
         self.item_list = self.behavior.get_epochs()
         self.layoutChanged.emit()
         self.stream.get_epoch_by_idx(self.state["current_frame"])

@@ -559,10 +559,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             )
             self.cur_behav_layout.addWidget(behav_label)
             self.stream_labels[ID] = behav_label
-            self.state.connect("current_frame", stream.get_behavior_by_idx)
-            stream.cur_behavior_name.connect(behav_label.set_behavior)
             # Connect video slider and frame spinbox to the stream to track the current epoch
             self.state.connect("current_frame", stream.get_epoch_by_idx)
+            # get_epoch_by_idx will emit cur_epoch and cur_behavior, which will set the epoch table and behavior label respectively
+            stream.cur_behavior_name.connect(behav_label.set_behavior)
+
             # Scroll to current epoch if action is checked
             if self.actionTrack_epoch.isChecked():
                 stream_table_view.connect_scroll()
@@ -740,7 +741,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         else:
             cur_stream.set_behavior(cur_idx, keypressed)
-            cur_stream.get_behavior_by_idx(self.state["current_frame"])
+            cur_stream.get_epoch_by_idx(self.state["current_frame"])
             return True
     
     def add_behavior(self):

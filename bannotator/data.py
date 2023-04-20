@@ -244,7 +244,7 @@ class Stream(QtCore.QObject):
             self.map_behav_key()
             for _, be in self.behaviors.items():
                 be.keybind_changed.connect(self.map_behav_key)
-                be.color_changed.connect(lambda: self.color_changed.emit())
+                be.color_changed.connect(lambda: self.color_changed.emit(self.get_color_dict()))
                 be.name_changed.connect(self.reconstruct_behavior_dict)
                 be.name_changed.connect(lambda x: self.behavior_name_changed.emit(x))
 
@@ -284,10 +284,10 @@ class Stream(QtCore.QObject):
         behav_list = [behav for _, behav in self.behaviors.items()]
         behav_list.sort(key=lambda x: x.ID)
         if name not in [behav.name for behav in behav_list]:
-            new_behavior = Behavior(name=name,keybind=keybind,ID=behav_list[-1].ID+1, color=QColor("black"),epochs=[],stream=self)
+            new_behavior = Behavior(name=name,keybind=keybind,ID=behav_list[-1].ID+1, color=QColor("#43a398"),epochs=[],stream=self)
             self.behaviors[new_behavior.name] = new_behavior
             new_behavior.keybind_changed.connect(self.map_behav_key)
-            new_behavior.color_changed.connect(lambda: self.color_changed.emit())
+            new_behavior.color_changed.connect(lambda: self.color_changed.emit(self.get_color_dict()))
             new_behavior.name_changed.connect(self.reconstruct_behavior_dict)
             new_behavior.name_changed.connect(lambda x: self.behavior_name_changed.emit(x))
             self.map_behav_key()
@@ -465,11 +465,11 @@ class Stream(QtCore.QObject):
                 epoch = epochs[int(1 / 2 * len(epochs))]
         if allow_emit:
             self.cur_epoch.emit(epoch)
+            self.cur_behavior_name.emit(epoch.get_behavior())
         return epoch
 
     def get_behavior_by_idx(self, idx: int):
         epoch = self.get_epoch_by_idx(idx, False)
-        self.cur_behavior_name.emit(epoch.get_behavior())
         return epoch.get_behavior()
 
     def get_length(self):
