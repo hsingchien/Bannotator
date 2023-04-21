@@ -138,7 +138,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.connect(
             "annot", [self.setup_table_models, lambda: self.update_gui(["gui"])]
         )
-        self.state.connect("video",[lambda: self.update_gui(["gui"])])
+        self.state.connect("video",[lambda: self.update_gui(["video_ui","gui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
         self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
 
@@ -150,6 +150,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.video_slider.changeBoxRange(
                     self.state["slider_box"][0] + 1, self.state["slider_box"][1] + 1
                 )  # "slider_box" index from 0, video_slider index from 1
+            # Update time label
+            if self.state["FPS"] is not None:
+                cur_time = int(self.state["current_frame"]/self.state["FPS"])
+                minutes,seconds = divmod(cur_time, 60)
+                hours,minutes = divmod(minutes, 60)
+                duration = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+                self.time_label.setText(duration)
+
         if "tracks" in topics:
             # Update tracks highlight and behavior label (selected with a bracket)
             for _, stream in self.state["annot"].get_streams().items():
@@ -325,15 +333,15 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 valid_video = True
 
         self.vids.append(bvideo)
+        # Set stretch factors
         if self.state["video"] == 0:
             self.vids_stretch_factor = [1]
         else:
             self.vids_stretch_factor.append(
                 bvideo.num_frame() / self.vids[0].num_frame()
             )
-
-        self.state["video"] += 1
-        if self.state["video"] == 1:
+        # Connect scene
+        if self.state["video"] == 0:
             bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
@@ -358,7 +366,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     # Rebuild the gridlayout
                     self.update_gui(["video_layout"])
             new_view.show()
+        # Change state and trigger callbakcs
         self.go_to_frame(self.state["current_frame"])
+        self.state["video"] += 1
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
@@ -425,12 +435,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.vids_stretch_factor.append(
                 bvideo.num_frame() / self.vids[0].num_frame()
             )
-
+        #
         bvideo.start_frame_fetcher()
         bvideo.run_worker.connect(lambda: self.go_to_frame(self.state["current_frame"]))
         self.vids.append(bvideo)
-        self.state["video"] += 1
-        if self.state["video"] == 1:
+        if self.state["video"] == 0:
             bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
@@ -455,7 +464,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     # Rebuild the gridlayout
                     self.update_gui(["video_layout"])
             new_view.show()
+        # Refresh the scene
         self.go_to_frame(self.state["current_frame"])
+        # Trigger ui updtates
+        self.state["video"] += 1
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
