@@ -346,51 +346,53 @@ class SeqVideoWorker(QRunnable):
         self._emit_flag = False
     @Slot()
     def run(self):
-        seqfile = open(self._url, "rb")
-        while self._run:
-            if self._start is not None and self._jpeg and self._emit_flag:
-                # Set the current frame position to the requested frame
-                seqfile.seek(self._start)
-                imdata = seqfile.read(self._end-self._start)                
-                # Read the frame
-                pixmap = QPixmap()
-                try:
-                    pixmap.loadFromData(imdata)
-                except Exception as err:
-                    print(f"Failed fetching frame! {err}")
+        # seqfile = open(self._url, "rb")
+        with open(self._url, "rb") as seqfile:
+            while self._run:
+                if self._start is not None and self._jpeg and self._emit_flag:
+                    # Set the current frame position to the requested frame
+                    seqfile.seek(self._start)
+                    # imdata = seqfile.read(self._end-self._start)                
+                    # # Read the frame
+                    # pixmap = QPixmap()
+                    # try:
+                    #     pixmap.loadFromData(imdata)
+                    # except Exception as err:
+                    #     print(f"Failed fetching frame! {err}")
 
-                self.signals.result_signal.emit(pixmap)
-                self._emit_flag = False
-                # # Use cv2 to decode binary jpeg
-                # imdata = seqfile.read(self._end-self._start)
-                # jpg_image = bytearray()
-                # jpg_image += imdata
-                # frame = np.asarray(jpg_image, dtype="uint8")
-                # frame = cv2.imdecode(frame, 0)
-                # height, width = frame.shape
-                # q_image = QImage(frame.data, width, height, QImage.Format_Grayscale8)
-                # pixmap = QPixmap(q_image)
-                
-            elif self._start is not None and self._emit_flag:
-                seqfile.seek(self._start)
-                _pixel_type = "uint8"
-                _pixel_count = self.header["image_size_bytes"]
-                imdata = seqfile.read(_pixel_count)
-                _shape = (self.header["height"], int(_pixel_count/self.header["height"]))
-                pixmap = QPixmap()
-                try:
-                    frame = np.fromfile(seqfile,_pixel_type,_pixel_count).reshape(_shape)
-                    q_image = QImage(frame.data, _shape[1], _shape[0],QImage.Format_Grayscale8)
-                    pixmap.convertFromImage(q_image)
-                except Exception as err:
-                    print(f"Failed fetching frame! {err}")
+                    # self.signals.result_signal.emit(pixmap)
+                    # self._emit_flag = False
+                    # Use cv2 to decode binary jpeg
+                    imdata = seqfile.read(self._end-self._start)
+                    jpg_image = bytearray()
+                    jpg_image += imdata
+                    frame = np.asarray(jpg_image, dtype="uint8")
+                    frame = cv2.imdecode(frame, 0)
+                    height, width = frame.shape
+                    q_image = QImage(frame.data, width, height, QImage.Format_Grayscale8)
+                    pixmap = QPixmap(q_image)
+                    self.signals.result_signal.emit(pixmap)
+                    self._emit_flag = False
                     
-                self.signals.result_signal.emit(pixmap)
-                self._emit_flag = False
-            else:
-                QThread.msleep(20)
-
-        seqfile.close()
+                elif self._start is not None and self._emit_flag:
+                    seqfile.seek(self._start)
+                    _pixel_type = "uint8"
+                    _pixel_count = self.header["image_size_bytes"]
+                    imdata = seqfile.read(_pixel_count)
+                    _shape = (self.header["height"], int(_pixel_count/self.header["height"]))
+                    pixmap = QPixmap()
+                    try:
+                        frame = np.fromfile(seqfile,_pixel_type,_pixel_count).reshape(_shape)
+                        q_image = QImage(frame.data, _shape[1], _shape[0],QImage.Format_Grayscale8)
+                        pixmap.convertFromImage(q_image)
+                    except Exception as err:
+                        print(f"Failed fetching frame! {err}")
+                        
+                    self.signals.result_signal.emit(pixmap)
+                    self._emit_flag = False
+                else:
+                    QThread.msleep(20)
+        # seqfile.close()
 
     
     

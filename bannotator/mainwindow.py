@@ -85,6 +85,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Connect menu bar actions
         # File menu
         self.actionReset.triggered.connect(self.reset_app)
+        self.actionQuit.triggered.connect(self.close)
         # Video menu
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionAdd_seq.triggered.connect(self.add_seq)
@@ -116,6 +117,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionTrack_epoch.toggled.connect(
             lambda: self.update_gui(["view_options"])
         )
+
 
         # Connect state change
         self.connect_states()
