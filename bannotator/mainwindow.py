@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QTimer, Qt, QEvent
 from bannotator.state import GuiState
+import bannotator.utility as utt
 from bannotator.video import BehavVideo, SeqBehavVideo
 from bannotator.data import Annotation
 from bannotator.dataview import (
@@ -39,6 +40,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["track_window"] = self.track_window_spinbox.value()
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
+        self.dialog_state = False
 
         # Container for dynamically generated widgets
         # Key = stream ID, item = TrackBar widget
@@ -74,12 +76,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.track_window_spinbox.valueChanged.connect(
             lambda x: self.state.set("track_window", x)
         )
-        self.video_layout_comboBox.currentTextChanged.connect(self.set_video_layout)
+        self.video_layout_comboBox.currentTextChanged.connect(lambda x: self.state.set("video_layout", x))
 
         self.add_behavior_button.clicked.connect(self.add_behavior)
         self.delete_behavior_button.clicked.connect(self.delete_behavior)
-
-        self.dialog_state = False
         # Connect menu bar actions
         # Video menu
         self.actionOpen_video.triggered.connect(self.open_video)
@@ -110,6 +110,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionTrack_epoch.toggled.connect(
             lambda: self.update_gui(["view_options"])
         )
+        self.actionClose_annotation.triggered.connect(self.close_annotation)
         # Connect state change
         self.state.connect(
             "current_frame",
@@ -507,6 +508,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Set up table views
         # Set up behavior tableview
         annotation = self.state["annot"]
+        if annotation is None:
+            return False
         behavior_tablemodel = BehaviorTableModel(
             annotation=annotation,
             properties=["ID", "name", "keybind", "color"],
@@ -747,6 +750,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return True
     
     def add_behavior(self):
+        if self.state["annot"] is None:
+            return False
         self.dialog_state = True
         newdialog = AddBehaviorDialog(parent=self,annotation = self.state["annot"])
         name,keybind = newdialog.get_input()
@@ -755,6 +760,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.dialog_state = False
     
     def delete_behavior(self):
+        if self.state["annot"] is None:
+            return False
         self.dialog_state = True
         newdialog = DeleteBehaviorDialog(parent=self, annotation=self.state["annot"])
         to_del, to_rep = newdialog.get_input()
@@ -778,9 +785,28 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return True
         except Exception:
             return False
+    
+    def close_annotation(self):
+        # First clear out all the widgets
+        if self.state["annot"] is None:
+            return False
+        warning_dialog = QMessageBox.warning(self, "Do you want to close annotation?",
+                                "Make sure to save before closing",
+                                QMessageBox.Ok, QMessageBox.Cancel)
+        if warning_dialog != QMessageBox.Ok:
+            return False
+        self.video_slider.clear_track()
+        utt.clear_layout(self.track_layout)
+        utt.clear_layout(self.full_tracks_layout)
+        utt.clear_layout(self.cur_behav_layout)
+        utt.clear_layout(self.stream_table_layout)
+        utt.clear_layout(self.behav_epoch_table_layout)
+        utt.reset_table(self.behavior_table)
+        utt.reset_table(self.stats_table)
+        self.state["annot"] = None
+        # Disconnect from states to the already deleted annotation
+        
 
-    def set_video_layout(self, layout_option):
-        self.state["video_layout"] = layout_option
 
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:

@@ -31,22 +31,27 @@ class Ui_DeleteBehaviorDialog(object):
         self.label = QLabel(DeleteBehaviorDialog)
         self.label.setObjectName(u"label")
 
-        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 2)
 
         self.behavior_combobox = QComboBox(DeleteBehaviorDialog)
         self.behavior_combobox.setObjectName(u"behavior_combobox")
 
-        self.gridLayout.addWidget(self.behavior_combobox, 0, 1, 1, 2)
+        self.gridLayout.addWidget(self.behavior_combobox, 0, 2, 1, 1)
+
+        self.num_epochs_label = QLabel(DeleteBehaviorDialog)
+        self.num_epochs_label.setObjectName(u"num_epochs_label")
+
+        self.gridLayout.addWidget(self.num_epochs_label, 1, 0, 1, 1)
 
         self.epoch_info_label = QLabel(DeleteBehaviorDialog)
         self.epoch_info_label.setObjectName(u"epoch_info_label")
 
-        self.gridLayout.addWidget(self.epoch_info_label, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.epoch_info_label, 1, 1, 1, 2)
 
         self.replace_behavior_combobox = QComboBox(DeleteBehaviorDialog)
         self.replace_behavior_combobox.setObjectName(u"replace_behavior_combobox")
 
-        self.gridLayout.addWidget(self.replace_behavior_combobox, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.replace_behavior_combobox, 1, 3, 1, 1)
 
 
         self.verticalLayout.addLayout(self.gridLayout)
@@ -69,6 +74,7 @@ class Ui_DeleteBehaviorDialog(object):
     def retranslateUi(self, DeleteBehaviorDialog):
         DeleteBehaviorDialog.setWindowTitle(QCoreApplication.translate("DeleteBehaviorDialog", u"Delete behavior", None))
         self.label.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"Delete", None))
-        self.epoch_info_label.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"Its # epochs will be replaced with", None))
+        self.num_epochs_label.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"TextLabel", None))
+        self.epoch_info_label.setText(QCoreApplication.translate("DeleteBehaviorDialog", u"epochs will be merged into", None))
     # retranslateUi
 

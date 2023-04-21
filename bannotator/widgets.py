@@ -102,6 +102,15 @@ class VideoSlider(QSlider):
             painter.end()
 
         super().paintEvent(event)
+    
+    def clear_track(self):
+        self.boxstart = None
+        self.boxend = None
+        self.track_data = None
+        self.update_track_flag = False
+        self.color_dict = None
+        self.pixmap_bg = None
+        self.update()
 
     def set_track_data(self, new_track_data):
         self.track_data = new_track_data

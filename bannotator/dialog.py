@@ -61,13 +61,16 @@ class DeleteBehaviorDialog(QDialog, Ui_DeleteBehaviorDialog):
         all_behavior_names = [behav.name for behav in behavior_list[0]]
         self.behavior_combobox.addItems(all_behavior_names)
         self.replace_behavior_combobox.addItems(all_behavior_names)
-        self.behavior_combobox.setCurrentIndex(0)
         self.replace_behavior_combobox.setCurrentIndex(0)
+        self.behavior_combobox.setCurrentIndex(0)
+        self.update_behavior_info(self.behavior_combobox.currentText())
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
         self.behavior_combobox.currentTextChanged.connect(self.validate_input)
         self.replace_behavior_combobox.currentTextChanged.connect(self.validate_input)
+        self.behavior_combobox.currentTextChanged.connect(self.update_behavior_info)
+        
         
     def validate_input(self):
         if self.replace_behavior_combobox.currentText() == self.behavior_combobox.currentText():
@@ -82,6 +85,15 @@ class DeleteBehaviorDialog(QDialog, Ui_DeleteBehaviorDialog):
             return (to_delete, replace)
         else:
             return (None, None)
+    
+    def update_behavior_info(self, bname):
+        n_epochs = []
+        for _,stream in self.annotation.get_streams().items():
+            behav = stream.get_behavior_dict()[bname]
+            n_epochs.append(str(behav.num_epochs()))
+        n_epochs = ", ".join(n_epochs)
+        self.num_epochs_label.setText(n_epochs)
+
         
         
         
