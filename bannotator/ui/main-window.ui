@@ -311,16 +311,9 @@ QSlider::handle:horizontal {
     <addaction name="separator"/>
     <addaction name="actionTrack_epoch"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>Edit</string>
-    </property>
-    <addaction name="actionMerge_behavior"/>
-   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuVideo"/>
    <addaction name="menuAnnotation"/>
-   <addaction name="menuEdit"/>
    <addaction name="menuWindows"/>
    <addaction name="menuHelp"/>
   </widget>

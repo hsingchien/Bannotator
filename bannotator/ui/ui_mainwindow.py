@@ -272,8 +272,6 @@ class Ui_MainWindow(object):
         self.menuHelp.setObjectName(u"menuHelp")
         self.menuWindows = QMenu(self.menubar)
         self.menuWindows.setObjectName(u"menuWindows")
-        self.menuEdit = QMenu(self.menubar)
-        self.menuEdit.setObjectName(u"menuEdit")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
@@ -437,7 +435,6 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuVideo.menuAction())
         self.menubar.addAction(self.menuAnnotation.menuAction())
-        self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuWindows.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
         self.menuVideo.addAction(self.actionOpen_video)
@@ -463,7 +460,6 @@ class Ui_MainWindow(object):
         self.menuWindows.addAction(self.actionEpoch_table)
         self.menuWindows.addSeparator()
         self.menuWindows.addAction(self.actionTrack_epoch)
-        self.menuEdit.addAction(self.actionMerge_behavior)
 
         self.retranslateUi(MainWindow)
 
@@ -514,7 +510,6 @@ class Ui_MainWindow(object):
         self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
         self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"Help", None))
         self.menuWindows.setTitle(QCoreApplication.translate("MainWindow", u"View", None))
-        self.menuEdit.setTitle(QCoreApplication.translate("MainWindow", u"Edit", None))
         self.behav_table_dock.setWindowTitle(QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.behav_tab), QCoreApplication.translate("MainWindow", u"Behaviors", None))
         self.annotation_tabs.setTabText(self.annotation_tabs.indexOf(self.stats_tab), QCoreApplication.translate("MainWindow", u"Stats", None))

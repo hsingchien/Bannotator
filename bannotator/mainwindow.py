@@ -76,11 +76,15 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.track_window_spinbox.valueChanged.connect(
             lambda x: self.state.set("track_window", x)
         )
-        self.video_layout_comboBox.currentTextChanged.connect(lambda x: self.state.set("video_layout", x))
+        self.video_layout_comboBox.currentTextChanged.connect(
+            lambda x: self.state.set("video_layout", x)
+        )
 
         self.add_behavior_button.clicked.connect(self.add_behavior)
         self.delete_behavior_button.clicked.connect(self.delete_behavior)
         # Connect menu bar actions
+        # File menu
+        self.actionReset.triggered.connect(self.reset_app)
         # Video menu
         self.actionOpen_video.triggered.connect(self.open_video)
         self.actionAdd_seq.triggered.connect(self.add_seq)
@@ -94,6 +98,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if x
             else self.auto_save_timer.stop()
         )
+        self.actionClose_annotation.triggered.connect(self.close_annotation)
+        # View menu
         self.actionFull_annotation.toggled.connect(
             lambda: self.update_gui(["view_options"])
         )
@@ -110,8 +116,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionTrack_epoch.toggled.connect(
             lambda: self.update_gui(["view_options"])
         )
-        self.actionClose_annotation.triggered.connect(self.close_annotation)
+
         # Connect state change
+        self.connect_states()
+
+    def connect_states(self):
         self.state.connect(
             "current_frame",
             [
@@ -129,13 +138,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.connect(
             "annot", [self.setup_table_models, lambda: self.update_gui(["gui"])]
         )
-        self.state.connect(
-            "video",
-            [
-                lambda: self.go_to_frame(self.state["current_frame"]),
-                lambda: self.update_gui(["gui"]),
-            ],
-        )
+        self.state.connect("video",[lambda: self.update_gui(["gui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
         self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
 
@@ -299,11 +302,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 return False
             else:
                 valid_video = True
-            
+
         # Check if the video is significantly different from video 0
-        if (self.state["video"] > 0 
-            and not valid_video 
-            and np.abs(bvideo.num_frame()-self.vids[0].num_frame()) > 0.05 * self.vids[0].num_frame()):
+        if (
+            self.state["video"] > 0
+            and not valid_video
+            and np.abs(bvideo.num_frame() - self.vids[0].num_frame())
+            > 0.05 * self.vids[0].num_frame()
+        ):
             warning_dialog = QMessageBox.warning(
                 self,
                 "Is this the correct video?",
@@ -318,12 +324,13 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             else:
                 valid_video = True
 
-        
         self.vids.append(bvideo)
         if self.state["video"] == 0:
             self.vids_stretch_factor = [1]
         else:
-            self.vids_stretch_factor.append(bvideo.num_frame()/self.vids[0].num_frame())
+            self.vids_stretch_factor.append(
+                bvideo.num_frame() / self.vids[0].num_frame()
+            )
 
         self.state["video"] += 1
         if self.state["video"] == 1:
@@ -351,7 +358,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     # Rebuild the gridlayout
                     self.update_gui(["video_layout"])
             new_view.show()
-
+        self.go_to_frame(self.state["current_frame"])
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
@@ -391,9 +398,12 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             else:
                 valid_video = True
         # Check if the video is significantly different from video 0
-        if (self.state["video"] > 0 
-            and not valid_video 
-            and np.abs(bvideo.num_frame()-self.vids[0].num_frame()) > 0.05 * self.vids[0].num_frame()):
+        if (
+            self.state["video"] > 0
+            and not valid_video
+            and np.abs(bvideo.num_frame() - self.vids[0].num_frame())
+            > 0.05 * self.vids[0].num_frame()
+        ):
             warning_dialog = QMessageBox.warning(
                 self,
                 "Is this the correct video?",
@@ -412,8 +422,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if self.state["video"] == 0:
             self.vids_stretch_factor = [1]
         else:
-            self.vids_stretch_factor.append(bvideo.num_frame()/self.vids[0].num_frame())
-            
+            self.vids_stretch_factor.append(
+                bvideo.num_frame() / self.vids[0].num_frame()
+            )
+
         bvideo.start_frame_fetcher()
         bvideo.run_worker.connect(lambda: self.go_to_frame(self.state["current_frame"]))
         self.vids.append(bvideo)
@@ -443,7 +455,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     # Rebuild the gridlayout
                     self.update_gui(["video_layout"])
             new_view.show()
-
+        self.go_to_frame(self.state["current_frame"])
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
 
@@ -464,9 +476,13 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         annotation.assign_behavior_color()
         annot_length = annotation.get_length()
         if self.vids and annot_length < self.vids[0].num_frame():
-            warning_dialog = QMessageBox.warning(self, "Is this the correct annotation?",
-                                "Annotation is shorter than video 1!\nOk to pad with default behavior. Cancel to abort",
-                                QMessageBox.Ok, QMessageBox.Cancel)
+            warning_dialog = QMessageBox.warning(
+                self,
+                "Is this the correct annotation?",
+                "Annotation is shorter than video 1!\nOk to pad with default behavior. Cancel to abort",
+                QMessageBox.Ok,
+                QMessageBox.Cancel,
+            )
             if warning_dialog != QMessageBox.Ok:
                 return False
             else:
@@ -475,13 +491,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         elif self.vids and annot_length > self.vids[0].num_frame():
             # Guide user to shrink the annotation
             self.dialog_state = True
-            (from_value, to_value) = TruncateAnnotationDialog(annot_length, self.vids[0].num_frame(),parent=self).get_input()
+            (from_value, to_value) = TruncateAnnotationDialog(
+                annot_length, self.vids[0].num_frame(), parent=self
+            ).get_input()
             if from_value is not None:
-                annotation.truncate(start = from_value, length = self.vids[0].num_frame())
+                annotation.truncate(start=from_value, length=self.vids[0].num_frame())
             else:
                 return False
         self.state["annot"] = annotation
-        
 
     def open_config(self):
         fileDialog = QFileDialog()
@@ -626,11 +643,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 filename = annot_path.replace(".txt", "_backup.txt")
             if self.state["annot"].save_to_file(filename, True):
                 self.statusbar.clearMessage()
-                self.statusbar.showMessage("Automatically saved annotaion backup.", 1000)
+                self.statusbar.showMessage(
+                    "Automatically saved annotaion backup.", 1000
+                )
         except Exception:
             if self.state["annot"] is not None:
                 self.statusbar.clearMessage()
-                self.statusbar.showMessage("Autosave failed! Try manually save the annotation and auto-save will succeed next time.", 4000)
+                self.statusbar.showMessage(
+                    "Autosave failed! Try manually save the annotation and auto-save will succeed next time.",
+                    4000,
+                )
             pass
 
     def save_config(self):
@@ -748,17 +770,17 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             cur_stream.set_behavior(cur_idx, keypressed)
             cur_stream.get_epoch_by_idx(self.state["current_frame"])
             return True
-    
+
     def add_behavior(self):
         if self.state["annot"] is None:
             return False
         self.dialog_state = True
-        newdialog = AddBehaviorDialog(parent=self,annotation = self.state["annot"])
-        name,keybind = newdialog.get_input()
+        newdialog = AddBehaviorDialog(parent=self, annotation=self.state["annot"])
+        name, keybind = newdialog.get_input()
         if name is not None and keybind is not None:
             self.state["annot"].add_behavior(name, keybind)
         self.dialog_state = False
-    
+
     def delete_behavior(self):
         if self.state["annot"] is None:
             return False
@@ -770,9 +792,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.stats_table.model().current_activate_property("name") == to_del:
                 self.stats_table.model().set_activate_by_name(to_rep)
             self.state["annot"].delete_behavior(to_del, to_rep)
-        for _,stream in self.state["annot"].get_streams().items():
+        for _, stream in self.state["annot"].get_streams().items():
             stream.get_epoch_by_idx(self.state["current_frame"])
-        self.dialog_state=False
+        self.dialog_state = False
 
     def assign_current_stream(self, keyint: int):
         keyint = keyint - 49
@@ -785,16 +807,22 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return True
         except Exception:
             return False
-    
-    def close_annotation(self):
+
+    def close_annotation(self, suppress_warning=False):
         # First clear out all the widgets
         if self.state["annot"] is None:
             return False
-        warning_dialog = QMessageBox.warning(self, "Do you want to close annotation?",
-                                "Make sure to save before closing",
-                                QMessageBox.Ok, QMessageBox.Cancel)
-        if warning_dialog != QMessageBox.Ok:
-            return False
+        self.timer.stop()
+        if not suppress_warning:
+            warning_dialog = QMessageBox.warning(
+                self,
+                "Do you want to close annotation?",
+                "Make sure to save before closing!",
+                QMessageBox.Ok,
+                QMessageBox.Cancel,
+            )
+            if warning_dialog != QMessageBox.Ok:
+                return False
         self.video_slider.clear_track()
         utt.clear_layout(self.track_layout)
         utt.clear_layout(self.full_tracks_layout)
@@ -803,10 +831,54 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         utt.clear_layout(self.behav_epoch_table_layout)
         utt.reset_table(self.behavior_table)
         utt.reset_table(self.stats_table)
+        # Reset connections
+        self.state.clear_connections("annot")
+        self.state.clear_connections("current_frame")
+        self.state.clear_connections("slider_box")
+        self.state.clear_connections("current_stream")
+        self.state.clear_connections("track_window")
+        # Clear containers
+        self.tracks.clear()
+        self.full_tracks.clear()
+        self.stream_labels.clear()
+        self.stream_tables.clear()
+        self.behav_epoch_tables.clear()
         self.state["annot"] = None
-        # Disconnect from states to the already deleted annotation
-        
+        self.state["slider_box"] = [None, None]
+        # Reconnect callbacks
+        self.connect_states()
 
+        self.update_gui(["gui"])
+
+    def reset_app(self):
+        self.timer.stop()
+        warning_dialog = QMessageBox.warning(
+            self,
+            "Do you want to reset the app",
+            "Make sure to save unsaved work!",
+            QMessageBox.Ok,
+            QMessageBox.Cancel,
+        )
+        if warning_dialog != QMessageBox.Ok:
+            return False
+        # Close videos
+        self.state["video_layout"] = "Side by Side"
+        self.state["video"] = 0
+        for vid in self.vids:
+            vid.stop_worker()
+        while len(self.vid_views) > 1:
+            vid_view = self.vid_views.pop(-1)
+            self.video_layout.removeWidget(vid_view)
+            vid_view.deleteLater()
+        self.vid1_view.clear_pixmap()
+        self.state.clear_connections("video")
+        self.state.clear_connections("video_layout")
+        self.state.clear_connections("FPS")
+        self.state.clear_connections("play_speed")
+        self.state["FPS"] = None
+        self.vids_stretch_factor = []
+        self.vids.clear()
+        self.close_annotation(True)
 
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:

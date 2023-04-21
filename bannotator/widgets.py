@@ -102,7 +102,7 @@ class VideoSlider(QSlider):
             painter.end()
 
         super().paintEvent(event)
-    
+
     def clear_track(self):
         self.boxstart = None
         self.boxend = None
@@ -415,6 +415,9 @@ class BehavVideoView(QGraphicsView):
         # self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
         self.setScene(QGraphicsScene())
         self.pixItem = QGraphicsPixmapItem()
+        pixmap = QPixmap()
+        # pixmap.load(":/resource/annotator.jpg")
+        self.pixItem.setPixmap(pixmap)
         self.scene().addItem(self.pixItem)
         self.scene().sceneRectChanged.connect(self.fitPixItem)
 
@@ -429,6 +432,12 @@ class BehavVideoView(QGraphicsView):
 
     def fitPixItem(self):
         self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
+
+    def clear_pixmap(self):
+        pixmap = QPixmap()
+        # pixmap.load(":/resource/annotator.jpg")
+        self.pixItem.setPixmap(pixmap)
+        self.fitPixItem()
 
 
 class BehavLabel(QLabel):

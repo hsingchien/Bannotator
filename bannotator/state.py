@@ -41,6 +41,11 @@ class GuiState(object):
         else:
             for callback in callbacks:
                 self._call_backs[key].remove(callback)
+    
+    def clear_connections(self, key:str):
+        if key not in self._call_backs:
+            return False
+        self._call_backs.pop(key)
 
     def _connect_callback(self, key: str, callback: Callable):
         if not callable(callback):
