@@ -223,7 +223,6 @@ class StatsTableModel(GenericTableModel):
             self.properties.append(
                 "S" + str(behav_lists[i][0].get_stream_ID()) + "-epochs"
             )
-        print(self.properties)
 
     def change_layout(self):
         self.refresh_item_list()

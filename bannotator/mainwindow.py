@@ -856,10 +856,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.disconnect("current_frame", full_track.set_frame_mark)
         self.state.disconnect("slider_box", full_track.set_slider_box)
         stream = self.state["annot"].delete_stream(del_id)
-        if self.state["current_stream"] is self.state["annot"].get_stream(del_id):
+        if self.state["current_stream"] is stream:
             streams = self.state["annot"].get_streams()
             IDs = sorted(list(streams.keys()))
             self.state["current_stream"] = streams[IDs[0]]
+
         self.full_tracks_layout.removeWidget(full_track)
         self.track_layout.removeWidget(track)
         blabel = self.stream_labels.pop(del_id)
