@@ -23,25 +23,20 @@ class Ui_AddStreamDialog(object):
     def setupUi(self, AddStreamDialog):
         if not AddStreamDialog.objectName():
             AddStreamDialog.setObjectName(u"AddStreamDialog")
-        AddStreamDialog.resize(225, 112)
+        AddStreamDialog.resize(225, 132)
         self.verticalLayout = QVBoxLayout(AddStreamDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.streamID_label = QLabel(AddStreamDialog)
-        self.streamID_label.setObjectName(u"streamID_label")
-
-        self.gridLayout.addWidget(self.streamID_label, 0, 0, 1, 1)
-
         self.label = QLabel(AddStreamDialog)
         self.label.setObjectName(u"label")
 
-        self.gridLayout.addWidget(self.label, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
 
-        self.comboBox = QComboBox(AddStreamDialog)
-        self.comboBox.setObjectName(u"comboBox")
+        self.behavior_combobox = QComboBox(AddStreamDialog)
+        self.behavior_combobox.setObjectName(u"behavior_combobox")
 
-        self.gridLayout.addWidget(self.comboBox, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.behavior_combobox, 0, 1, 1, 1)
 
 
         self.verticalLayout.addLayout(self.gridLayout)
@@ -63,7 +58,6 @@ class Ui_AddStreamDialog(object):
 
     def retranslateUi(self, AddStreamDialog):
         AddStreamDialog.setWindowTitle(QCoreApplication.translate("AddStreamDialog", u"Add stream", None))
-        self.streamID_label.setText(QCoreApplication.translate("AddStreamDialog", u"Stream ID: ", None))
         self.label.setText(QCoreApplication.translate("AddStreamDialog", u"Filled with ", None))
     # retranslateUi
 

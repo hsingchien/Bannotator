@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>225</width>
-    <height>112</height>
+    <height>132</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,21 +17,14 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="streamID_label">
-       <property name="text">
-        <string>Stream ID: </string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Filled with </string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QComboBox" name="comboBox"/>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="behavior_combobox"/>
      </item>
     </layout>
    </item>

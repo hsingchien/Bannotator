@@ -82,6 +82,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         self.add_behavior_button.clicked.connect(self.add_behavior)
         self.delete_behavior_button.clicked.connect(self.delete_behavior)
+        self.add_stream_button.clicked.connect(self.add_stream)
+        self.delete_stream_button.clicked.connect(self.delete_stream)
         # Connect menu bar actions
         # File menu
         self.actionReset.triggered.connect(self.reset_app)
@@ -118,7 +120,6 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda: self.update_gui(["view_options"])
         )
 
-
         # Connect state change
         self.connect_states()
 
@@ -140,7 +141,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.connect(
             "annot", [self.setup_table_models, lambda: self.update_gui(["gui"])]
         )
-        self.state.connect("video",[lambda: self.update_gui(["video_ui","gui"])])
+        self.state.connect("video", [lambda: self.update_gui(["video_ui", "gui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
         self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
 
@@ -154,9 +155,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 )  # "slider_box" index from 0, video_slider index from 1
             # Update time label
             if self.state["FPS"] is not None:
-                cur_time = int(self.state["current_frame"]/self.state["FPS"])
-                minutes,seconds = divmod(cur_time, 60)
-                hours,minutes = divmod(minutes, 60)
+                cur_time = int(self.state["current_frame"] / self.state["FPS"])
+                minutes, seconds = divmod(cur_time, 60)
+                hours, minutes = divmod(minutes, 60)
                 duration = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
                 self.time_label.setText(duration)
 
@@ -574,66 +575,68 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         # Set up epochs table for each stream
         streams = annotation.get_streams()
-        for ID, stream in streams.items():
-            # Create stream tables
-            stream_table = StreamTableModel(
-                stream=stream, properties=["name", "start", "end"], state=self.state
-            )
-            stream_table_view = GenericTableView()
-            stream_table_view.setModel(stream_table)
-            stream_table_view.set_columns_fixed([1, 2])
-            stream.data_changed.connect(stream_table_view.repaint_table)
-            stream.epoch_number_changed.connect(stream_table_view.change_layout)
-            self.stream_tables[ID] = stream_table_view
-            self.stream_table_layout.addWidget(stream_table_view)
-            stream_table.jump_to_frame.connect(
-                lambda x: self.state.set("current_frame", x)
-            )
-            # Create behavior label, add to the full track widget
-            behav_label = BehavLabel(
-                behav=stream.get_behavior_by_idx(self.state["current_frame"]),
-            )
-            self.cur_behav_layout.addWidget(behav_label)
-            self.stream_labels[ID] = behav_label
-            # Connect video slider and frame spinbox to the stream to track the current epoch
-            self.state.connect("current_frame", stream.get_epoch_by_idx)
-            # get_epoch_by_idx will emit cur_epoch and cur_behavior, which will set the epoch table and behavior label respectively
-            stream.cur_behavior_name.connect(behav_label.set_behavior)
-
-            # Scroll to current epoch if action is checked
-            if self.actionTrack_epoch.isChecked():
-                stream_table_view.connect_scroll()
-            # Create empty behavior epoch tables
-            behav_epoch_table = BehavEpochTableModel(
-                stream=stream, properties=["name", "start", "end"], state=self.state
-            )
-            behavior_tablemodel.activated_behavior_changed.connect(
-                behav_epoch_table.set_behavior
-            )
-            stats_tablemodel.activated_behavior_changed.connect(
-                behav_epoch_table.set_behavior
-            )
-            behav_epoch_table.jump_to_frame.connect(
-                lambda x: self.state.set("current_frame", x)
-            )
-            behav_epoch_table_view = GenericTableView()
-            behav_epoch_table_view.setModel(behav_epoch_table)
-            self.behav_epoch_tables[ID] = behav_epoch_table_view
-            self.behav_epoch_table_layout.addWidget(behav_epoch_table_view)
-            if self.actionTrack_epoch.isChecked():
-                behav_epoch_table_view.connect_scroll()
+        for _, stream in streams.items():
+            self.setup_stream_tables(stream)
             # Emit the cur_epoch signal from the stream after all tables are set up to
             # highlight the current epoch
             stream.get_epoch_by_idx(self.state["current_frame"])
 
         self.update_slider_box()
-        self.plot_tracks()
+        for _, stream in streams.items():
+            self.plot_stream_tracks(stream)
 
         # Set the first stream as current stream
         IDs = sorted(list(streams.keys()))
         self.state["current_stream"] = streams[IDs[0]]
 
         return True
+
+    def setup_stream_tables(self, stream):
+        # Create stream tables
+        stream_table = StreamTableModel(
+            stream=stream, properties=["name", "start", "end"], state=self.state
+        )
+        stream_table_view = GenericTableView()
+        stream_table_view.setModel(stream_table)
+        stream_table_view.set_columns_fixed([1, 2])
+        stream.data_changed.connect(stream_table_view.repaint_table)
+        stream.epoch_number_changed.connect(stream_table_view.change_layout)
+        self.stream_tables[stream.ID] = stream_table_view
+        self.stream_table_layout.addWidget(stream_table_view)
+        stream_table.jump_to_frame.connect(lambda x: self.state.set("current_frame", x))
+        # Create behavior label, add to the full track widget
+        behav_label = BehavLabel(
+            behav=stream.get_behavior_by_idx(self.state["current_frame"]),
+        )
+        self.cur_behav_layout.addWidget(behav_label)
+        self.stream_labels[stream.ID] = behav_label
+        # Connect video slider and frame spinbox to the stream to track the current epoch
+        self.state.connect("current_frame", stream.get_epoch_by_idx)
+        # get_epoch_by_idx will emit cur_epoch and cur_behavior, which will set the epoch table and behavior label respectively
+        stream.cur_behavior_name.connect(behav_label.set_behavior)
+
+        # Scroll to current epoch if action is checked
+        if self.actionTrack_epoch.isChecked():
+            stream_table_view.connect_scroll()
+        # Create empty behavior epoch tables
+        behav_epoch_table = BehavEpochTableModel(
+            stream=stream, properties=["name", "start", "end"], state=self.state
+        )
+        self.behavior_table.model().activated_behavior_changed.connect(
+            behav_epoch_table.set_behavior
+        )
+        self.stats_table.model().activated_behavior_changed.connect(
+            behav_epoch_table.set_behavior
+        )
+        behav_epoch_table.jump_to_frame.connect(
+            lambda x: self.state.set("current_frame", x)
+        )
+        behav_epoch_table_view = GenericTableView()
+        behav_epoch_table_view.setModel(behav_epoch_table)
+        self.behav_epoch_tables[stream.ID] = behav_epoch_table_view
+        self.behav_epoch_table_layout.addWidget(behav_epoch_table_view)
+        if self.actionTrack_epoch.isChecked():
+            behav_epoch_table_view.connect_scroll()
 
     def save_annotation(self):
         self.state["annot"].saved_in_file.connect(
@@ -731,49 +734,47 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         else:
             return True
 
-    def plot_tracks(self):
-        annot = self.state["annot"]
-        streams = annot.get_streams()
-        # Generate tracks for streams
-        for _, stream in streams.items():
-            # Make mainwindow track widgets
-            stream_vect = stream.get_stream_vect()
-            color_dict = stream.get_color_dict()
-            track = TrackBar(
-                stream_vect,
-                color_dict,
-                self.state["current_frame"],
-                self.state["slider_box"],
-                False,
-                False,
-            )
-            if self.state["current_stream"] is stream:
-                track.set_selected(True)
-            else:
-                track.set_selected(False)
-            self.tracks[stream.ID] = track
-            stream.data_changed.connect(track.set_data)
-            stream.color_changed.connect(track.set_color_dict)
-            self.state.connect("current_frame", track.set_frame_mark)
-            self.state.connect("slider_box", track.set_slider_box)
-            self.track_layout.addWidget(track)
-            # Make full length track widgets
-            full_track = TrackBar(
-                stream_vect,
-                color_dict,
-                self.state["current_frame"],
-                self.state["slider_box"],
-                True,
-                True,
-            )
-            self.state.connect("current_frame", full_track.set_frame_mark)
-            self.state.connect("slider_box", full_track.set_slider_box)
-            stream.data_changed.connect(full_track.set_data)
-            stream.color_changed.connect(full_track.set_color_dict)
-            self.full_tracks_layout.addWidget(full_track)
-            # Also connect stream content change signals to video slider track update
-            stream.data_changed.connect(self.video_slider.set_track_data)
-            stream.color_changed.connect(self.video_slider.set_color_dict)
+    def plot_stream_tracks(self, stream):
+        # Generate tracks for the stream
+        # Make mainwindow track widgets
+        stream_vect = stream.get_stream_vect()
+        color_dict = stream.get_color_dict()
+        track = TrackBar(
+            stream_vect,
+            color_dict,
+            self.state["current_frame"],
+            self.state["slider_box"],
+            False,
+            False,
+        )
+        # if self.state["current_stream"] is stream:
+        #     track.set_selected(True)
+        # else:
+        #     track.set_selected(False)
+        self.tracks[stream.ID] = track
+        stream.data_changed.connect(track.set_data)
+        stream.color_changed.connect(track.set_color_dict)
+        self.state.connect("current_frame", track.set_frame_mark)
+        self.state.connect("slider_box", track.set_slider_box)
+        self.track_layout.addWidget(track)
+        # Make full length track widgets
+        full_track = TrackBar(
+            stream_vect,
+            color_dict,
+            self.state["current_frame"],
+            self.state["slider_box"],
+            True,
+            True,
+        )
+        self.state.connect("current_frame", full_track.set_frame_mark)
+        self.state.connect("slider_box", full_track.set_slider_box)
+        stream.data_changed.connect(full_track.set_data)
+        stream.color_changed.connect(full_track.set_color_dict)
+        self.full_tracks_layout.addWidget(full_track)
+        self.full_tracks[stream.ID] = full_track
+        # Also connect stream content change signals to video slider track update
+        stream.data_changed.connect(self.video_slider.set_track_data)
+        stream.color_changed.connect(self.video_slider.set_color_dict)
 
     def change_current_behavior(self, keypressed: str = None):
         cur_idx = self.state["current_frame"]
@@ -795,6 +796,21 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.state["annot"].add_behavior(name, keybind)
         self.dialog_state = False
 
+    def add_stream(self):
+        if self.state["annot"] is None:
+            return False
+        self.dialog_state = True
+        newdialog = AddStreamDialog(parent=self, annotation=self.state["annot"])
+        behavior = newdialog.get_input()
+        if behavior is not None:
+            new_stream = self.state["annot"].add_stream(behavior)
+            self.setup_stream_tables(new_stream)
+            self.plot_stream_tracks(new_stream)
+            self.dialog_state = False
+        else:
+            self.dialog_state = False
+            return False
+
     def delete_behavior(self):
         if self.state["annot"] is None:
             return False
@@ -806,9 +822,58 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.stats_table.model().current_activate_property("name") == to_del:
                 self.stats_table.model().set_activate_by_name(to_rep)
             self.state["annot"].delete_behavior(to_del, to_rep)
+        else:
+            self.dialog_state = False
+            return False
         for _, stream in self.state["annot"].get_streams().items():
             stream.get_epoch_by_idx(self.state["current_frame"])
         self.dialog_state = False
+
+    def delete_stream(self):
+        if self.state["annot"] is None:
+            return False
+        self.dialog_state = True
+        newdialog = DeleteStreamDialog(parent=self, annotation=self.state["annot"])
+        del_id = newdialog.exec()
+        if del_id is None:
+            self.dialog_state = False
+            return False
+        if self.state["annot"].num_stream() == 1:
+            self.dialog_state = False
+            return False
+        # Remove tables
+        stream_table = self.stream_tables.pop(del_id)
+        utt.reset_table(stream_table)
+        behav_stream_table = self.behav_epoch_tables.pop(del_id)
+        utt.reset_table(behav_stream_table)
+        self.stream_table_layout.removeWidget(stream_table)
+        self.behav_epoch_table_layout.removeWidget(behav_stream_table)
+        # Remove tracks
+        full_track = self.full_tracks.pop(del_id)
+        track = self.tracks.pop(del_id)
+        self.state.disconnect("current_frame", track.set_frame_mark)
+        self.state.disconnect("slider_box", track.set_slider_box)
+        self.state.disconnect("current_frame", full_track.set_frame_mark)
+        self.state.disconnect("slider_box", full_track.set_slider_box)
+        stream = self.state["annot"].delete_stream(del_id)
+        if self.state["current_stream"] is self.state["annot"].get_stream(del_id):
+            streams = self.state["annot"].get_streams()
+            IDs = sorted(list(streams.keys()))
+            self.state["current_stream"] = streams[IDs[0]]
+        self.full_tracks_layout.removeWidget(full_track)
+        self.track_layout.removeWidget(track)
+        blabel = self.stream_labels.pop(del_id)
+        self.cur_behav_layout.removeWidget(blabel)
+        # Delete widgets
+        stream_table.deleteLater()
+        behav_stream_table.deleteLater()
+        full_track.deleteLater()
+        track.deleteLater()
+        blabel.deleteLater()
+        self.state.disconnect("current_frame", stream.get_epoch_by_idx)
+        del stream
+        self.dialog_state = False
+        return True
 
     def assign_current_stream(self, keyint: int):
         keyint = keyint - 49

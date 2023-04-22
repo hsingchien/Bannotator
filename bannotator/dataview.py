@@ -214,8 +214,17 @@ class StatsTableModel(GenericTableModel):
         self.blist_dict = dict()
         for behav_list in behav_lists:
             self.blist_dict["S" + str(behav_list[0].get_stream_ID())] = behav_list
-        self.layoutChanged.emit()
-    
+        self.properties = self.properties[0:2]
+        for i in range(len(behav_lists)):
+            self.properties.append(
+                "S" + str(behav_lists[i][0].get_stream_ID()) + "-prct"
+            )
+        for i in range(len(behav_lists)):
+            self.properties.append(
+                "S" + str(behav_lists[i][0].get_stream_ID()) + "-epochs"
+            )
+        print(self.properties)
+
     def change_layout(self):
         self.refresh_item_list()
         return super().change_layout()

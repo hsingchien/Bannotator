@@ -23,7 +23,7 @@ class Ui_DeleteStreamDialog(object):
     def setupUi(self, DeleteStreamDialog):
         if not DeleteStreamDialog.objectName():
             DeleteStreamDialog.setObjectName(u"DeleteStreamDialog")
-        DeleteStreamDialog.resize(308, 94)
+        DeleteStreamDialog.resize(199, 96)
         self.verticalLayout = QVBoxLayout(DeleteStreamDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -33,10 +33,10 @@ class Ui_DeleteStreamDialog(object):
 
         self.horizontalLayout.addWidget(self.label)
 
-        self.comboBox = QComboBox(DeleteStreamDialog)
-        self.comboBox.setObjectName(u"comboBox")
+        self.stream_combobox = QComboBox(DeleteStreamDialog)
+        self.stream_combobox.setObjectName(u"stream_combobox")
 
-        self.horizontalLayout.addWidget(self.comboBox)
+        self.horizontalLayout.addWidget(self.stream_combobox)
 
 
         self.verticalLayout.addLayout(self.horizontalLayout)
