@@ -523,8 +523,13 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             else:
                 return False
         self.state["annot"] = annotation
+        # Set the size of the table docks to minimum 
+        self.behav_table_dock.resize(self.behav_table_dock.minimumWidth(), self.behav_table_dock.height())
+        self.epoch_dock.resize(self.epoch_dock.minimumWidth(), self.epoch_dock.height())
     
     def new_annotation(self):
+        if self.state["annot"] is not None:
+            self.close_annotation(False)
         self.dialog_state = True
         new_dialog = NewAnnotationDialog()
         (nstream, ns, ks) = new_dialog.get_input()
