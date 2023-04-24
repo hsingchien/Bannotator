@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QMessageBox,
 )
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import QTimer, Qt, QEvent
 from bannotator.state import GuiState
 import bannotator.utility as utt
@@ -29,6 +30,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setWindowTitle("Annotator")
+        self.setWindowIcon(QIcon(":/icon.ico"))
         # Initialize states
         self.state = GuiState()
         self.state["video"] = 0
@@ -990,7 +993,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             except:
                 pass
 
-        elif event.key() == Qt.Key_Minus:
+        elif event.key() == Qt.Key_Minus and event.modifiers() != Qt.ControlModifier:
             # - key, move to the previous cut point
             try:
                 current_stream = self.state["current_stream"]
@@ -1005,7 +1008,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     self.state["current_frame"] = previous_epoch.start - 1
             except Exception:
                 pass
-        elif event.key() == Qt.Key_Equal:
+        elif event.key() == Qt.Key_Minus and event.modifiers() == Qt.ControlModifier:
+            try:
+                current_stream = self.state["current_stream"]
+                current_behav_epoch_table = self.behav_epoch_tables[current_stream.ID]
+                current_behav_epoch_table.model().jump_to_prev(
+                    self.state["current_frame"]
+                )
+            except Exception:
+                pass
+        elif event.key() == Qt.Key_Equal and event.modifiers() != Qt.ControlModifier:
             # = key, move to next end
             try:
                 current_stream = self.state["current_stream"]
@@ -1020,6 +1032,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     self.state["current_frame"] = next_epoch.end
             except Exception:
                 pass
+        elif event.key() == Qt.Key_Equal and event.modifiers() == Qt.ControlModifier:
+            try:
+                current_stream = self.state["current_stream"]
+                current_behav_epoch_table = self.behav_epoch_tables[current_stream.ID]
+                current_behav_epoch_table.model().jump_to_next(
+                    self.state["current_frame"]
+                )
+            except Exception:
+                pass
+
         elif event.key() == Qt.Key_Space:
             # Spacebar, toggle play/pause
             try:

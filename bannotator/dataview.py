@@ -380,6 +380,40 @@ class BehavEpochTableModel(GenericTableModel):
             # Connect to set the current frame to the start of this epoch
             self.jump_to_frame.emit(cur_epoch.start-1)
     
+    def jump_to_next(self, frame_number):
+        frame_number += 1
+        if self.item_list:
+            # Find the current epoch
+            starts = [epoch.start for epoch in self.item_list]
+            idx = list(filter(lambda x: x > frame_number, starts))
+            if idx:
+                next_epoch = self.item_list[starts.index(idx[0])]
+                self._activated_index = starts.index(idx[0])
+                self.activated_row_changed.emit(starts.index(idx[0]))
+            else:
+                next_epoch = self.item_list[0]
+                self._activated_index = 0
+                self.activated_row_changed.emit(0)
+            self.jump_to_frame.emit(next_epoch.start-1)
+    
+    def jump_to_prev(self, frame_number):
+        frame_number+=1
+        if self.item_list:
+            # Find the current epoch
+            starts = [epoch.start for epoch in self.item_list]
+            idx = list(filter(lambda x: x < frame_number, starts))
+            if idx:
+                next_epoch = self.item_list[starts.index(idx[-1])]
+                self._activated_index = starts.index(idx[-1])
+                self.activated_row_changed.emit(starts.index(idx[-1]))
+            else:
+                next_epoch = self.item_list[-1]
+                self._activated_index = len(self.item_list)-1
+                self.activated_row_changed.emit(len(self.item_list)-1)
+            self.jump_to_frame.emit(next_epoch.start-1)
+                
+        
+    
     def set_activated_epoch(self, epoch):
         cur_epoch_idx = self.get_item_index(epoch)
         self._activated_index = cur_epoch_idx

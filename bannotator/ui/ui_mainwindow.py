@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
 from bannotator.dataview import GenericTableView
 from bannotator.widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, TabWidget,
     VideoSlider)
+import bannotator.resource.resource_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -88,6 +89,8 @@ class Ui_MainWindow(object):
         self.actionMerge_behavior.setObjectName(u"actionMerge_behavior")
         self.actionClose_annotation = QAction(MainWindow)
         self.actionClose_annotation.setObjectName(u"actionClose_annotation")
+        self.actionNew_annotation_2 = QAction(MainWindow)
+        self.actionNew_annotation_2.setObjectName(u"actionNew_annotation_2")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -443,7 +446,7 @@ class Ui_MainWindow(object):
         self.menuVideo.addAction(self.actionRemove_video)
         self.menuAnnotation.addAction(self.actionOpen_annotation)
         self.menuAnnotation.addAction(self.actionSave_annotation)
-        self.menuAnnotation.addAction(self.actionNew_annotation)
+        self.menuAnnotation.addAction(self.actionNew_annotation_2)
         self.menuAnnotation.addAction(self.actionClose_annotation)
         self.menuAnnotation.addSeparator()
         self.menuAnnotation.addAction(self.actionOpen_config)
@@ -489,13 +492,14 @@ class Ui_MainWindow(object):
         self.actionTips.setText(QCoreApplication.translate("MainWindow", u"Tips", None))
         self.actionAdd_seq.setText(QCoreApplication.translate("MainWindow", u"Add seq", None))
         self.actionTrack_epoch.setText(QCoreApplication.translate("MainWindow", u"Track epoch", None))
-        self.actionHelp.setText(QCoreApplication.translate("MainWindow", u"Help", None))
+        self.actionHelp.setText(QCoreApplication.translate("MainWindow", u"Hot keys", None))
         self.actionMerge_behaviors.setText(QCoreApplication.translate("MainWindow", u"Merge behaviors", None))
         self.actionAuto_save_annotation.setText(QCoreApplication.translate("MainWindow", u"Auto save annotation", None))
         self.actionMerge_behavior.setText(QCoreApplication.translate("MainWindow", u"Merge behavior", None))
         self.actionClose_annotation.setText(QCoreApplication.translate("MainWindow", u"Close annotation", None))
+        self.actionNew_annotation_2.setText(QCoreApplication.translate("MainWindow", u"New annotation", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
-        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00", None))
+        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
         self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
