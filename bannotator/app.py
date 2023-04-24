@@ -1,6 +1,7 @@
 from bannotator.mainwindow import MainWindow
 import sys
 from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon
 
 
 def main():
@@ -8,6 +9,7 @@ def main():
     mainwindow = MainWindow()
     app.installEventFilter(mainwindow)
     app.setApplicationName("Bannotator")
+    app.setWindowIcon(QIcon(":/icon.ico"))
     mainwindow.show()
     print("Happy annotating!")
     app.exec()
