@@ -414,13 +414,13 @@ class BehavVideoView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         # self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
         self.setScene(QGraphicsScene())
-        self.scene().setBackgroundBrush(QColor("595959"))
+        self.scene().setBackgroundBrush(QColor("#595959"))
         self.pixItem = QGraphicsPixmapItem()
         pixmap = QPixmap()
         pixmap.load(":/bg.png")
         self.pixItem.setPixmap(pixmap)
         self.scene().addItem(self.pixItem)
-        self.scene().sceneRectChanged.connect(self.fitPixItem)
+        # self.scene().sceneRectChanged.connect(self.fitPixItem)
 
     @Slot()
     def updatePixmap(self, new_pixmap):
@@ -429,14 +429,16 @@ class BehavVideoView(QGraphicsView):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
+        self.fitPixItem()
 
     def fitPixItem(self):
-        self.fitInView(self.pixItem, aspectRadioMode=Qt.KeepAspectRatio)
-
+        self.scene().setSceneRect(self.pixItem.boundingRect())
+        self.setAlignment(Qt.AlignCenter)
+        self.fitInView(self.scene().sceneRect(), aspectRadioMode=Qt.KeepAspectRatio)
+        
     def clear_pixmap(self):
         pixmap = QPixmap()
-        # pixmap.load(":/resource/annotator.jpg")
+        pixmap.load(":/bg.png")
         self.pixItem.setPixmap(pixmap)
         self.fitPixItem()
 

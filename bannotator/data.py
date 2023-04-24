@@ -616,7 +616,7 @@ class Annotation(QtCore.QObject):
             stream.data_changed.connect(self.streams_changed)
             stream.color_changed.connect(self.streams_changed)
             # stream.behavior_name_changed.connect(self.streams_changed)
-            stream.behav_name_changed.connect(self.rename_color_dict_key)
+            stream.behavior_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
         self.behav_color = dict()
         self.file_path = os.path.join(os.getcwd(), "annotation.txt")
@@ -648,7 +648,7 @@ class Annotation(QtCore.QObject):
             self.streams[i].construct_behavior_from_config(config)
             self.streams[i].data_changed.connect(self.streams_changed)
             self.streams[i].color_changed.connect(self.streams_changed)
-            self.streams[i].behav_name_changed.connect(self.rename_color_dict_key)
+            self.streams[i].behavior_name_changed.connect(self.rename_color_dict_key)
 
     def set_length(self, length):
         for _, stream in self.streams.items():

@@ -97,6 +97,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Annotation menu
         self.actionOpen_annotation.triggered.connect(self.open_annotation)
         self.actionSave_annotation.triggered.connect(self.save_annotation)
+        self.actionNew_annotation.triggered.connect(self.new_annotation)
         self.actionOpen_config.triggered.connect(self.open_config)
         self.actionSave_config.triggered.connect(self.save_config)
         self.actionAuto_save_annotation.toggled.connect(
@@ -144,7 +145,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.connect(
             "annot", [self.setup_table_models, lambda: self.update_gui(["gui"])]
         )
-        self.state.connect("video", [lambda: self.update_gui(["video_ui", "gui"])])
+        self.state.connect("video", [lambda: self.update_gui(["video_ui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
         self.state.connect("current_stream", [lambda: self.update_gui(["tracks"])])
 
@@ -221,8 +222,13 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.actionSave_config.setEnabled(False)
             if self.state["video"] > 0:
                 self.actionOpen_config.setEnabled(True)
+                self.actionNew_annotation.setEnabled(True)
             else:
                 self.actionOpen_config.setEnabled(False)
+                self.actionNew_annotation.setEnabled(False)
+            # Fit all video views
+            for view in self.vid_views:
+                view.fitPixItem()
 
         if "video_layout" in topics:
             # Convert video layout
@@ -375,8 +381,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Change state and trigger callbakcs
         self.go_to_frame(self.state["current_frame"])
         self.state["video"] += 1
-        self.video_slider.setMinimum(1)
-        self.curframe_spinBox.setMinimum(1)
+        QTimer.singleShot(30, lambda: self.update_gui(["gui"]))
 
     def add_seq(self):
         self.statusbar.showMessage(
@@ -476,6 +481,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["video"] += 1
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
+        QTimer.singleShot(30, lambda: self.update_gui(["gui"]))
 
     def open_annotation(self):
         fileDialog = QFileDialog()
@@ -517,6 +523,27 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             else:
                 return False
         self.state["annot"] = annotation
+    
+    def new_annotation(self):
+        self.dialog_state = True
+        new_dialog = NewAnnotationDialog()
+        (nstream, ns, ks) = new_dialog.get_input()
+        if nstream is None:
+            self.dialog_state = False
+            return False
+        annotation = Annotation({})
+        fake_annots = dict()
+        le = self.video_slider.maximum()
+        for i in range(nstream):
+            fake_annots[i+1] = [" ".join(["1",str(le),ns[0]])]
+        fake_config = []
+        for i,n in enumerate(ns):
+            fake_config.append(" ".join([n,ks[i]]))
+        annotation.construct_streams(fake_config, fake_annots)
+        annotation.assign_behavior_color()
+        self.state["annot"] = annotation
+        self.dialog_state = False
+
 
     def open_config(self):
         fileDialog = QFileDialog()
@@ -930,7 +957,6 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["slider_box"] = [None, None]
         # Reconnect callbacks
         self.connect_states()
-
         self.update_gui(["gui"])
 
     def reset_app(self):
@@ -962,6 +988,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.vids_stretch_factor = []
         self.vids.clear()
         self.close_annotation(True)
+        self.update_gui(["gui"])
 
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:

@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QInputDialog, QDialog, QDialogButtonBox
 from bannotator.ui import *
+import re
 
 
 class TruncateAnnotationDialog(QDialog, Ui_TruncateAnnotationDialog):
@@ -137,4 +138,71 @@ class DeleteStreamDialog(QDialog, Ui_DeleteStreamDialog):
             return streamID
         else:
             return None
+
+class NewAnnotationDialog(QDialog, Ui_NewAnnotationDialog):
+    def __init__(self, *arg, **kwarg):
+        super().__init__(*arg, **kwarg)
+        self.setupUi(self)
+        self.behavior_text_edit.textChanged.connect(self.validate_behaivor)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    def validate_behaivor(self):
+        ok = False
+        names = []
+        keybinds = []
+        text = self.behavior_text_edit.toPlainText()
+        bk_pairs = text.split("\n")
+        # Remove empty lines
+        for l in bk_pairs:
+            if re.match(r'^\s*$', l):
+                bk_pairs.remove(l)
+        # Check if the text is in the format of  word-key
+        pattern = re.compile(r'^(\w+)(\s*[-]*\s*)([a-zA-Z])$')
+        for bk in bk_pairs:
+            bkl = bk.lower()
+            mat = re.match(pattern, bkl)
+            if not mat:
+                self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+                return ok
+            else:
+                name = mat.group(1)
+                space = mat.group(2)
+                k = mat.group(3)
+                if len(space) < 1:
+                    self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+                    return ok
+                else:
+                    names.append(name)
+                    keybinds.append(k)
+        # Check if words and keys are unique
+        if len(names) != len(set(names)):
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+            return ok
+        if len(keybinds) != len(set(keybinds)):
+            self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+            return ok
+        ok = True
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(True)
+        return ok
+        
+    def get_input(self):
+        if self.exec() == QDialog.Accepted:
+            names = []
+            keybinds = []
+            nstream = self.nStream_spinBox.value()
+            bk_pairs = self.behavior_text_edit.toPlainText().split("\n")
+            # Remove empty lines
+            for l in bk_pairs:
+                if re.match(r'^\s*$', l):
+                    bk_pairs.remove(l)
+            pattern = re.compile(r'^(\w+)\s*[-]*\s*(\w)$')
+            for bk in bk_pairs:
+                bkl = bk.lower()
+                mat = re.match(pattern, bkl)
+                names.append(mat.group(1))
+                keybinds.append(mat.group(2))
+            return (nstream, names, keybinds)
+        else:
+            return (None,None,None)
+
 

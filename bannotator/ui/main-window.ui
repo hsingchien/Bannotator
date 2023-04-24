@@ -269,16 +269,14 @@ QSlider::handle:horizontal {
     </property>
     <addaction name="actionOpen_video"/>
     <addaction name="actionAdd_seq"/>
-    <addaction name="separator"/>
-    <addaction name="actionRemove_video"/>
    </widget>
    <widget class="QMenu" name="menuAnnotation">
     <property name="title">
      <string>Annotation</string>
     </property>
     <addaction name="actionOpen_annotation"/>
+    <addaction name="actionNew_annotation"/>
     <addaction name="actionSave_annotation"/>
-    <addaction name="actionNew_annotation_2"/>
     <addaction name="actionClose_annotation"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_config"/>
@@ -596,11 +594,6 @@ QSlider::handle:horizontal {
     <string>About</string>
    </property>
   </action>
-  <action name="actionNew_annotation">
-   <property name="text">
-    <string>New annotation</string>
-   </property>
-  </action>
   <action name="actionNew_config">
    <property name="text">
     <string>New config</string>
@@ -706,7 +699,10 @@ QSlider::handle:horizontal {
     <string>Close annotation</string>
    </property>
   </action>
-  <action name="actionNew_annotation_2">
+  <action name="actionNew_annotation">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>New annotation</string>
    </property>
