@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QDockWidget,
     QLabel,
 )
-from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont
+from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont, QFontDatabase
 from PySide6.QtCore import Slot, QSize, Qt, Signal, QRect
 import numpy as np
 from typing import Dict
@@ -435,7 +435,7 @@ class BehavVideoView(QGraphicsView):
         self.scene().setSceneRect(self.pixItem.boundingRect())
         self.setAlignment(Qt.AlignCenter)
         self.fitInView(self.scene().sceneRect(), aspectRadioMode=Qt.KeepAspectRatio)
-        
+
     def clear_pixmap(self):
         pixmap = QPixmap()
         pixmap.load(":/bg.png")

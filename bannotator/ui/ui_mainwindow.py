@@ -114,6 +114,14 @@ class Ui_MainWindow(object):
 
         self.time_label = QLabel(self.centralwidget)
         self.time_label.setObjectName(u"time_label")
+        font = QFont()
+        font.setFamilies([u"Courier New"])
+        font.setPointSize(13)
+        font.setBold(True)
+        font.setUnderline(False)
+        font.setStrikeOut(False)
+        font.setKerning(True)
+        self.time_label.setFont(font)
         self.time_label.setTextFormat(Qt.MarkdownText)
         self.time_label.setAlignment(Qt.AlignCenter)
 
@@ -202,6 +210,9 @@ class Ui_MainWindow(object):
         self.video_layout.setObjectName(u"video_layout")
         self.vid1_view = BehavVideoView(self.centralwidget)
         self.vid1_view.setObjectName(u"vid1_view")
+        font1 = QFont()
+        font1.setFamilies([u"Andale Mono"])
+        self.vid1_view.setFont(font1)
 
         self.video_layout.addWidget(self.vid1_view)
 
@@ -263,7 +274,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
+        self.menubar.setGeometry(QRect(0, 0, 1366, 37))
         self.menuVideo = QMenu(self.menubar)
         self.menuVideo.setObjectName(u"menuVideo")
         self.menuAnnotation = QMenu(self.menubar)
