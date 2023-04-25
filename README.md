@@ -1,27 +1,14 @@
 # Behavior Annotator
 
-## A Pyside6 application that assists manual annotation of videos.
-
-
+![Alt text](bannotator/resource/bg_readme.png)
+### A Pyside6 application that assists manual annotation of videos.
 # Table of contents
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Flags](#flags)
-    - `-1`
-    - `-a`   (or) `--all`
-    - `-A`   (or) `--almost-all`
-    - `-d`   (or) `--dirs`
-    - `-f`   (or) `--files`
-    - `-h`   (or) `--help`
-    - `-l`   (or) `--long`
-    - `-r`   (or) `--report`
-    - `--tree` (or) `--tree=[DEPTH]`
-    - `--gs` (or) `--git-status`
-    - `--sd` (or) `--sort-dirs` or `--group-directories-first`
-    - `--sf` (or) `--sort-files`
-    - `-t`
-  - [Combination of flags](#combination-of-flags)
+  - [Basics](#basics)
+  - [Video](#video)
+  - [Annotation](#annotation)  
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -60,9 +47,6 @@ annotate-behavior
 
 # Usage
 
-[(Back to top)](#table-of-contents)
-
-Man pages have been added. Checkout `man colorls`.
 
 ### Flags
 
