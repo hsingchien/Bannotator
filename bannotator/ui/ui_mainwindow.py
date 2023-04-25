@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main-window.ui'
+## Form generated from reading UI file 'mainwindow.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.4.2
 ##
@@ -20,7 +20,8 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
     QHBoxLayout, QHeaderView, QLabel, QLayout,
     QMainWindow, QMenu, QMenuBar, QPushButton,
     QSizePolicy, QSlider, QSpacerItem, QSpinBox,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QSplitter, QStatusBar, QTabWidget, QVBoxLayout,
+    QWidget)
 
 from bannotator.dataview import GenericTableView
 from bannotator.widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, TabWidget,
@@ -97,22 +98,28 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.horizontalLayout_2 = QHBoxLayout(self.centralwidget)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.display_layout = QVBoxLayout()
-        self.display_layout.setObjectName(u"display_layout")
-        self.horizontalLayout_12 = QHBoxLayout()
-        self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.label_4 = QLabel(self.centralwidget)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setTextFormat(Qt.PlainText)
-        self.label_4.setScaledContents(False)
-        self.label_4.setAlignment(Qt.AlignCenter)
-        self.label_4.setTextInteractionFlags(Qt.NoTextInteraction)
+        self.verticalLayout_8 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.splitter = QSplitter(self.centralwidget)
+        self.splitter.setObjectName(u"splitter")
+        self.splitter.setOrientation(Qt.Vertical)
+        self.widget = QWidget(self.splitter)
+        self.widget.setObjectName(u"widget")
+        self.video_area_vlayout = QVBoxLayout(self.widget)
+        self.video_area_vlayout.setObjectName(u"video_area_vlayout")
+        self.video_area_vlayout.setContentsMargins(0, 0, 0, 0)
+        self.video_control_hlayout = QHBoxLayout()
+        self.video_control_hlayout.setObjectName(u"video_control_hlayout")
+        self.time_label_txt = QLabel(self.widget)
+        self.time_label_txt.setObjectName(u"time_label_txt")
+        self.time_label_txt.setTextFormat(Qt.PlainText)
+        self.time_label_txt.setScaledContents(False)
+        self.time_label_txt.setAlignment(Qt.AlignCenter)
+        self.time_label_txt.setTextInteractionFlags(Qt.NoTextInteraction)
 
-        self.horizontalLayout_12.addWidget(self.label_4)
+        self.video_control_hlayout.addWidget(self.time_label_txt)
 
-        self.time_label = QLabel(self.centralwidget)
+        self.time_label = QLabel(self.widget)
         self.time_label.setObjectName(u"time_label")
         font = QFont()
         font.setFamilies([u"Courier New"])
@@ -125,90 +132,90 @@ class Ui_MainWindow(object):
         self.time_label.setTextFormat(Qt.MarkdownText)
         self.time_label.setAlignment(Qt.AlignCenter)
 
-        self.horizontalLayout_12.addWidget(self.time_label)
+        self.video_control_hlayout.addWidget(self.time_label)
 
-        self.label_2 = QLabel(self.centralwidget)
-        self.label_2.setObjectName(u"label_2")
+        self.current_frame_label = QLabel(self.widget)
+        self.current_frame_label.setObjectName(u"current_frame_label")
 
-        self.horizontalLayout_12.addWidget(self.label_2)
+        self.video_control_hlayout.addWidget(self.current_frame_label)
 
-        self.curframe_spinBox = QSpinBox(self.centralwidget)
+        self.curframe_spinBox = QSpinBox(self.widget)
         self.curframe_spinBox.setObjectName(u"curframe_spinBox")
         self.curframe_spinBox.setMinimum(1)
         self.curframe_spinBox.setMaximum(1000)
 
-        self.horizontalLayout_12.addWidget(self.curframe_spinBox)
+        self.video_control_hlayout.addWidget(self.curframe_spinBox)
 
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalSpacer_1 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout_12.addItem(self.horizontalSpacer)
+        self.video_control_hlayout.addItem(self.horizontalSpacer_1)
 
-        self.play_button = QPushButton(self.centralwidget)
+        self.play_button = QPushButton(self.widget)
         self.play_button.setObjectName(u"play_button")
 
-        self.horizontalLayout_12.addWidget(self.play_button)
+        self.video_control_hlayout.addWidget(self.play_button)
 
-        self.pause_button = QPushButton(self.centralwidget)
+        self.pause_button = QPushButton(self.widget)
         self.pause_button.setObjectName(u"pause_button")
 
-        self.horizontalLayout_12.addWidget(self.pause_button)
+        self.video_control_hlayout.addWidget(self.pause_button)
 
-        self.label_3 = QLabel(self.centralwidget)
-        self.label_3.setObjectName(u"label_3")
+        self.video_speed_label = QLabel(self.widget)
+        self.video_speed_label.setObjectName(u"video_speed_label")
 
-        self.horizontalLayout_12.addWidget(self.label_3)
+        self.video_control_hlayout.addWidget(self.video_speed_label)
 
-        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.centralwidget)
+        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.widget)
         self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
         self.speed_doubleSpinBox.setMinimum(-10.000000000000000)
         self.speed_doubleSpinBox.setMaximum(10.000000000000000)
         self.speed_doubleSpinBox.setSingleStep(0.100000000000000)
         self.speed_doubleSpinBox.setValue(1.000000000000000)
 
-        self.horizontalLayout_12.addWidget(self.speed_doubleSpinBox)
+        self.video_control_hlayout.addWidget(self.speed_doubleSpinBox)
 
-        self.label = QLabel(self.centralwidget)
-        self.label.setObjectName(u"label")
+        self.track_window_label = QLabel(self.widget)
+        self.track_window_label.setObjectName(u"track_window_label")
 
-        self.horizontalLayout_12.addWidget(self.label)
+        self.video_control_hlayout.addWidget(self.track_window_label)
 
-        self.track_window_spinbox = QSpinBox(self.centralwidget)
+        self.track_window_spinbox = QSpinBox(self.widget)
         self.track_window_spinbox.setObjectName(u"track_window_spinbox")
         self.track_window_spinbox.setMinimum(1)
         self.track_window_spinbox.setMaximum(1000)
         self.track_window_spinbox.setValue(500)
 
-        self.horizontalLayout_12.addWidget(self.track_window_spinbox)
+        self.video_control_hlayout.addWidget(self.track_window_spinbox)
 
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
-        self.horizontalLayout_12.addItem(self.horizontalSpacer_2)
+        self.video_control_hlayout.addItem(self.horizontalSpacer_2)
 
-        self.label_5 = QLabel(self.centralwidget)
-        self.label_5.setObjectName(u"label_5")
+        self.video_layout_label = QLabel(self.widget)
+        self.video_layout_label.setObjectName(u"video_layout_label")
 
-        self.horizontalLayout_12.addWidget(self.label_5)
+        self.video_control_hlayout.addWidget(self.video_layout_label)
 
-        self.video_layout_comboBox = QComboBox(self.centralwidget)
+        self.video_layout_comboBox = QComboBox(self.widget)
         self.video_layout_comboBox.addItem("")
         self.video_layout_comboBox.addItem("")
         self.video_layout_comboBox.setObjectName(u"video_layout_comboBox")
 
-        self.horizontalLayout_12.addWidget(self.video_layout_comboBox)
+        self.video_control_hlayout.addWidget(self.video_layout_comboBox)
 
-        self.horizontalLayout_12.setStretch(1, 1)
-        self.horizontalLayout_12.setStretch(3, 1)
-        self.horizontalLayout_12.setStretch(4, 1)
-        self.horizontalLayout_12.setStretch(8, 1)
-        self.horizontalLayout_12.setStretch(10, 1)
-        self.horizontalLayout_12.setStretch(11, 1)
-        self.horizontalLayout_12.setStretch(13, 1)
+        self.video_control_hlayout.setStretch(1, 1)
+        self.video_control_hlayout.setStretch(3, 1)
+        self.video_control_hlayout.setStretch(4, 1)
+        self.video_control_hlayout.setStretch(8, 1)
+        self.video_control_hlayout.setStretch(10, 1)
+        self.video_control_hlayout.setStretch(11, 1)
+        self.video_control_hlayout.setStretch(13, 1)
 
-        self.display_layout.addLayout(self.horizontalLayout_12)
+        self.video_area_vlayout.addLayout(self.video_control_hlayout)
 
         self.video_layout = QHBoxLayout()
         self.video_layout.setObjectName(u"video_layout")
-        self.vid1_view = BehavVideoView(self.centralwidget)
+        self.vid1_view = BehavVideoView(self.widget)
         self.vid1_view.setObjectName(u"vid1_view")
         font1 = QFont()
         font1.setFamilies([u"Andale Mono"])
@@ -217,9 +224,9 @@ class Ui_MainWindow(object):
         self.video_layout.addWidget(self.vid1_view)
 
 
-        self.display_layout.addLayout(self.video_layout)
+        self.video_area_vlayout.addLayout(self.video_layout)
 
-        self.video_slider = VideoSlider(self.centralwidget)
+        self.video_slider = VideoSlider(self.widget)
         self.video_slider.setObjectName(u"video_slider")
         self.video_slider.setStyleSheet(u"QSlider::groove:horizontal {\n"
 "    border: 0px solid #999999;\n"
@@ -242,9 +249,10 @@ class Ui_MainWindow(object):
         self.video_slider.setOrientation(Qt.Horizontal)
         self.video_slider.setTickPosition(QSlider.NoTicks)
 
-        self.display_layout.addWidget(self.video_slider)
+        self.video_area_vlayout.addWidget(self.video_slider)
 
-        self.track_frame = QFrame(self.centralwidget)
+        self.splitter.addWidget(self.widget)
+        self.track_frame = QFrame(self.splitter)
         self.track_frame.setObjectName(u"track_frame")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
@@ -254,27 +262,22 @@ class Ui_MainWindow(object):
         self.track_frame.setMinimumSize(QSize(0, 0))
         self.track_frame.setFrameShape(QFrame.StyledPanel)
         self.track_frame.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_10 = QHBoxLayout(self.track_frame)
-        self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.horizontalLayout_2 = QHBoxLayout(self.track_frame)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.track_layout = QVBoxLayout()
+        self.track_layout.setSpacing(2)
         self.track_layout.setObjectName(u"track_layout")
 
-        self.horizontalLayout_10.addLayout(self.track_layout)
+        self.horizontalLayout_2.addLayout(self.track_layout)
 
+        self.splitter.addWidget(self.track_frame)
 
-        self.display_layout.addWidget(self.track_frame)
+        self.verticalLayout_8.addWidget(self.splitter)
 
-        self.display_layout.setStretch(0, 1)
-        self.display_layout.setStretch(1, 16)
-        self.display_layout.setStretch(3, 4)
-
-        self.horizontalLayout_2.addLayout(self.display_layout)
-
-        self.horizontalLayout_2.setStretch(0, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1366, 37))
+        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
         self.menuVideo = QMenu(self.menubar)
         self.menuVideo.setObjectName(u"menuVideo")
         self.menuAnnotation = QMenu(self.menubar)
@@ -505,14 +508,14 @@ class Ui_MainWindow(object):
         self.actionMerge_behavior.setText(QCoreApplication.translate("MainWindow", u"Merge behavior", None))
         self.actionClose_annotation.setText(QCoreApplication.translate("MainWindow", u"Close annotation", None))
         self.actionNew_annotation.setText(QCoreApplication.translate("MainWindow", u"New annotation", None))
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Time", None))
+        self.time_label_txt.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
+        self.current_frame_label.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
         self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Video Layout", None))
+        self.video_speed_label.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
+        self.track_window_label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
+        self.video_layout_label.setText(QCoreApplication.translate("MainWindow", u"Video Layout", None))
         self.video_layout_comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Side by Side", None))
         self.video_layout_comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Stacked", None))
 

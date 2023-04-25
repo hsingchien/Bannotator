@@ -244,6 +244,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             current_layout = self.video_layout
             index = self.display_layout.indexOf(current_layout)
             stretch_factor = self.display_layout.stretch(index)
+            print(stretch_factor)
             if self.state["video_layout"] == "Side by Side":
                 new_layout = QHBoxLayout()
                 for vid in self.vid_views:
@@ -788,6 +789,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             color_dict,
             self.state["current_frame"],
             self.state["slider_box"],
+            16,
             False,
             False,
         )
@@ -807,6 +809,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             color_dict,
             self.state["current_frame"],
             self.state["slider_box"],
+            8,
             True,
             True,
         )

@@ -20,193 +20,198 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2">
+   <layout class="QVBoxLayout" name="verticalLayout_8">
     <item>
-     <layout class="QVBoxLayout" name="display_layout" stretch="1,16,0,4">
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1">
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QWidget" name="">
+       <layout class="QVBoxLayout" name="video_area_vlayout">
         <item>
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>Time</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::PlainText</enum>
-          </property>
-          <property name="scaledContents">
-           <bool>false</bool>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-          <property name="textInteractionFlags">
-           <set>Qt::NoTextInteraction</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="time_label">
-          <property name="font">
-           <font>
-            <family>Courier New</family>
-            <pointsize>13</pointsize>
-            <bold>true</bold>
-            <underline>false</underline>
-            <strikeout>false</strikeout>
-            <kerning>true</kerning>
-           </font>
-          </property>
-          <property name="text">
-           <string>00:00:00</string>
-          </property>
-          <property name="textFormat">
-           <enum>Qt::MarkdownText</enum>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Current Frame</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="curframe_spinBox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="play_button">
-          <property name="text">
-           <string>Play</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pause_button">
-          <property name="text">
-           <string>Pause</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Speed</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="PlaySpeedSpinBox" name="speed_doubleSpinBox">
-          <property name="minimum">
-           <double>-10.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>10.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.100000000000000</double>
-          </property>
-          <property name="value">
-           <double>1.000000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Track Window</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QSpinBox" name="track_window_spinbox">
-          <property name="minimum">
-           <number>1</number>
-          </property>
-          <property name="maximum">
-           <number>1000</number>
-          </property>
-          <property name="value">
-           <number>500</number>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Video Layout</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="video_layout_comboBox">
+         <layout class="QHBoxLayout" name="video_control_hlayout" stretch="0,1,0,1,1,0,0,0,1,0,1,1,0,1">
           <item>
-           <property name="text">
-            <string>Side by Side</string>
-           </property>
+           <widget class="QLabel" name="time_label_txt">
+            <property name="text">
+             <string>Time</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::PlainText</enum>
+            </property>
+            <property name="scaledContents">
+             <bool>false</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="textInteractionFlags">
+             <set>Qt::NoTextInteraction</set>
+            </property>
+           </widget>
           </item>
           <item>
-           <property name="text">
-            <string>Stacked</string>
-           </property>
+           <widget class="QLabel" name="time_label">
+            <property name="font">
+             <font>
+              <family>Courier New</family>
+              <pointsize>13</pointsize>
+              <bold>true</bold>
+              <underline>false</underline>
+              <strikeout>false</strikeout>
+              <kerning>true</kerning>
+             </font>
+            </property>
+            <property name="text">
+             <string>00:00:00</string>
+            </property>
+            <property name="textFormat">
+             <enum>Qt::MarkdownText</enum>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
           </item>
-         </widget>
+          <item>
+           <widget class="QLabel" name="current_frame_label">
+            <property name="text">
+             <string>Current Frame</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="curframe_spinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_1">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="play_button">
+            <property name="text">
+             <string>Play</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pause_button">
+            <property name="text">
+             <string>Pause</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="video_speed_label">
+            <property name="text">
+             <string>Speed</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="PlaySpeedSpinBox" name="speed_doubleSpinBox">
+            <property name="minimum">
+             <double>-10.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>10.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="track_window_label">
+            <property name="text">
+             <string>Track Window</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="track_window_spinbox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>500</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QLabel" name="video_layout_label">
+            <property name="text">
+             <string>Video Layout</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="video_layout_comboBox">
+            <item>
+             <property name="text">
+              <string>Side by Side</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Stacked</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="video_layout" stretch="0">
         <item>
-         <widget class="BehavVideoView" name="vid1_view">
-          <property name="font">
-           <font>
-            <family>Andale Mono</family>
-           </font>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="video_layout">
+          <item>
+           <widget class="BehavVideoView" name="vid1_view">
+            <property name="font">
+             <font>
+              <family>Andale Mono</family>
+             </font>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="VideoSlider" name="video_slider">
-        <property name="styleSheet">
-         <string notr="true">QSlider::groove:horizontal {
+        <item>
+         <widget class="VideoSlider" name="video_slider">
+          <property name="styleSheet">
+           <string notr="true">QSlider::groove:horizontal {
     border: 0px solid #999999;
     height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
     margin-left: 3px;
@@ -221,52 +226,56 @@ QSlider::handle:horizontal {
     border-radius: 3px;
 	subcontrol-origin: content;
 }</string>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="value">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::NoTicks</enum>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QFrame" name="track_frame">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Raised</enum>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <item>
-          <layout class="QVBoxLayout" name="track_layout"/>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="tickPosition">
+           <enum>QSlider::NoTicks</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QFrame" name="track_frame">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <layout class="QVBoxLayout" name="track_layout">
+          <property name="spacing">
+           <number>2</number>
+          </property>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -276,7 +285,7 @@ QSlider::handle:horizontal {
      <x>0</x>
      <y>0</y>
      <width>1366</width>
-     <height>37</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuVideo">

@@ -164,12 +164,13 @@ class TrackBar(QWidget):
         color_dict: Dict = None,
         frame_mark: int = None,
         slider_box=[],
+        min_height = 8,
         use_pixmap=False,
         full_track_flag=False,
         parent=None,
     ):
         super().__init__(parent)
-        self.setMinimumHeight(8)
+        self.setMinimumHeight(min_height)
         self.full_data = data
         self.color_dict = color_dict
         self.selected = False
