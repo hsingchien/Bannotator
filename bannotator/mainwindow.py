@@ -66,6 +66,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.auto_save_timer = QTimer(self)
         self.auto_save_timer.timeout.connect(self.save_annotation_copy)
         self.auto_save_timer.start(30000)
+        self.gui_timer = QTimer(self)
+        self.gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
+        self.gui_timer.start(33)
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
@@ -229,6 +232,12 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             # Fit all video views
             for view in self.vid_views:
                 view.fitPixItem()
+            # Display video path in window title
+            if self.state["video"] > 0:
+                file_name = self.vids[0].file_name()
+                self.setWindowTitle(" - ".join(["Annotator",file_name]))
+            else:
+                self.setWindowTitle("Annotator")
 
         if "video_layout" in topics:
             # Convert video layout

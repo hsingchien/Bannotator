@@ -44,7 +44,7 @@ class BehavVideo(QObject):
         self.fetch_frame_number.emit(frameN)
 
     def file_name(self):
-        return self.file_name
+        return self.video_path
 
     def num_frame(self):
         return self.last_frame_index + 1
@@ -163,7 +163,7 @@ class SeqBehavVideo(QObject):
     def __init__(self, filename, outlet=None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
         self.outlet = outlet
-        self._filename = filename
+        self._video_path = filename
         self._file = open(filename, 'rb')
         self.header_dict = self.read_header(HEADER_FIELDS)
         self._frame_num = self.header_dict["allocated_frames"]
@@ -183,7 +183,7 @@ class SeqBehavVideo(QObject):
             self._timestamp_struct = struct.Struct('<LH')
             self._timestamp_micro = False
             # Use a separate thread to find starts and ends
-            frame_finder = FindingFrameWorker(self._filename, self._frame_num)
+            frame_finder = FindingFrameWorker(self._video_path, self._frame_num)
             # Signal to find start and end
             frame_finder.signals.result_signal.connect(self.set_im_indices)
             # Emit progress and display in the statusbar
@@ -196,6 +196,9 @@ class SeqBehavVideo(QObject):
         else:
             raise IOError("Only uncompressed or JPEG images are supported at this point")
         self._file.close()
+
+    def file_name(self):
+        return self._video_path
         
     def start_frame_fetcher(self):
         # First wait for frame finding worker done searching
@@ -203,7 +206,7 @@ class SeqBehavVideo(QObject):
             self.waiting_loop.exec()
         if self._jpeg and len(self._imstarts) != self._frame_num:
             raise IOError("Number of frames does not match header data")
-        self.worker = SeqVideoWorker(self._filename, self._jpeg, self.header_dict)
+        self.worker = SeqVideoWorker(self._video_path, self._jpeg, self.header_dict)
         # Signal to send the fetching instruction (start, end, next_start)
         self.fetch_index.connect(self.worker.receive_read_position)
         # Run/Stop signal
