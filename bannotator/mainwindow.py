@@ -66,9 +66,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.auto_save_timer = QTimer(self)
         self.auto_save_timer.timeout.connect(self.save_annotation_copy)
         self.auto_save_timer.start(30000)
-        self.gui_timer = QTimer(self)
-        self.gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
-        self.gui_timer.start(33)
+        # self.gui_timer = QTimer(self)
+        # self.gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
+        # self.gui_timer.start(33)
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
@@ -238,28 +238,36 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.setWindowTitle(" - ".join(["Annotator",file_name]))
             else:
                 self.setWindowTitle("Annotator")
+            # Set stretch factor for video layout (side by side and stacked)
+            if self.state["video_layout"] != "Grid":
+                for view in self.vid_views:
+                    self.video_layout.setStretchFactor(view, 1)
 
         if "video_layout" in topics:
             # Convert video layout
             current_layout = self.video_layout
             index = self.display_layout.indexOf(current_layout)
             stretch_factor = self.display_layout.stretch(index)
-            print(stretch_factor)
             if self.state["video_layout"] == "Side by Side":
                 new_layout = QHBoxLayout()
                 for vid in self.vid_views:
-                    new_layout.addWidget(vid)
+                    new_layout.addWidget(vid,1)
             if self.state["video_layout"] == "Stacked":
                 new_layout = QVBoxLayout()
                 for vid in self.vid_views:
-                    new_layout.addWidget(vid)
+                    new_layout.addWidget(vid,1)
 
             if self.state["video_layout"] == "Grid":
+                nvideos = len(self.vid_views)
                 new_layout = QGridLayout()
-                n_row = np.floor(np.sqrt(self.state["video"]))
-                n_col = np.ceil(self.state["video"] / n_row)
+                n_row = np.floor(np.sqrt(nvideos))
+                n_col = np.ceil(nvideos / n_row)
                 for i, vid in enumerate(self.vid_views):
                     new_layout.addWidget(vid, i // n_col, i % n_col)
+                for i in range(int(n_row)):
+                    new_layout.setRowStretch(i,1)
+                for i in range(int(n_col)):
+                    new_layout.setColumnStretch(i,1)
             self.video_layout = new_layout
             self.display_layout.removeItem(current_layout)
             self.display_layout.insertLayout(index, new_layout, stretch_factor)
@@ -370,24 +378,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             new_view = BehavVideoView()
             bvideo.new_frame_fetched.connect(new_view.updatePixmap)
             self.vid_views.append(new_view)
-            if self.state["video_layout"] != "Grid":
-                self.video_layout.addWidget(new_view)
-            else:
-                n_row = np.floor(np.sqrt(self.state["video"]))
-                n_col = np.ceil(self.state["video"] / n_row)
-                if (
-                    n_row == self.video_layout.rowCount()
-                    and n_col == self.video_layout.columnCount()
-                ):
-                    self.video_layout.addWidget(
-                        new_view,
-                        (self.state["video"] - 1) // n_col,
-                        (self.state["video"] - 1) % n_col,
-                    )
-                else:
-                    # Rebuild the gridlayout
-                    self.update_gui(["video_layout"])
-            new_view.show()
+            self.update_gui(["video_layout"])
+            # new_view.show()
         # Change state and trigger callbakcs
         self.go_to_frame(self.state["current_frame"])
         self.state["video"] += 1
@@ -467,24 +459,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             new_view = BehavVideoView()
             bvideo.new_frame_fetched.connect(new_view.updatePixmap)
             self.vid_views.append(new_view)
-            if self.state["video_layout"] != "Grid":
-                self.video_layout.addWidget(new_view)
-            else:
-                n_row = np.floor(np.sqrt(self.state["video"]))
-                n_col = np.ceil(self.state["video"] / n_row)
-                if (
-                    n_row == self.video_layout.rowCount()
-                    and n_col == self.video_layout.columnCount()
-                ):
-                    self.video_layout.addWidget(
-                        new_view,
-                        (self.state["video"] - 1) // n_col,
-                        (self.state["video"] - 1) % n_col,
-                    )
-                else:
-                    # Rebuild the gridlayout
-                    self.update_gui(["video_layout"])
-            new_view.show()
+            self.update_gui(["video_layout"])
+            # new_view.show()
         # Refresh the scene
         self.go_to_frame(self.state["current_frame"])
         # Trigger ui updtates

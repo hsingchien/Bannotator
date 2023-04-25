@@ -493,7 +493,9 @@ class Stream(QtCore.QObject):
             self.epochs.append(epoch)
             self.behaviors[behav_name].append_epoch(epoch)
         self._length = self.get_length()
-        self.validate_epoch()
+        validation = self.validate_epoch()
+        if not validation:
+            raise ValueError("Invalid annotation. See console for more info!")
         self.data_changed.emit(self.get_stream_vect())
 
     def get_behaviors(self):
@@ -707,7 +709,7 @@ class Annotation(QtCore.QObject):
             self.streams[stream_id].data_changed.connect(self.streams_changed)
         return True
 
-    def validate_streams(self):
+    def validate_stream_behavior(self):
         behav_list = [stream.get_behaviors() for _, stream in self.streams.items()]
         # Validate the streams have the same behavior setting
         for i in range(len(behav_list[0])):
@@ -727,12 +729,20 @@ class Annotation(QtCore.QObject):
         return True
 
     def get_behaviors(self):
-        if self.validate_streams():
+        if self.validate_stream_behavior():
             # Return a list of Behavior objects
             ks = sorted(list(self.streams.keys()))
             return [self.streams[k].get_behaviors() for k in ks]
         else:
             raise Exception("Inconsisten behaviors across streams")
+
+    def validate_stream(self):
+        for _,stream in self.streams.items():
+            if stream.validate_epoch():
+                continue
+            else:
+                return False
+
 
     def add_behavior(self, name, keybind):
         for _, stream in self.streams.items():
@@ -828,6 +838,9 @@ class Annotation(QtCore.QObject):
         return length
 
     def save_to_file(self, filename, auto_save=False):
+        valid = self.validate_stream()
+        if not valid:
+            Warning("Annotation might contain blank, overlaping epoches, or repetitive epochs.")
         try:
             with open(filename, "w") as f:
                 f.write("Caltech Behavior Annotator - Annotation File\n")

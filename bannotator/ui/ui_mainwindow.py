@@ -103,14 +103,15 @@ class Ui_MainWindow(object):
         self.splitter = QSplitter(self.centralwidget)
         self.splitter.setObjectName(u"splitter")
         self.splitter.setOrientation(Qt.Vertical)
-        self.widget = QWidget(self.splitter)
-        self.widget.setObjectName(u"widget")
-        self.video_area_vlayout = QVBoxLayout(self.widget)
-        self.video_area_vlayout.setObjectName(u"video_area_vlayout")
-        self.video_area_vlayout.setContentsMargins(0, 0, 0, 0)
+        self.layoutWidget = QWidget(self.splitter)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.display_layout = QVBoxLayout(self.layoutWidget)
+        self.display_layout.setSpacing(4)
+        self.display_layout.setObjectName(u"display_layout")
+        self.display_layout.setContentsMargins(0, 0, 0, 0)
         self.video_control_hlayout = QHBoxLayout()
         self.video_control_hlayout.setObjectName(u"video_control_hlayout")
-        self.time_label_txt = QLabel(self.widget)
+        self.time_label_txt = QLabel(self.layoutWidget)
         self.time_label_txt.setObjectName(u"time_label_txt")
         self.time_label_txt.setTextFormat(Qt.PlainText)
         self.time_label_txt.setScaledContents(False)
@@ -119,7 +120,7 @@ class Ui_MainWindow(object):
 
         self.video_control_hlayout.addWidget(self.time_label_txt)
 
-        self.time_label = QLabel(self.widget)
+        self.time_label = QLabel(self.layoutWidget)
         self.time_label.setObjectName(u"time_label")
         font = QFont()
         font.setFamilies([u"Courier New"])
@@ -134,12 +135,12 @@ class Ui_MainWindow(object):
 
         self.video_control_hlayout.addWidget(self.time_label)
 
-        self.current_frame_label = QLabel(self.widget)
+        self.current_frame_label = QLabel(self.layoutWidget)
         self.current_frame_label.setObjectName(u"current_frame_label")
 
         self.video_control_hlayout.addWidget(self.current_frame_label)
 
-        self.curframe_spinBox = QSpinBox(self.widget)
+        self.curframe_spinBox = QSpinBox(self.layoutWidget)
         self.curframe_spinBox.setObjectName(u"curframe_spinBox")
         self.curframe_spinBox.setMinimum(1)
         self.curframe_spinBox.setMaximum(1000)
@@ -150,22 +151,22 @@ class Ui_MainWindow(object):
 
         self.video_control_hlayout.addItem(self.horizontalSpacer_1)
 
-        self.play_button = QPushButton(self.widget)
+        self.play_button = QPushButton(self.layoutWidget)
         self.play_button.setObjectName(u"play_button")
 
         self.video_control_hlayout.addWidget(self.play_button)
 
-        self.pause_button = QPushButton(self.widget)
+        self.pause_button = QPushButton(self.layoutWidget)
         self.pause_button.setObjectName(u"pause_button")
 
         self.video_control_hlayout.addWidget(self.pause_button)
 
-        self.video_speed_label = QLabel(self.widget)
+        self.video_speed_label = QLabel(self.layoutWidget)
         self.video_speed_label.setObjectName(u"video_speed_label")
 
         self.video_control_hlayout.addWidget(self.video_speed_label)
 
-        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.widget)
+        self.speed_doubleSpinBox = PlaySpeedSpinBox(self.layoutWidget)
         self.speed_doubleSpinBox.setObjectName(u"speed_doubleSpinBox")
         self.speed_doubleSpinBox.setMinimum(-10.000000000000000)
         self.speed_doubleSpinBox.setMaximum(10.000000000000000)
@@ -174,12 +175,12 @@ class Ui_MainWindow(object):
 
         self.video_control_hlayout.addWidget(self.speed_doubleSpinBox)
 
-        self.track_window_label = QLabel(self.widget)
+        self.track_window_label = QLabel(self.layoutWidget)
         self.track_window_label.setObjectName(u"track_window_label")
 
         self.video_control_hlayout.addWidget(self.track_window_label)
 
-        self.track_window_spinbox = QSpinBox(self.widget)
+        self.track_window_spinbox = QSpinBox(self.layoutWidget)
         self.track_window_spinbox.setObjectName(u"track_window_spinbox")
         self.track_window_spinbox.setMinimum(1)
         self.track_window_spinbox.setMaximum(1000)
@@ -191,12 +192,12 @@ class Ui_MainWindow(object):
 
         self.video_control_hlayout.addItem(self.horizontalSpacer_2)
 
-        self.video_layout_label = QLabel(self.widget)
+        self.video_layout_label = QLabel(self.layoutWidget)
         self.video_layout_label.setObjectName(u"video_layout_label")
 
         self.video_control_hlayout.addWidget(self.video_layout_label)
 
-        self.video_layout_comboBox = QComboBox(self.widget)
+        self.video_layout_comboBox = QComboBox(self.layoutWidget)
         self.video_layout_comboBox.addItem("")
         self.video_layout_comboBox.addItem("")
         self.video_layout_comboBox.setObjectName(u"video_layout_comboBox")
@@ -211,11 +212,11 @@ class Ui_MainWindow(object):
         self.video_control_hlayout.setStretch(11, 1)
         self.video_control_hlayout.setStretch(13, 1)
 
-        self.video_area_vlayout.addLayout(self.video_control_hlayout)
+        self.display_layout.addLayout(self.video_control_hlayout)
 
         self.video_layout = QHBoxLayout()
         self.video_layout.setObjectName(u"video_layout")
-        self.vid1_view = BehavVideoView(self.widget)
+        self.vid1_view = BehavVideoView(self.layoutWidget)
         self.vid1_view.setObjectName(u"vid1_view")
         font1 = QFont()
         font1.setFamilies([u"Andale Mono"])
@@ -224,9 +225,9 @@ class Ui_MainWindow(object):
         self.video_layout.addWidget(self.vid1_view)
 
 
-        self.video_area_vlayout.addLayout(self.video_layout)
+        self.display_layout.addLayout(self.video_layout)
 
-        self.video_slider = VideoSlider(self.widget)
+        self.video_slider = VideoSlider(self.layoutWidget)
         self.video_slider.setObjectName(u"video_slider")
         self.video_slider.setStyleSheet(u"QSlider::groove:horizontal {\n"
 "    border: 0px solid #999999;\n"
@@ -249,9 +250,10 @@ class Ui_MainWindow(object):
         self.video_slider.setOrientation(Qt.Horizontal)
         self.video_slider.setTickPosition(QSlider.NoTicks)
 
-        self.video_area_vlayout.addWidget(self.video_slider)
+        self.display_layout.addWidget(self.video_slider)
 
-        self.splitter.addWidget(self.widget)
+        self.display_layout.setStretch(1, 4)
+        self.splitter.addWidget(self.layoutWidget)
         self.track_frame = QFrame(self.splitter)
         self.track_frame.setObjectName(u"track_frame")
         sizePolicy1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
