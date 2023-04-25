@@ -57,7 +57,7 @@ class Ui_DeleteStreamDialog(object):
     # setupUi
 
     def retranslateUi(self, DeleteStreamDialog):
-        DeleteStreamDialog.setWindowTitle(QCoreApplication.translate("DeleteStreamDialog", u"Which stream do you want to delete?", None))
+        DeleteStreamDialog.setWindowTitle(QCoreApplication.translate("DeleteStreamDialog", u"Delete stream", None))
         self.label.setText(QCoreApplication.translate("DeleteStreamDialog", u"Stream ID", None))
     # retranslateUi
 

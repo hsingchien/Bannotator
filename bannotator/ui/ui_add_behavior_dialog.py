@@ -68,7 +68,7 @@ class Ui_AddBehaviorDialog(object):
     # setupUi
 
     def retranslateUi(self, AddBehaviorDialog):
-        AddBehaviorDialog.setWindowTitle(QCoreApplication.translate("AddBehaviorDialog", u"Dialog", None))
+        AddBehaviorDialog.setWindowTitle(QCoreApplication.translate("AddBehaviorDialog", u"Add behavior", None))
         self.name.setText(QCoreApplication.translate("AddBehaviorDialog", u"name", None))
         self.keybind.setText(QCoreApplication.translate("AddBehaviorDialog", u"keybind", None))
     # retranslateUi

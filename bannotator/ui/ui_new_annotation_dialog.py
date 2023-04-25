@@ -73,7 +73,7 @@ class Ui_NewAnnotationDialog(object):
     # setupUi
 
     def retranslateUi(self, NewAnnotationDialog):
-        NewAnnotationDialog.setWindowTitle(QCoreApplication.translate("NewAnnotationDialog", u"Dialog", None))
+        NewAnnotationDialog.setWindowTitle(QCoreApplication.translate("NewAnnotationDialog", u"Create new annotation", None))
         self.nStream_label.setText(QCoreApplication.translate("NewAnnotationDialog", u"number of streams", None))
         self.behavior_label.setText(QCoreApplication.translate("NewAnnotationDialog", u"Behavior - keybind:", None))
     # retranslateUi

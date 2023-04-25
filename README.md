@@ -1,14 +1,15 @@
 # Behavior Annotator
 
-![Alt text](bannotator/resource/bg_readme.png)
-### A Pyside6 application that assists manual annotation of videos.
+<img src="bannotator/resource/bg_readme.png" height="300">
+
 # Table of contents
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Basics](#basics)
+  - [GUI](#GUI)
   - [Video](#video)
-  - [Annotation](#annotation)  
+  - [Annotation](#annotation)
+  - [KeyPress Functions](#keypress-functions)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -47,196 +48,60 @@ annotate-behavior
 
 # Usage
 
+### GUI
 
-### Flags
+![Alt text](bannotator/resource/app_illustration.png)
 
-- With `-1` : Lists one entry per line
+The GUI layout has 5 major areas.
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149062-4f0547ca-bd25-11e7-98b6-587467379704.png)
+- A video area, where you can add display of multiple videos.
+- Stream area shows the enlarged portion of the color coded streams.
+- Stream overviews provide the bird's view of the full annotation and the progress.
+- Behavior tables dock where ID, name, keystroke and color are shown in the Behaviors tab; number of epochs and percentage of the time are shown in the Stats tab.
+- Epoch tables where epochs are shown in the All Epochs tab, epochs of selected behaviors are shown in the Behavior Epochs tab.
 
-- With `-a` (or) `--all` : Does not ignore entries starting with '.'
+### Video
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149045-182eb39e-bd25-11e7-83d4-897cb14bcff3.png)
+- Annotator supports major video formats and the Norpix Streampix seq files. Only uncompressed seq (RAW) or compressed seq in JPEG format are currently supported.
 
-- With `-A` (or) `--almost-all` : Does not ignore entries starting with '.', except `./` and `../`
+- Annotator is capable of displaying multiple videos simultaneously, there is ideal for experiments with multiple video streams. If videos have different number of frames, the 1st added video is treated as the main video and the other videos are stretched to the length of the video 1.
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149046-1ef7664e-bd25-11e7-8bd9-bfc3c8b27b74.png)
+- Annotator provides several different video layouts. Side by side, Stacked or Grid (this option becomes available when number of videos reaches 4).
 
-- With `-d` (or) `--dirs` : Shows only directories
+- Video can be played at various speed.
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149066-5f842aa8-bd25-11e7-9bf0-23313b717182.png)
+### Annotation
 
-- With `-f` (or) `--files` : Shows only files
+The annotator is compatible with the format of annotation txt file of [Piotr's MATLAB toolbox](https://github.com/pdollar/toolbox). If you are a user of the behavior annotator of this toolbox, you can view/edit your existing annotation files as well as create new annotation using your old configuration files. The output file of this annotator is also back compatible with Piotr's annotator.
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149065-5a27c9d4-bd25-11e7-9a2b-fd731d76a058.png)
+If you are not familiar with the Piotr's toolbox, you can create an new annotation from scratch using `New annotaion` function in the `Annotation` menu. To enable this option you need to add a video first to let the annotator know the length of the annotation.
 
-- With `-h` (or) `--help` : Prints a very helpful help menu
+![Alt text](bannotator/resource/new_annotation_dialog.png)
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149096-cf2cf5b0-bd25-11e7-84b6-909d79099c98.png)
+Set the number of streams. In text editor, input behavior - keystroke pair on each line, parsed by '-' or space. The name and keystroke must be unique word or letter otherwise the input is rejected by the dialog. Once created, all the streams will be filled with the first behavior in your list. Usually the first behavior label is reserved for the "blank" label. Name this behavior as "other" or "blank", the annotator will assign grey color to it.
 
-- With `-l` (or) `--long` : Shows in long listing format
+Once the new streams are created, you can now go through the video and make labels. Press keystroke to label the current frame as well as the rest of the Epoch. Epoch is the fundamental unit of the annotation. An `Annotation` contains `Streams` which contains a series of `Epoch`. Each `Stream` also contains several `Behavior` objects each on of which stores the name, color, keystroke and ID of user defined behaviors. `Behavior` objects also collects all the `Epochs` of this kind in its stream.
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149049-2a63ae48-bd25-11e7-943c-5ceed25bd693.png)
+### KeyPress Functions
 
-- With `-r` (or) `--report` : Shows brief report about number of files and folders shown
+<kbd>Space</kbd> : Play/Pause video
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149082-96a83fec-bd25-11e7-9081-7f77e4c90e90.png)
+<kbd>&#8593;</kbd> / <kbd>&#8595;</kbd> : Increase/Decrease playing speed
 
-- With `--tree` (or) `--tree=[DEPTH]` : Shows tree view of the directory with the specified depth (default 3)
+<kbd>&#8592;</kbd> / <kbd>&#8594;</kbd> : Previous/Next frame
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149051-32e596e4-bd25-11e7-93a9-5e50c8d2bb19.png)
+<kbd>1</kbd> - <kbd>0</kbd> : Change the current stream to stream 1 - 10
 
-- With `--gs` (or) `--git-status` : Shows git status for each entry
+<kbd>`</kbd> : Rotate current stream
 
-  ![image](https://user-images.githubusercontent.com/17109060/32149075-7a1a1954-bd25-11e7-964e-1adb173aa2b9.png)
+<kbd>-</kbd>/<kbd>+</kbd> : Move to previous/next epoch of current stream
 
-- With `--sd` (or) `--sort-dirs` or `--group-directories-first` : Shows directories first, followed by files
-
-  ![image](https://user-images.githubusercontent.com/17109060/32149068-65117fc0-bd25-11e7-8ada-0b055603e3fd.png)
-
-- With `--sf` (or) `--sort-files` : Shows files first, followed by directories
-
-  ![image](https://user-images.githubusercontent.com/17109060/32149071-6b379de4-bd25-11e7-8764-a0c577e526a1.png)
-
-- With `-t` : Sort by modification time, newest first (NEED TO ADD IMAGE)
-
-- With color options : `--light` or `--dark` can be passed as a flag, to choose the appropriate color scheme. By default, the dark color scheme is chosen. In order to tweak any color, read [Custom configurations](#custom-configurations).
-
-### Combination of flags
-
-- Using `--gs` with `-t` :
-
-  ![image](https://user-images.githubusercontent.com/17109060/32149076-8423c864-bd25-11e7-816e-8642643d2c27.png)
-
-- Using `--gs` with `-l` :
-
-  ![image](https://user-images.githubusercontent.com/17109060/32149078-899b0622-bd25-11e7-9810-d398eaa77e32.png)
-
-- Using `--sd` with `-l` and `-A` :
-
-  ![image](https://user-images.githubusercontent.com/17109060/32149084-9eb2a416-bd25-11e7-8fb7-a9d336c6e038.png)
-
-# Installation
-
-[(Back to top)](#table-of-contents)
-
-1. Install Ruby (preferably, version >= 2.6)
-2. [Download](https://www.nerdfonts.com/font-downloads) and install a Nerd Font. Have a look at the [Nerd Font README](https://github.com/ryanoasis/nerd-fonts/blob/master/readme.md) for installation instructions.
-
-    *Note for `iTerm2` users - Please enable the Nerd Font at iTerm2 > Preferences > Profiles > Text > Non-ASCII font > Hack Regular Nerd Font Complete.*
-
-    *Note for `HyperJS` users - Please add `"Hack Nerd Font"` Font as an option to `fontFamily` in your `~/.hyper.js` file.*
-
-3. Install the [colorls](https://rubygems.org/gems/colorls/) ruby gem with `gem install colorls`
-
-    *Note for `rbenv` users - In case of load error when using `lc`, please try the below patch.*
-
-    ```sh
-    rbenv rehash
-    rehash
-    ```
-
-4. Enable tab completion for flags by entering following line to your shell configuration file (`~/.bashrc` or `~/.zshrc`) :
-    ```bash
-    source $(dirname $(gem which colorls))/tab_complete.sh
-    ```
-
-5. Start using `colorls` :tada:
-
-6. Have a look at [Recommended configurations](#recommended-configurations) and [Custom configurations](#custom-configurations).
-
-# Recommended configurations
-
-[(Back to top)](#table-of-contents)
-
-1. To add some short command (say, `lc`) with some flag options (say, `-l`, `-A`, `--sd`) by default, add this to your shell configuration file (`~/.bashrc`, `~/.zshrc`, etc.) :
-    ```sh
-    alias lc='colorls -lA --sd'
-    ```
-
-2. For changing the icon(s) to other unicode icons of choice (select icons from [here](https://nerdfonts.com/)), change the YAML files in a text editor of your choice (say, `subl`)
-
-    ```sh
-    subl $(dirname $(gem which colorls))/yaml
-    ```
-
-# Custom configurations
-
-[(Back to top)](#table-of-contents)
-
-You can overwrite the existing icons and colors mapping by copying the yaml files from `$(dirname $(gem which colorls))/yaml` into `~/.config/colorls`, and changing them.
-
-- To overwrite color mapping :
-
-  Please have a look at the [list of supported color names](https://github.com/sickill/rainbow#color-list). You may also use a color hex code as long as it is quoted within the YAML file and prefaced with a `#` symbol.
-
-  Let's say that you're using the dark color scheme and would like to change the color of untracked file (`??`) in the `--git-status` flag to yellow. Copy the defaut `dark_colors.yaml` and change it.
-
-  ```sh
-  cp $(dirname $(gem which colorls))/yaml/dark_colors.yaml ~/.config/colorls/dark_colors.yaml
-  ```
-
-  In the `~/.config/colorls/dark_colors.yaml` file, change the color set for `untracked` from `darkorange` to `yellow`, and save the change.
-
-  ```
-  untracked: yellow
-  ```
-
-  Or, using hex color codes:
-
-  ```
-  untracked: '#FFFF00'
-  ```
-
-- To overwrite icon mapping :
-
-  Please have a look at the [list of supported icons](https://nerdfonts.com/). Let's say you want to add an icon for swift files. Copy the default `files.yaml` and change it.
-
-  ```sh
-  cp $(dirname $(gem which colorls))/yaml/files.yaml ~/.config/colorls/files.yaml`
-  ```
-
-  In the `~/.config/colorls/files.yaml` file, add a new icon / change an existing icon, and save the change.
-
-
-  ```
-  swift: "\uF179"
-  ```
-
-- User contributed alias configurations :
-
-  - [@rjhilgefort](https://gist.github.com/rjhilgefort/51ea47dd91bcd90cd6d9b3b199188c16)
-
-
-# Updating
-
-[(Back to top)](#table-of-contents)
-
-Want to update to the latest version of `colorls`?
-
-```sh
-gem update colorls
-```
-
-# Uninstallation
-
-[(Back to top)](#table-of-contents)
-
-Want to uninstall and revert back to the old style? No issues (sob). Please feel free to open an issue regarding how we can enhance `colorls`.
-
-```sh
-gem uninstall colorls
-```
+<kbd>CTRL</kbd><kbd>-</kbd>/<kbd>CTRL</kbd><kbd>+</kbd> : Move to previous/next epoch of selected behavior
 
 # Contributing
 
-[(Back to top)](#table-of-contents)
-
-Your contributions are always welcome! Please have a look at the [contribution guidelines](CONTRIBUTING.md) first. :tada:
+Your contributions are always welcome! Contribution guideline will be available soon.
 
 # License
-
-[(Back to top)](#table-of-contents)
-
 
 The MIT License (MIT) 2017 - [Athitya Kumar](https://github.com/athityakumar/). Please have a look at the [LICENSE.md](LICENSE.md) for more details.
