@@ -197,19 +197,19 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.track_window_spinbox.setMaximum(self.vids[0].num_frame())
             # Update the video layout combobox
             if (
-                self.state["video"] > 2
+                self.state["video"] > 3
                 and self.video_layout_comboBox.findText("Grid") == -1
             ):
                 self.video_layout_comboBox.addItem("Grid")
             elif (
-                self.state["video"] <= 2
+                self.state["video"] <= 3
                 and self.video_layout_comboBox.currentText() != "Grid"
             ):
                 self.video_layout_comboBox.removeItem(
                     self.video_layout_comboBox.findText("Grid")
                 )
             elif (
-                self.state["video"] <= 2
+                self.state["video"] <= 3
                 and self.video_layout_comboBox.currentText() == "Grid"
             ):
                 self.video_layout_comboBox.setCurrentText("Side by Side")
