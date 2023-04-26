@@ -9,3 +9,4 @@ dependencies:
   - pip:
       - opencv-python==4.7.0.68
       - pyside6==6.4.2
+      - distinctipy

@@ -66,9 +66,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.auto_save_timer = QTimer(self)
         self.auto_save_timer.timeout.connect(self.save_annotation_copy)
         self.auto_save_timer.start(30000)
-        # self.gui_timer = QTimer(self)
-        # self.gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
-        # self.gui_timer.start(33)
+        self.gui_timer = QTimer(self)
+        self.gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
+        self.gui_timer.start(33)
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self.play_video)
         self.pause_button.clicked.connect(self.timer.stop)
@@ -126,7 +126,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionTrack_epoch.toggled.connect(
             lambda: self.update_gui(["view_options"])
         )
-
+        self.actionShuffle_colors.triggered.connect(lambda: self.state["annot"].assign_behavior_color() if self.state["annot"] is not None else None)
         # Connect state change
         self.connect_states()
 
@@ -483,7 +483,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         annotation.read_from_file(anno_path)
-        annotation.assign_behavior_color()
+        # annotation.assign_behavior_color()
+        annotation.assign_behavior_color(12)
         annot_length = annotation.get_length()
         if self.vids and annot_length < self.vids[0].num_frame():
             warning_dialog = QMessageBox.warning(
@@ -664,8 +665,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         self.statusbar.showMessage("Saving annotation...", 0)
+        if self.state["annot"].get_file_path() is not None:
+            annot_name = self.state["annot"].get_file_path()
+        elif self.vids:
+            vid_path = self.vids[0].file_name()
+            annot_name = vid_path.replace("." + vid_path.split(".")[-1],"_annot.txt")
+        else:
+            annot_name = "annotation.txt"
+
         filename, _ = QFileDialog.getSaveFileName(
-            None, "Save Annotation", "annotation.txt", "text Files (*.txt)"
+            None, "Save Annotation", annot_name, "text Files (*.txt)"
         )
         if not filename:
             return False
@@ -675,10 +684,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     def save_annotation_copy(self):
         try:
             annot_path = self.state["annot"].get_file_path()
-            if annot_path is None:
-                filename = os.path.join(os.getcwd(), "annotation_backup.txt")
-            else:
+            if annot_path is not None:
                 filename = annot_path.replace(".txt", "_backup.txt")
+            elif self.vids:
+                vid_path = self.vids[0].file_name()
+                filename = vid_path.replace("." + vid_path.split(".")[-1],"_annotation_backup.txt")
+            else:
+                filename = os.path.join(os.getcwd(), "annotation_backup.txt")
+                
             if self.state["annot"].save_to_file(filename, True):
                 self.statusbar.clearMessage()
                 self.statusbar.showMessage(
@@ -972,7 +985,6 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             vid_view = self.vid_views.pop(-1)
             self.video_layout.removeWidget(vid_view)
             vid_view.deleteLater()
-        self.vid1_view.clear_pixmap()
         self.state.clear_connections("video")
         self.state.clear_connections("video_layout")
         self.state.clear_connections("FPS")
@@ -981,6 +993,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.vids_stretch_factor = []
         self.vids.clear()
         self.close_annotation(True)
+        self.vid1_view.clear_pixmap()
         self.update_gui(["gui"])
 
     def eventFilter(self, obj, event):

@@ -16,7 +16,7 @@ import re
 
 class GenericTableModel(QAbstractTableModel):
     activated_row_changed = QtCore.Signal(int)
-
+    state_change = QtCore.Signal(object)
     def __init__(
         self,
         items: Optional[list] = None,
@@ -164,22 +164,26 @@ class BehaviorTableModel(GenericTableModel):
         if colum_idx == 3:
             data_item = self.item_list[row_idx]
             current_color = data_item.get_color()
+            self.state_change.emit(QAbstractItemView.EditingState)
             new_color = QColorDialog.getColor(current_color,None,"Pick a color for this behavior")
             if new_color.isValid():
                 for stream_behav in self.all_behaviors:
                     stream_behav[row_idx].set_color(new_color)
                 self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
+            self.state_change.emit(QAbstractItemView.NoState)
         if colum_idx == 2:
             data_item = self.item_list[row_idx]
             current_key = data_item.get_keybind()
             all_key_binds = [behav.get_keybind() for behav in self.item_list]
             letters = [chr(i) for i in range(ord('a'), ord('z')+1)]
             available_strokes = [current_key] + [l for l in letters if l not in all_key_binds] + [" "]
+            self.state_change.emit(QAbstractItemView.EditingState)
             new_keybind, ok = QInputDialog.getItem(None,"Select a new key", "key",available_strokes,0,False)
             if ok and new_keybind:
                 for stream_behav in self.all_behaviors:
                     stream_behav[row_idx].set_keybind(new_keybind)
             self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
+            self.state_change.emit(QAbstractItemView.NoState)
         
     def receive_activate_behavior(self, behav_name):
         row_idx = self.get_property_index(behav_name,"name")
@@ -440,6 +444,11 @@ class GenericTableView(QTableView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.doubleClicked.connect(self.activate_selected)
+    
+    def setModel(self, model) -> None:
+        if isinstance(model, GenericTableModel):
+            model.state_change.connect(self.setState)
+        return super().setModel(model)
     
     def disconnect_scroll(self):
         self.model().activated_row_changed.disconnect(self.scroll_to_idx)

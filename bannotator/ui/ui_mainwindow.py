@@ -91,6 +91,8 @@ class Ui_MainWindow(object):
         self.actionNew_annotation = QAction(MainWindow)
         self.actionNew_annotation.setObjectName(u"actionNew_annotation")
         self.actionNew_annotation.setEnabled(False)
+        self.actionShuffle_colors = QAction(MainWindow)
+        self.actionShuffle_colors.setObjectName(u"actionShuffle_colors")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -110,6 +112,7 @@ class Ui_MainWindow(object):
         self.display_layout.setObjectName(u"display_layout")
         self.display_layout.setContentsMargins(0, 0, 0, 0)
         self.video_control_hlayout = QHBoxLayout()
+        self.video_control_hlayout.setSpacing(3)
         self.video_control_hlayout.setObjectName(u"video_control_hlayout")
         self.time_label_txt = QLabel(self.layoutWidget)
         self.time_label_txt.setObjectName(u"time_label_txt")
@@ -206,10 +209,8 @@ class Ui_MainWindow(object):
 
         self.video_control_hlayout.setStretch(1, 1)
         self.video_control_hlayout.setStretch(3, 1)
-        self.video_control_hlayout.setStretch(4, 1)
         self.video_control_hlayout.setStretch(8, 1)
         self.video_control_hlayout.setStretch(10, 1)
-        self.video_control_hlayout.setStretch(11, 1)
         self.video_control_hlayout.setStretch(13, 1)
 
         self.display_layout.addLayout(self.video_control_hlayout)
@@ -476,6 +477,8 @@ class Ui_MainWindow(object):
         self.menuWindows.addAction(self.actionEpoch_table)
         self.menuWindows.addSeparator()
         self.menuWindows.addAction(self.actionTrack_epoch)
+        self.menuWindows.addSeparator()
+        self.menuWindows.addAction(self.actionShuffle_colors)
 
         self.retranslateUi(MainWindow)
 
@@ -510,6 +513,7 @@ class Ui_MainWindow(object):
         self.actionMerge_behavior.setText(QCoreApplication.translate("MainWindow", u"Merge behavior", None))
         self.actionClose_annotation.setText(QCoreApplication.translate("MainWindow", u"Close annotation", None))
         self.actionNew_annotation.setText(QCoreApplication.translate("MainWindow", u"New annotation", None))
+        self.actionShuffle_colors.setText(QCoreApplication.translate("MainWindow", u"Shuffle colors", None))
         self.time_label_txt.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
         self.current_frame_label.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))

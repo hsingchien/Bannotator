@@ -3,7 +3,8 @@ from PySide6 import QtCore
 from typing import List, Dict
 import re
 import numpy as np
-import os
+import distinctipy as distc
+
 
 
 class Epoch(object):
@@ -621,7 +622,8 @@ class Annotation(QtCore.QObject):
             stream.behavior_name_changed.connect(self.rename_color_dict_key)
         # Behvior-color dict
         self.behav_color = dict()
-        self.file_path = os.path.join(os.getcwd(), "annotation.txt")
+        # self.file_path = os.path.join(os.getcwd(), "annotation.txt")
+        self.file_path = None
 
     def rename_color_dict_key(self, names):
         old_name = names[0]
@@ -804,20 +806,23 @@ class Annotation(QtCore.QObject):
             epoch_lens.append(len(stream.get_epochs()))
         return epoch_lens
 
-    def assign_behavior_color(self):
+    def assign_behavior_color(self, rng=None):
+        self.behav_color.clear()
         behaviors = self.get_behaviors()
         behavior_names = [i.name for i in behaviors[0]]
-        for i, behav in enumerate(behavior_names):
-            hue = int(255 * i / len(behavior_names))
-            saturation = 180
-            value = 200
-            if behav not in ["other", "blank"]:
-                self.behav_color[behav] = QColor.fromHsv(hue, saturation, value)
+        non_blank_behaviors = [name for name in behavior_names if name not in ("other","blank")]
+        colors = distc.get_colors(len(non_blank_behaviors), exclude_colors=[(0.62,0.62,0.62),(1,1,1),(0,0,0)], n_attempts=500, pastel_factor=0.1,rng=rng)
+        i = 0
+        for behav in behavior_names:
+            if behav not in ("other", "blank"):
+                self.behav_color[behav] = QColor.fromRgbF(*colors[i])
+                i+=1
             else:
-                self.behav_color[behav] = QColor("#9d9d9d")
+                self.behav_color[behav] = QColor.fromRgbF(0.62,0.62,0.62)
         # Assign colors to the behavior objects for all the streams
         for _, stream in self.streams.items():
             stream.assign_color(self.behav_color)
+        self.streams_changed()
 
     def get_stream_vects(self):
         vec_dict = dict()

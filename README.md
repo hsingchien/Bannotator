@@ -111,6 +111,8 @@ This project is inspired by [Piotr's MATLAB toolbox](https://github.com/pdollar/
 
 Seq file reading is inspired by [PIMS](https://github.com/soft-matter/pims).
 
+Random color generator [distinctipy](https://github.com/alan-turing-institute/distinctipy)
+
 The project is built with [PySide6](https://doc.qt.io/qtforpython-6/index.html#).
 
 # License

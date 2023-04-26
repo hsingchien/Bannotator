@@ -370,12 +370,16 @@ class SeqVideoWorker(QRunnable):
                     jpg_image = bytearray()
                     jpg_image += imdata
                     frame = np.asarray(jpg_image, dtype="uint8")
-                    frame = cv2.imdecode(frame, 0)
-                    height, width = frame.shape
-                    q_image = QImage(frame.data, width, height, QImage.Format_Grayscale8)
-                    pixmap = QPixmap(q_image)
-                    self.signals.result_signal.emit(pixmap)
-                    self._emit_flag = False
+                    try:
+                        frame = cv2.imdecode(frame, 0)
+                        height, width = frame.shape
+                        q_image = QImage(frame.data, width, height, QImage.Format_Grayscale8)
+                        pixmap = QPixmap(q_image)
+                        self.signals.result_signal.emit(pixmap)
+                        self._emit_flag = False
+                    except Exception as err:
+                        self._emit_flag = False
+                        print(f"Failed fetching frame! {err}")
                     
                 elif self._start is not None and self._emit_flag:
                     seqfile.seek(self._start)
@@ -388,11 +392,11 @@ class SeqVideoWorker(QRunnable):
                         frame = np.fromfile(seqfile,_pixel_type,_pixel_count).reshape(_shape)
                         q_image = QImage(frame.data, _shape[1], _shape[0],QImage.Format_Grayscale8)
                         pixmap.convertFromImage(q_image)
+                        self.signals.result_signal.emit(pixmap)
+                        self._emit_flag = False
                     except Exception as err:
+                        self._emit_flag = False
                         print(f"Failed fetching frame! {err}")
-                        
-                    self.signals.result_signal.emit(pixmap)
-                    self._emit_flag = False
                 else:
                     QThread.msleep(20)
         # seqfile.close()
