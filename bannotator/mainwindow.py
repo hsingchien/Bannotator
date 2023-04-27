@@ -1,4 +1,5 @@
-from bannotator.ui.ui_mainwindow import Ui_MainWindow
+import numpy as np
+import os
 from PySide6.QtWidgets import (
     QFileDialog,
     QAbstractItemView,
@@ -20,10 +21,9 @@ from bannotator.dataview import (
     StatsTableModel,
     BehavEpochTableModel,
 )
-from bannotator.dialog import *
+import bannotator.dialog as dialog
 from bannotator.widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
-import numpy as np
-import os
+from bannotator.ui.ui_mainwindow import Ui_MainWindow
 
 
 class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
@@ -43,36 +43,36 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["track_window"] = self.track_window_spinbox.value()
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
-        self.dialog_state = False
+        self._dialog_state = False
 
         # Container for dynamically generated widgets
         # Key = stream ID, item = TrackBar widget
-        self.tracks = dict()
-        self.full_tracks = dict()
+        self._stream_tracks = dict()
+        self._full_stream_tracks = dict()
         # Key = stream ID, item = stream QLabel for current behavior
-        self.stream_labels = dict()
+        self._behavior_labels = dict()
         # Key = stream ID, item = stream table model
-        self.stream_tables = dict()
+        self._epoch_tables = dict()
         # Key = ID, item = behavior epoch table model
-        self.behav_epoch_tables = dict()
+        self._behav_epoch_tables = dict()
 
         # Group video viewers into list
-        self.vid_views = [self.vid1_view]
-        self.vids = []
-        self.vids_stretch_factor = []
+        self._video_views = [self.vid1_view]
+        self._videos = []
+        self._video_stretch_factor = []
         # Set up timers
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.play_video_update_frame)
-        self.auto_save_timer = QTimer(self)
-        self.auto_save_timer.timeout.connect(self.save_annotation_copy)
-        self.auto_save_timer.start(30000)
-        self.gui_timer = QTimer(self)
-        self.gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
-        self.gui_timer.start(33)
+        self._play_timer = QTimer(self)
+        self._play_timer.timeout.connect(self._video_play_frame_update)
+        self._auto_save_timer = QTimer(self)
+        self._auto_save_timer.timeout.connect(self._save_annotation_copy)
+        self._auto_save_timer.start(30000)
+        self._update_gui_timer = QTimer(self)
+        self._update_gui_timer.timeout.connect(lambda: self.update_gui(["gui"]))
+        self._update_gui_timer.start(33)
         # Set up pushbuttons, spinboxes and other interactable widgets
-        self.play_button.clicked.connect(self.play_video)
-        self.pause_button.clicked.connect(self.timer.stop)
-        self.speed_doubleSpinBox.valueChanged.connect(self.set_play_speed)
+        self.play_button.clicked.connect(self._play_video)
+        self.pause_button.clicked.connect(self._play_timer.stop)
+        self.speed_doubleSpinBox.valueChanged.connect(self._set_play_speed)
         self.video_slider.valueChanged.connect(
             lambda x: self.state.set("current_frame", x - 1)
         )
@@ -86,29 +86,29 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.state.set("video_layout", x)
         )
 
-        self.add_behavior_button.clicked.connect(self.add_behavior)
-        self.delete_behavior_button.clicked.connect(self.delete_behavior)
-        self.add_stream_button.clicked.connect(self.add_stream)
-        self.delete_stream_button.clicked.connect(self.delete_stream)
+        self.add_behavior_button.clicked.connect(self._add_behavior)
+        self.delete_behavior_button.clicked.connect(self._delete_behavior)
+        self.add_stream_button.clicked.connect(self._add_stream)
+        self.delete_stream_button.clicked.connect(self._delete_stream)
         # Connect menu bar actions
         # File menu
-        self.actionReset.triggered.connect(self.reset_app)
+        self.actionReset.triggered.connect(self._reset_app)
         self.actionQuit.triggered.connect(self.close)
         # Video menu
-        self.actionOpen_video.triggered.connect(self.open_video)
-        self.actionAdd_seq.triggered.connect(self.add_seq)
+        self.actionOpen_video.triggered.connect(self._open_video)
+        self.actionAdd_seq.triggered.connect(self._add_seq)
         # Annotation menu
-        self.actionOpen_annotation.triggered.connect(self.open_annotation)
-        self.actionSave_annotation.triggered.connect(self.save_annotation)
-        self.actionNew_annotation.triggered.connect(self.new_annotation)
-        self.actionOpen_config.triggered.connect(self.open_config)
-        self.actionSave_config.triggered.connect(self.save_config)
+        self.actionOpen_annotation.triggered.connect(self._open_annotation)
+        self.actionSave_annotation.triggered.connect(self._save_annotation)
+        self.actionNew_annotation.triggered.connect(self._new_annotation)
+        self.actionOpen_config.triggered.connect(self._open_config)
+        self.actionSave_config.triggered.connect(self._save_config)
         self.actionAuto_save_annotation.toggled.connect(
-            lambda x: self.auto_save_timer.start(30000)
+            lambda x: self._auto_save_timer.start(30000)
             if x
-            else self.auto_save_timer.stop()
+            else self._auto_save_timer.stop()
         )
-        self.actionClose_annotation.triggered.connect(self.close_annotation)
+        self.actionClose_annotation.triggered.connect(self._close_annotation)
         # View menu
         self.actionFull_annotation.toggled.connect(
             lambda: self.update_gui(["view_options"])
@@ -128,25 +128,25 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         self.actionShuffle_colors.triggered.connect(lambda: self.state["annot"].assign_behavior_color() if self.state["annot"] is not None else None)
         # Connect state change
-        self.connect_states()
+        self._connect_states()
 
-    def connect_states(self):
+    def _connect_states(self):
         self.state.connect(
             "current_frame",
             [
-                self.go_to_frame,
-                self.update_slider_box,
+                self._go_to_frame,
+                self._update_slider_box,
                 lambda: self.update_gui(["video_ui"]),
             ],
         )
 
         self.state.connect(
             "track_window",
-            [self.update_slider_box],
+            [self._update_slider_box],
         )
         self.state.connect("slider_box", [lambda: self.update_gui(["video_ui"])])
         self.state.connect(
-            "annot", [self.setup_table_models, lambda: self.update_gui(["gui"])]
+            "annot", [self._setup_annotation_widgets, lambda: self.update_gui(["gui"])]
         )
         self.state.connect("video", [lambda: self.update_gui(["video_ui"])])
         self.state.connect("video_layout", [lambda: self.update_gui(["video_layout"])])
@@ -172,11 +172,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             # Update tracks highlight and behavior label (selected with a bracket)
             for _, stream in self.state["annot"].get_streams().items():
                 if self.state["current_stream"] is stream:
-                    self.tracks[stream.ID].set_selected(True)
-                    self.stream_labels[stream.ID].set_selected(True)
+                    self._stream_tracks[stream.ID].set_selected(True)
+                    self._behavior_labels[stream.ID].set_selected(True)
                 else:
-                    self.tracks[stream.ID].set_selected(False)
-                    self.stream_labels[stream.ID].set_selected(False)
+                    self._stream_tracks[stream.ID].set_selected(False)
+                    self._behavior_labels[stream.ID].set_selected(False)
             # Update background of the slider to be the current stream
             self.video_slider.set_color_track(
                 self.state["current_stream"].get_stream_vect(),
@@ -192,9 +192,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.curframe_spinBox.setMaximum(annot_length)
                 self.track_window_spinbox.setMaximum(annot_length)
             elif self.state["video"] > 0:
-                self.video_slider.setMaximum(self.vids[0].num_frame())
-                self.curframe_spinBox.setMaximum(self.vids[0].num_frame())
-                self.track_window_spinbox.setMaximum(self.vids[0].num_frame())
+                self.video_slider.setMaximum(self._videos[0].num_frame())
+                self.curframe_spinBox.setMaximum(self._videos[0].num_frame())
+                self.track_window_spinbox.setMaximum(self._videos[0].num_frame())
             # Update the video layout combobox
             if (
                 self.state["video"] > 3
@@ -230,17 +230,17 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.actionOpen_config.setEnabled(False)
                 self.actionNew_annotation.setEnabled(False)
             # Fit all video views
-            for view in self.vid_views:
+            for view in self._video_views:
                 view.fitPixItem()
             # Display video path in window title
             if self.state["video"] > 0:
-                file_name = self.vids[0].file_name()
+                file_name = self._videos[0].file_name()
                 self.setWindowTitle(" - ".join(["Annotator",file_name]))
             else:
                 self.setWindowTitle("Annotator")
             # Set stretch factor for video layout (side by side and stacked)
             if self.state["video_layout"] != "Grid":
-                for view in self.vid_views:
+                for view in self._video_views:
                     self.video_layout.setStretchFactor(view, 1)
 
         if "video_layout" in topics:
@@ -250,19 +250,19 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             stretch_factor = self.display_layout.stretch(index)
             if self.state["video_layout"] == "Side by Side":
                 new_layout = QHBoxLayout()
-                for vid in self.vid_views:
+                for vid in self._video_views:
                     new_layout.addWidget(vid,1)
             if self.state["video_layout"] == "Stacked":
                 new_layout = QVBoxLayout()
-                for vid in self.vid_views:
+                for vid in self._video_views:
                     new_layout.addWidget(vid,1)
 
             if self.state["video_layout"] == "Grid":
-                nvideos = len(self.vid_views)
+                nvideos = len(self._video_views)
                 new_layout = QGridLayout()
                 n_row = np.floor(np.sqrt(nvideos))
                 n_col = np.ceil(nvideos / n_row)
-                for i, vid in enumerate(self.vid_views):
+                for i, vid in enumerate(self._video_views):
                     new_layout.addWidget(vid, i // n_col, i % n_col)
                 for i in range(int(n_row)):
                     new_layout.setRowStretch(i,1)
@@ -277,17 +277,17 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.epoch_dock.setVisible(self.actionEpoch_table.isChecked())
             self.tracks_dock.setVisible(self.actionFull_annotation.isChecked())
             # Set the epoch tracking state
-            if self.actionTrack_epoch.isChecked() and self.stream_tables:
+            if self.actionTrack_epoch.isChecked() and self._epoch_tables:
                 for ID, stream in self.state["annot"].get_streams().items():
-                    self.stream_tables[ID].connect_scroll()
-                    self.behav_epoch_tables[ID].connect_scroll()
+                    self._epoch_tables[ID].connect_scroll()
+                    self._behav_epoch_tables[ID].connect_scroll()
                     stream.get_epoch_by_idx(self.state["current_frame"])
-            elif self.stream_tables:
+            elif self._epoch_tables:
                 for ID in self.state["annot"].get_streams():
-                    self.stream_tables[ID].disconnect_scroll()
-                    self.behav_epoch_tables[ID].disconnect_scroll()
+                    self._epoch_tables[ID].disconnect_scroll()
+                    self._behav_epoch_tables[ID].disconnect_scroll()
 
-    def update_slider_box(self):
+    def _update_slider_box(self):
         try:
             annot = self.state["annot"]
             current_frame = self.state["current_frame"]
@@ -310,7 +310,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         except Exception:
             pass
 
-    def open_video(self):
+    def _open_video(self):
+        # Add a mainstream video file.
+        # Also create and start a frame fetching worker in a separate thread, emitting frames at 60Hz
         fileDialog = QFileDialog()
         fileDialog.setFileMode(QFileDialog.ExistingFile)
         video_path, _ = fileDialog.getOpenFileName(
@@ -345,8 +347,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if (
             self.state["video"] > 0
             and not valid_video
-            and np.abs(bvideo.num_frame() - self.vids[0].num_frame())
-            > 0.05 * self.vids[0].num_frame()
+            and np.abs(bvideo.num_frame() - self._videos[0].num_frame())
+            > 0.05 * self._videos[0].num_frame()
         ):
             warning_dialog = QMessageBox.warning(
                 self,
@@ -362,30 +364,32 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             else:
                 valid_video = True
 
-        self.vids.append(bvideo)
+        self._videos.append(bvideo)
         # Set stretch factors
         if self.state["video"] == 0:
-            self.vids_stretch_factor = [1]
+            self._video_stretch_factor = [1]
         else:
-            self.vids_stretch_factor.append(
-                bvideo.num_frame() / self.vids[0].num_frame()
+            self._video_stretch_factor.append(
+                bvideo.num_frame() / self._videos[0].num_frame()
             )
         # Connect scene
         if self.state["video"] == 0:
-            bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
+            bvideo.new_frame_fetched.connect(self._video_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
             new_view = BehavVideoView()
             bvideo.new_frame_fetched.connect(new_view.updatePixmap)
-            self.vid_views.append(new_view)
+            self._video_views.append(new_view)
             self.update_gui(["video_layout"])
             # new_view.show()
         # Change state and trigger callbakcs
-        self.go_to_frame(self.state["current_frame"])
+        self._go_to_frame(self.state["current_frame"])
         self.state["video"] += 1
         QTimer.singleShot(30, lambda: self.update_gui(["gui"]))
 
-    def add_seq(self):
+    def _add_seq(self):
+        # Add a .seq file. SeqBehavVideo class supports reading RAW and JPEG seq files.
+        # Also create a frame fetching worker that fetches frames and emits at 60Hz to the video widget.
         self.statusbar.showMessage(
             "Opening .seq file. If this file is compressed (jpeg), it may take a few minutes...",
             0,
@@ -424,8 +428,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if (
             self.state["video"] > 0
             and not valid_video
-            and np.abs(bvideo.num_frame() - self.vids[0].num_frame())
-            > 0.05 * self.vids[0].num_frame()
+            and np.abs(bvideo.num_frame() - self._videos[0].num_frame())
+            > 0.05 * self._videos[0].num_frame()
         ):
             warning_dialog = QMessageBox.warning(
                 self,
@@ -443,33 +447,36 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         # Stretch factor for current video relative to the video 0
         if self.state["video"] == 0:
-            self.vids_stretch_factor = [1]
+            self._video_stretch_factor = [1]
         else:
-            self.vids_stretch_factor.append(
-                bvideo.num_frame() / self.vids[0].num_frame()
+            self._video_stretch_factor.append(
+                bvideo.num_frame() / self._videos[0].num_frame()
             )
         #
         bvideo.start_frame_fetcher()
-        bvideo.run_worker.connect(lambda: self.go_to_frame(self.state["current_frame"]))
-        self.vids.append(bvideo)
+        bvideo.run_worker.connect(lambda: self._go_to_frame(self.state["current_frame"]))
+        self._videos.append(bvideo)
         if self.state["video"] == 0:
-            bvideo.new_frame_fetched.connect(self.vid_views[0].updatePixmap)
+            bvideo.new_frame_fetched.connect(self._video_views[0].updatePixmap)
             self.state["FPS"] = bvideo.frame_rate()
         else:
             new_view = BehavVideoView()
             bvideo.new_frame_fetched.connect(new_view.updatePixmap)
-            self.vid_views.append(new_view)
+            self._video_views.append(new_view)
             self.update_gui(["video_layout"])
             # new_view.show()
         # Refresh the scene
-        self.go_to_frame(self.state["current_frame"])
+        self._go_to_frame(self.state["current_frame"])
         # Trigger ui updtates
         self.state["video"] += 1
         self.video_slider.setMinimum(1)
         self.curframe_spinBox.setMinimum(1)
         QTimer.singleShot(30, lambda: self.update_gui(["gui"]))
 
-    def open_annotation(self):
+    def _open_annotation(self):
+        # Open an existing annotation.txt file.
+        # Read and load an existing annotation txt file.
+        # Loaded annotation is inexplicitly verified
         fileDialog = QFileDialog()
         fileDialog.setFileMode(QFileDialog.ExistingFile)
         anno_path, _ = fileDialog.getOpenFileName(
@@ -483,10 +490,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         annotation.read_from_file(anno_path)
-        # annotation.assign_behavior_color()
         annotation.assign_behavior_color(12)
         annot_length = annotation.get_length()
-        if self.vids and annot_length < self.vids[0].num_frame():
+        if self._videos and annot_length < self._videos[0].num_frame():
             warning_dialog = QMessageBox.warning(
                 self,
                 "Is this the correct annotation?",
@@ -497,47 +503,52 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if warning_dialog != QMessageBox.Ok:
                 return False
             else:
-                annotation.set_length(self.vids[0].num_frame())
+                annotation.set_length(self._videos[0].num_frame())
 
-        elif self.vids and annot_length > self.vids[0].num_frame():
+        elif self._videos and annot_length > self._videos[0].num_frame():
             # Guide user to shrink the annotation
-            self.dialog_state = True
-            (from_value, to_value) = TruncateAnnotationDialog(
-                annot_length, self.vids[0].num_frame(), parent=self
+            self._dialog_state = True
+            (from_value, to_value) = dialog.TruncateAnnotationDialog(
+                annot_length, self._videos[0].num_frame(), parent=self
             ).get_input()
             if from_value is not None:
-                annotation.truncate(start=from_value, length=self.vids[0].num_frame())
+                annotation.truncate(start=from_value, length=self._videos[0].num_frame())
             else:
                 return False
         self.state["annot"] = annotation
-        # Set the size of the table docks to minimum 
-        self.behav_table_dock.resize(self.behav_table_dock.minimumWidth(), self.behav_table_dock.height())
-        self.epoch_dock.resize(self.epoch_dock.minimumWidth(), self.epoch_dock.height())
     
-    def new_annotation(self):
+    def _new_annotation(self):
+        # Create a new annotation. 
+        # Pops out a new annotation dialog, guide the user to create a new annotation
         if self.state["annot"] is not None:
-            self.close_annotation(False)
-        self.dialog_state = True
-        new_dialog = NewAnnotationDialog()
+            annot_closed = self._close_annotation(False)
+        if not annot_closed:
+            return False
+        self._dialog_state = True
+        new_dialog = dialog.NewAnnotationDialog()
         (nstream, ns, ks) = new_dialog.get_input()
         if nstream is None:
-            self.dialog_state = False
+            self._dialog_state = False
             return False
         annotation = Annotation({})
         fake_annots = dict()
         le = self.video_slider.maximum()
         for i in range(nstream):
-            fake_annots[i+1] = [" ".join(["1",str(le),ns[0]])]
+            fake_annots[i+1] = [" ".join(["1",str(le),ns[0]])] # Create a fake annotation file read
         fake_config = []
         for i,n in enumerate(ns):
             fake_config.append(" ".join([n,ks[i]]))
         annotation.construct_streams(fake_config, fake_annots)
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
-        self.dialog_state = False
+        self._dialog_state = False
+        return True
 
 
-    def open_config(self):
+    def _open_config(self):
+        # Open and read a configuration.txt file. 
+        # Creates empty streams as defined in the configuration file. 
+        # The length of the streams is determined by the video.
         fileDialog = QFileDialog()
         fileDialog.setFileMode(QFileDialog.ExistingFile)
         config_path, _ = fileDialog.getOpenFileName(
@@ -552,15 +563,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         annotation.read_config_from_file(config_path)
         if self.state["video"] > 0:
-            annotation.set_length(self.vids[0].num_frame())
+            annotation.set_length(self._videos[0].num_frame())
         else:
             annotation.set_length(self.video_slider.maximum())
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
 
-    def setup_table_models(self):
-        # Set up table views
-        # Set up behavior tableview
+    def _setup_annotation_widgets(self):
+        # Called after a valid annotation is loaded
+        # Sets up the behavior table, stats table, stream epoch tables and behavior epoch tables.
+        # Create full length track widgets, track widgets and behavior labels for each stream.
         annotation = self.state["annot"]
         if annotation is None:
             return False
@@ -598,14 +610,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Set up epochs table for each stream
         streams = annotation.get_streams()
         for _, stream in streams.items():
-            self.setup_stream_tables(stream)
+            self._setup_stream_tables(stream)
             # Emit the cur_epoch signal from the stream after all tables are set up to
             # highlight the current epoch
             stream.get_epoch_by_idx(self.state["current_frame"])
 
-        self.update_slider_box()
+        self._update_slider_box()
         for _, stream in streams.items():
-            self.plot_stream_tracks(stream)
+            self._plot_stream_tracks(stream)
 
         # Set the first stream as current stream
         IDs = sorted(list(streams.keys()))
@@ -613,8 +625,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         return True
 
-    def setup_stream_tables(self, stream):
-        # Create stream tables
+    def _setup_stream_tables(self, stream):
+        # Create stream tables and connect table signals and ui behavior
         stream_table = StreamTableModel(
             stream=stream, properties=["name", "start", "end"], state=self.state
         )
@@ -623,7 +635,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         stream_table_view.set_columns_fixed([1, 2])
         stream.data_changed.connect(stream_table_view.repaint_table)
         stream.epoch_number_changed.connect(stream_table_view.change_layout)
-        self.stream_tables[stream.ID] = stream_table_view
+        self._epoch_tables[stream.ID] = stream_table_view
         self.stream_table_layout.addWidget(stream_table_view)
         stream_table.jump_to_frame.connect(lambda x: self.state.set("current_frame", x))
         # Create behavior label, add to the full track widget
@@ -631,12 +643,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             behav=stream.get_behavior_by_idx(self.state["current_frame"]),
         )
         self.cur_behav_layout.addWidget(behav_label)
-        self.stream_labels[stream.ID] = behav_label
+        self._behavior_labels[stream.ID] = behav_label
         # Connect video slider and frame spinbox to the stream to track the current epoch
         self.state.connect("current_frame", stream.get_epoch_by_idx)
         # get_epoch_by_idx will emit cur_epoch and cur_behavior, which will set the epoch table and behavior label respectively
         stream.cur_behavior_name.connect(behav_label.set_behavior)
-
         # Scroll to current epoch if action is checked
         if self.actionTrack_epoch.isChecked():
             stream_table_view.connect_scroll()
@@ -655,20 +666,21 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         )
         behav_epoch_table_view = GenericTableView()
         behav_epoch_table_view.setModel(behav_epoch_table)
-        self.behav_epoch_tables[stream.ID] = behav_epoch_table_view
+        self._behav_epoch_tables[stream.ID] = behav_epoch_table_view
         self.behav_epoch_table_layout.addWidget(behav_epoch_table_view)
         if self.actionTrack_epoch.isChecked():
             behav_epoch_table_view.connect_scroll()
 
-    def save_annotation(self):
+    def _save_annotation(self):
+        # Save annotation dialog
         self.state["annot"].saved_in_file.connect(
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         self.statusbar.showMessage("Saving annotation...", 0)
         if self.state["annot"].get_file_path() is not None:
             annot_name = self.state["annot"].get_file_path()
-        elif self.vids:
-            vid_path = self.vids[0].file_name()
+        elif self._videos:
+            vid_path = self._videos[0].file_name()
             annot_name = vid_path.replace("." + vid_path.split(".")[-1],"_annot.txt")
         else:
             annot_name = "annotation.txt"
@@ -681,13 +693,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.statusbar.clearMessage()
         return self.state["annot"].save_to_file(filename)
 
-    def save_annotation_copy(self):
+    def _save_annotation_copy(self):
+        # Auto-save annotation copy silently.
         try:
             annot_path = self.state["annot"].get_file_path()
             if annot_path is not None:
                 filename = annot_path.replace(".txt", "_backup.txt")
-            elif self.vids:
-                vid_path = self.vids[0].file_name()
+            elif self._videos:
+                vid_path = self._videos[0].file_name()
                 filename = vid_path.replace("." + vid_path.split(".")[-1],"_annotation_backup.txt")
             else:
                 filename = os.path.join(os.getcwd(), "annotation_backup.txt")
@@ -706,7 +719,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 )
             pass
 
-    def save_config(self):
+    def _save_config(self):
         self.state["annot"].saved_in_file.connect(
             lambda x: self.statusbar.showMessage(x, 5000)
         )
@@ -719,74 +732,77 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.statusbar.clearMessage()
         return self.state["annot"].save_config_to_file(filename)
 
-    def go_to_frame(self, frameN):
-        videos = self.vids
+    def _go_to_frame(self, frameN):
+        # Send frame index signal to all the frame fetchers. Also stretch the frame according to stretch factors.
+        videos = self._videos
         if videos:
             for i, video in enumerate(videos):
-                this_frameN = frameN * self.vids_stretch_factor[i]
+                this_frameN = frameN * self._video_stretch_factor[i]
                 video.get_pixmap(int(this_frameN))
             return True
         else:
             return False
 
-    def play_video_update_frame(self):
+    def _video_play_frame_update(self):
+        # Calculate the index of next frame based on the play speed and change the current frame state.
+        # When speed is higher than 2x, round the speed to integer.
         if abs(self.state["play_speed"] - 0.00) > 2.0001:
             next_frame = self.state["current_frame"] + 1 * np.round(
                 self.state["play_speed"]
             )
+        # When speed is between 0 and 2x, use the true speed value.
         elif abs(self.state["play_speed"] - 0.00) > 0.0001:
             next_frame = self.state["current_frame"] + 1 * np.sign(
                 self.state["play_speed"]
             )
-
-        if next_frame < self.vids[0].num_frame() and next_frame > -1:
+        # When next frame reaches the edge, stop playing
+        if next_frame < self._videos[0].num_frame() and next_frame > -1:
             self.state["current_frame"] = next_frame
             return True
-        elif next_frame >= self.vids[0].num_frame():
-            self.state["current_frame"] = self.vids[0].num_frame() - 1
-            self.timer.stop()
+        elif next_frame >= self._videos[0].num_frame():
+            self.state["current_frame"] = self._videos[0].num_frame() - 1
+            self._play_timer.stop()
         elif next_frame <= 0:
             self.state["current_frame"] = 0
-            self.timer.stop()
+            self._play_timer.stop()
         else:
             return False
 
-    def play_video(self):
+    def _play_video(self):
+        # Start play timer based on the value of play speed
         if abs(self.state["play_speed"] - 0.00) > 2.0001:
-            # If playspeed faster than 2.0, then play at original FPS
-            self.timer.start(self.state["FPS"])
+            # If playspeed faster than 2.0, then play timer timeout at original FPS
+            # Speeding up video by skipping frames
+            self._play_timer.start(self.state["FPS"])
         elif abs(self.state["play_speed"] - 0.00) > 0.0001:
-            # If playspeed slower than 2.0, play at multiplied FPS
-            self.timer.start(1000 / (self.state["FPS"] * abs(self.state["play_speed"])))
+            # If playspeed slower than 2.0, speeding up by speeding up timer without skipping frames
+            self._play_timer.start(1000 / (self.state["FPS"] * abs(self.state["play_speed"])))
         else:
-            self.timer.stop()
+            # If playspeed is 0, stop the play timer
+            self._play_timer.stop()
 
-    def set_play_speed(self, value):
+    def _set_play_speed(self, value):
         self.state["play_speed"] = value
-        if self.timer.isActive():
-            self.play_video()
+        if self._play_timer.isActive():
+            self._play_video()
         else:
             return True
 
-    def plot_stream_tracks(self, stream):
-        # Generate tracks for the stream
-        # Make mainwindow track widgets
+    def _plot_stream_tracks(self, stream):
+        # Generate tracks for the streams.
         stream_vect = stream.get_stream_vect()
         color_dict = stream.get_color_dict()
+        # Create windowed stream tracks. 
         track = TrackBar(
-            stream_vect,
-            color_dict,
-            self.state["current_frame"],
-            self.state["slider_box"],
-            16,
-            False,
-            False,
+            data = stream_vect,
+            color_dict = color_dict, 
+            frame_mark = self.state["current_frame"],
+            slider_box = self.state["slider_box"],
+            min_height = 16,
+            use_pixmap=False,
+            full_track_flag=False,
         )
-        # if self.state["current_stream"] is stream:
-        #     track.set_selected(True)
-        # else:
-        #     track.set_selected(False)
-        self.tracks[stream.ID] = track
+        self._stream_tracks[stream.ID] = track
         stream.data_changed.connect(track.set_data)
         stream.color_changed.connect(track.set_color_dict)
         self.state.connect("current_frame", track.set_frame_mark)
@@ -794,25 +810,27 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.track_layout.addWidget(track)
         # Make full length track widgets
         full_track = TrackBar(
-            stream_vect,
-            color_dict,
-            self.state["current_frame"],
-            self.state["slider_box"],
-            8,
-            True,
-            True,
+            data=stream_vect,
+            color_dict=color_dict,
+            frame_mark=self.state["current_frame"],
+            slider_box=self.state["slider_box"],
+            min_height=8,
+            use_pixmap=True,
+            full_track_flag=True,
         )
         self.state.connect("current_frame", full_track.set_frame_mark)
         self.state.connect("slider_box", full_track.set_slider_box)
         stream.data_changed.connect(full_track.set_data)
         stream.color_changed.connect(full_track.set_color_dict)
         self.full_tracks_layout.addWidget(full_track)
-        self.full_tracks[stream.ID] = full_track
+        self._full_stream_tracks[stream.ID] = full_track
         # Also connect stream content change signals to video slider track update
         stream.data_changed.connect(self.video_slider.set_track_data)
         stream.color_changed.connect(self.video_slider.set_color_dict)
 
-    def change_current_behavior(self, keypressed: str = None):
+    def _change_current_behavior(self, keypressed: str = None):
+        # Called upon user invoked behavior change from keypresss
+        # Emit signals to change the ui
         cur_idx = self.state["current_frame"]
         cur_stream = self.state["current_stream"]
         if cur_stream is None:
@@ -822,36 +840,42 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             cur_stream.get_epoch_by_idx(self.state["current_frame"])
             return True
 
-    def add_behavior(self):
+    def _add_behavior(self):
+        # Dialog to guide behavior adding.
+        # Give options to define name and keystroke. 
         if self.state["annot"] is None:
             return False
-        self.dialog_state = True
-        newdialog = AddBehaviorDialog(parent=self, annotation=self.state["annot"])
+        self._dialog_state = True
+        newdialog = dialog.AddBehaviorDialog(parent=self, annotation=self.state["annot"])
         name, keybind = newdialog.get_input()
         if name is not None and keybind is not None:
             self.state["annot"].add_behavior(name, keybind)
-        self.dialog_state = False
+        self._dialog_state = False
 
-    def add_stream(self):
+    def _add_stream(self):
+        # Dialog to guide stream adding. 
+        # New stream will be initialized with selected behavior.
         if self.state["annot"] is None:
             return False
-        self.dialog_state = True
-        newdialog = AddStreamDialog(parent=self, annotation=self.state["annot"])
+        self._dialog_state = True
+        newdialog = dialog.AddStreamDialog(parent=self, annotation=self.state["annot"])
         behavior = newdialog.get_input()
         if behavior is not None:
             new_stream = self.state["annot"].add_stream(behavior)
-            self.setup_stream_tables(new_stream)
-            self.plot_stream_tracks(new_stream)
-            self.dialog_state = False
+            self._setup_stream_tables(new_stream)
+            self._plot_stream_tracks(new_stream)
+            self._dialog_state = False
         else:
-            self.dialog_state = False
+            self._dialog_state = False
             return False
 
-    def delete_behavior(self):
+    def _delete_behavior(self):
+        # Dialog to guide behavior deleting.
+        # Epochs of deleted behavior will be merged into selected behavior.
         if self.state["annot"] is None:
             return False
-        self.dialog_state = True
-        newdialog = DeleteBehaviorDialog(parent=self, annotation=self.state["annot"])
+        self._dialog_state = True
+        newdialog = dialog.DeleteBehaviorDialog(parent=self, annotation=self.state["annot"])
         to_del, to_rep = newdialog.get_input()
         if to_del is not None:
             # If behavior_epoch tables are viewing the deleted behavior, set it to replace behavior
@@ -859,34 +883,36 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 self.stats_table.model().set_activate_by_name(to_rep)
             self.state["annot"].delete_behavior(to_del, to_rep)
         else:
-            self.dialog_state = False
+            self._dialog_state = False
             return False
         for _, stream in self.state["annot"].get_streams().items():
             stream.get_epoch_by_idx(self.state["current_frame"])
-        self.dialog_state = False
+        self._dialog_state = False
 
-    def delete_stream(self):
+    def _delete_stream(self):
+        # Dialog to guide stream deleting.
+        # Widgets associated with the deleted stream are removed alongside.
         if self.state["annot"] is None:
             return False
-        self.dialog_state = True
-        newdialog = DeleteStreamDialog(parent=self, annotation=self.state["annot"])
+        self._dialog_state = True
+        newdialog = dialog.DeleteStreamDialog(parent=self, annotation=self.state["annot"])
         del_id = newdialog.exec()
         if del_id is None:
-            self.dialog_state = False
+            self._dialog_state = False
             return False
         if self.state["annot"].num_stream() == 1:
-            self.dialog_state = False
+            self._dialog_state = False
             return False
         # Remove tables
-        stream_table = self.stream_tables.pop(del_id)
+        stream_table = self._epoch_tables.pop(del_id)
         utt.reset_table(stream_table)
-        behav_stream_table = self.behav_epoch_tables.pop(del_id)
+        behav_stream_table = self._behav_epoch_tables.pop(del_id)
         utt.reset_table(behav_stream_table)
         self.stream_table_layout.removeWidget(stream_table)
         self.behav_epoch_table_layout.removeWidget(behav_stream_table)
         # Remove tracks
-        full_track = self.full_tracks.pop(del_id)
-        track = self.tracks.pop(del_id)
+        full_track = self._full_stream_tracks.pop(del_id)
+        track = self._stream_tracks.pop(del_id)
         self.state.disconnect("current_frame", track.set_frame_mark)
         self.state.disconnect("slider_box", track.set_slider_box)
         self.state.disconnect("current_frame", full_track.set_frame_mark)
@@ -899,7 +925,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
 
         self.full_tracks_layout.removeWidget(full_track)
         self.track_layout.removeWidget(track)
-        blabel = self.stream_labels.pop(del_id)
+        blabel = self._behavior_labels.pop(del_id)
         self.cur_behav_layout.removeWidget(blabel)
         # Delete widgets
         stream_table.deleteLater()
@@ -909,10 +935,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         blabel.deleteLater()
         self.state.disconnect("current_frame", stream.get_epoch_by_idx)
         del stream
-        self.dialog_state = False
+        self._dialog_state = False
         return True
 
-    def assign_current_stream(self, keyint: int):
+    def _assign_current_stream(self, keyint: int):
+        # Respond to user num key press. Assign the current stream to the corresponding stream.
         keyint = keyint - 49
         if keyint == -1:
             keyint = 9
@@ -924,11 +951,12 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         except Exception:
             return False
 
-    def close_annotation(self, suppress_warning=False):
+    def _close_annotation(self, suppress_warning=False):
+        # Close the current annotation. Also removes all the widgets and reset the signal connections.
         # First clear out all the widgets
         if self.state["annot"] is None:
             return False
-        self.timer.stop()
+        self._play_timer.stop()
         if not suppress_warning:
             warning_dialog = QMessageBox.warning(
                 self,
@@ -954,19 +982,21 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.clear_connections("current_stream")
         self.state.clear_connections("track_window")
         # Clear containers
-        self.tracks.clear()
-        self.full_tracks.clear()
-        self.stream_labels.clear()
-        self.stream_tables.clear()
-        self.behav_epoch_tables.clear()
+        self._stream_tracks.clear()
+        self._full_stream_tracks.clear()
+        self._behavior_labels.clear()
+        self._epoch_tables.clear()
+        self._behav_epoch_tables.clear()
         self.state["annot"] = None
         self.state["slider_box"] = [None, None]
         # Reconnect callbacks
-        self.connect_states()
+        self._connect_states()
         self.update_gui(["gui"])
+        return True
 
-    def reset_app(self):
-        self.timer.stop()
+    def _reset_app(self):
+        # Close annotation and remove all videos.
+        self._play_timer.stop()
         warning_dialog = QMessageBox.warning(
             self,
             "Do you want to reset the app",
@@ -979,10 +1009,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Close videos
         self.state["video_layout"] = "Side by Side"
         self.state["video"] = 0
-        for vid in self.vids:
+        for vid in self._videos:
             vid.stop_worker()
-        while len(self.vid_views) > 1:
-            vid_view = self.vid_views.pop(-1)
+        while len(self._video_views) > 1:
+            vid_view = self._video_views.pop(-1)
             self.video_layout.removeWidget(vid_view)
             vid_view.deleteLater()
         self.state.clear_connections("video")
@@ -990,24 +1020,25 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state.clear_connections("FPS")
         self.state.clear_connections("play_speed")
         self.state["FPS"] = None
-        self.vids_stretch_factor = []
-        self.vids.clear()
-        self.close_annotation(True)
+        self._video_stretch_factor = []
+        self._videos.clear()
+        self._close_annotation(True)
         self.vid1_view.clear_pixmap()
         self.update_gui(["gui"])
+        return True
 
     def eventFilter(self, obj, event):
         if event.type() != QEvent.KeyPress:
             return super().eventFilter(obj, event)
-        if self.editing_state():
+        if self._editing_state():
             return False
         if event.key() in range(Qt.Key_A, Qt.Key_Z + 1):
             # Alphabets
-            self.change_current_behavior(event.text().lower())
+            self._change_current_behavior(event.text().lower())
         if event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
             # Numbers
             try:
-                self.assign_current_stream(event.key())
+                self._assign_current_stream(event.key())
             except Exception:
                 pass
         elif event.key() == Qt.Key_QuoteLeft:
@@ -1022,7 +1053,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 if i == len(skeys) - 1:
                     i = -1
                 i += 50
-                self.assign_current_stream(i)
+                self._assign_current_stream(i)
             except:
                 pass
 
@@ -1044,7 +1075,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         elif event.key() == Qt.Key_Minus and event.modifiers() == Qt.ControlModifier:
             try:
                 current_stream = self.state["current_stream"]
-                current_behav_epoch_table = self.behav_epoch_tables[current_stream.ID]
+                current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
                 current_behav_epoch_table.model().jump_to_prev(
                     self.state["current_frame"]
                 )
@@ -1068,7 +1099,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         elif event.key() == Qt.Key_Equal and event.modifiers() == Qt.ControlModifier:
             try:
                 current_stream = self.state["current_stream"]
-                current_behav_epoch_table = self.behav_epoch_tables[current_stream.ID]
+                current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
                 current_behav_epoch_table.model().jump_to_next(
                     self.state["current_frame"]
                 )
@@ -1078,10 +1109,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         elif event.key() == Qt.Key_Space:
             # Spacebar, toggle play/pause
             try:
-                if not self.timer.isActive():
-                    self.play_video()
+                if not self._play_timer.isActive():
+                    self._play_video()
                 else:
-                    self.timer.stop()
+                    self._play_timer.stop()
             except:
                 pass
         elif event.key() == Qt.Key_Up:
@@ -1103,7 +1134,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Stop propagation
         return True
 
-    def editing_state(self):
+    def _editing_state(self):
         # Check focus widgets
         if self.focusWidget() in [
             self.speed_doubleSpinBox,
@@ -1115,10 +1146,10 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return True
         if self.stats_table.state() == QAbstractItemView.EditingState:
             return True
-        for _, table in self.stream_tables.items():
+        for _, table in self._epoch_tables.items():
             if table.state() == QAbstractItemView.EditingState:
                 return True
-        if self.dialog_state:
+        if self._dialog_state:
             return True
         return False
 
@@ -1131,7 +1162,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            for video in self.vids:
+            for video in self._videos:
                 video.stop_worker()
             event.accept()
         else:

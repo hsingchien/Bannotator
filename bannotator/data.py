@@ -16,8 +16,8 @@ class Epoch(object):
         start: int = None,
         end: int = None,
     ) -> None:
-        self.behavior = behavior
-        self.stream = stream
+        self._behavior = behavior
+        self._stream = stream
         # [start, end] is the inclusive index range
         self._start = start
         self._end = end
@@ -40,19 +40,19 @@ class Epoch(object):
 
     @property
     def name(self):
-        return self.behavior.name
+        return self._behavior.name
 
     @property
     def color(self):
-        return self.behavior.get_color()
+        return self._behavior.get_color()
 
     @property
     def streamID(self):
-        return self.stream.ID
+        return self._stream.ID
 
     def __str__(self) -> str:
         return (
-            f"Stream {self.streamID} - {self.behavior.name}: {self.start} - {self.end}"
+            f"Stream {self.streamID} - {self._behavior.name}: {self.start} - {self.end}"
         )
 
     def __lt__(self, other: "Epoch") -> bool:
@@ -71,19 +71,19 @@ class Epoch(object):
         return [self.start, self.end]
 
     def get_behavior(self):
-        return self.behavior
+        return self._behavior
 
     def get_stream(self):
-        return self.stream
+        return self._stream
 
     def set_stream(self, stream):
-        self.stream = stream
+        self._stream = stream
 
     def set_behavior(self, new_behavior: "Behavior" = None):
         if new_behavior is None:
             return False
-        if new_behavior is not self.behavior:
-            self.behavior = new_behavior
+        if new_behavior is not self._behavior:
+            self._behavior = new_behavior
             return True
 
     def set_start_end(self, start: int = None, end: int = None):
@@ -120,11 +120,11 @@ class Behavior(QtCore.QObject):
     ):
         super().__init__()
         self._name = name
-        self.keybind = keybind
+        self._keybind = keybind
         self._ID = ID
         self._color = color
-        self.epochs = epochs
-        self.stream = stream
+        self._epochs = epochs
+        self._stream = stream
 
     @property
     def name(self):
@@ -150,28 +150,28 @@ class Behavior(QtCore.QObject):
         return self._color.name()
 
     def __str__(self) -> str:
-        return f"stream: {self.stream}, {self.name}, ID: {self.ID}, keybind: {self.keybind}, color: {self.color}"
+        return f"stream: {self._stream}, {self.name}, ID: {self.ID}, keybind: {self._keybind}, color: {self.color}"
 
     def get_name(self):
         return self.name
 
     def get_keybind(self):
-        return self.keybind
+        return self._keybind
 
     def set_ID(self, new_ID: int = None):
         self.ID = new_ID
         return True
 
     def set_keybind(self, new_keybind: str = None):
-        if self.keybind != new_keybind:
-            self.keybind = new_keybind
+        if self._keybind != new_keybind:
+            self._keybind = new_keybind
             self.keybind_changed.emit()
             return True
         else:
             return False
 
     def set_stream(self, new_stream: "Stream" = None):
-        self.stream = new_stream
+        self._stream = new_stream
         return True
 
     def set_color(self, new_color: QColor = None):
@@ -183,39 +183,39 @@ class Behavior(QtCore.QObject):
             return False
 
     def get_stream_ID(self):
-        return self.stream.ID
+        return self._stream.ID
 
     def get_color(self):
         return self._color
 
     def num_epochs(self):
-        return len(self.epochs)
+        return len(self._epochs)
 
     def duration(self):
-        if not self.epochs:
+        if not self._epochs:
             return 0
         duration = 0
-        for epo in self.epochs:
+        for epo in self._epochs:
             duration += epo.get_length()
         return duration
 
     def append_epoch(self, epoch: Epoch = None):
-        self.epochs.append(epoch)
-        self.epochs.sort(key=lambda x: x.start)
+        self._epochs.append(epoch)
+        self._epochs.sort(key=lambda x: x.start)
         self.epoch_changed.emit()
 
     def remove_epoch(self, epoch: Epoch = None):
-        self.epochs.remove(epoch)
+        self._epochs.remove(epoch)
         self.epoch_changed.emit()
 
     def get_percentage(self):
         dur = self.duration()
-        stream_length = self.stream.get_length()
+        stream_length = self._stream.get_length()
         return dur / stream_length
 
     def get_epochs(self):
-        self.epochs.sort(key=lambda x: x.start)
-        return self.epochs
+        self._epochs.sort(key=lambda x: x.start)
+        return self._epochs
 
     def remove_redundant_epochs(self):
         def merge_redundant_epochs(e_list):
@@ -233,7 +233,7 @@ class Behavior(QtCore.QObject):
                 else:
                     return [epoch0] + the_rest
 
-        self.epochs = merge_redundant_epochs(self.epochs)
+        self._epochs = merge_redundant_epochs(self._epochs)
         self.epoch_changed.emit()
 
 

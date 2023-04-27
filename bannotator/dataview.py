@@ -10,7 +10,6 @@ from PySide6 import QtGui, QtCore
 from typing import Optional, List
 from bannotator.state import GuiState
 from bannotator.data import Stream, Behavior
-import re
 
 
 

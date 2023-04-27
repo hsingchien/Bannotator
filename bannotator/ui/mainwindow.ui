@@ -32,29 +32,10 @@
          <number>4</number>
         </property>
         <item>
-         <layout class="QHBoxLayout" name="video_control_hlayout" stretch="0,1,0,1,0,0,0,0,1,0,1,0,0,1">
+         <layout class="QHBoxLayout" name="video_control_hlayout" stretch="1,0,0,1,0,0,0,0,1,0,1,0,0,1">
           <property name="spacing">
            <number>3</number>
           </property>
-          <item>
-           <widget class="QLabel" name="time_label_txt">
-            <property name="text">
-             <string>Time</string>
-            </property>
-            <property name="textFormat">
-             <enum>Qt::PlainText</enum>
-            </property>
-            <property name="scaledContents">
-             <bool>false</bool>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignCenter</set>
-            </property>
-            <property name="textInteractionFlags">
-             <set>Qt::NoTextInteraction</set>
-            </property>
-           </widget>
-          </item>
           <item>
            <widget class="QLabel" name="time_label">
             <property name="font">
@@ -79,9 +60,22 @@
            </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QLabel" name="current_frame_label">
             <property name="text">
-             <string>Current Frame</string>
+             <string>Frame</string>
             </property>
            </widget>
           </item>
@@ -187,6 +181,12 @@
           </item>
           <item>
            <widget class="QComboBox" name="video_layout_comboBox">
+            <property name="minimumSize">
+             <size>
+              <width>10</width>
+              <height>0</height>
+             </size>
+            </property>
             <item>
              <property name="text">
               <string>Side by Side</string>

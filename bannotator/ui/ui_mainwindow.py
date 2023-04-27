@@ -114,15 +114,6 @@ class Ui_MainWindow(object):
         self.video_control_hlayout = QHBoxLayout()
         self.video_control_hlayout.setSpacing(3)
         self.video_control_hlayout.setObjectName(u"video_control_hlayout")
-        self.time_label_txt = QLabel(self.layoutWidget)
-        self.time_label_txt.setObjectName(u"time_label_txt")
-        self.time_label_txt.setTextFormat(Qt.PlainText)
-        self.time_label_txt.setScaledContents(False)
-        self.time_label_txt.setAlignment(Qt.AlignCenter)
-        self.time_label_txt.setTextInteractionFlags(Qt.NoTextInteraction)
-
-        self.video_control_hlayout.addWidget(self.time_label_txt)
-
         self.time_label = QLabel(self.layoutWidget)
         self.time_label.setObjectName(u"time_label")
         font = QFont()
@@ -137,6 +128,10 @@ class Ui_MainWindow(object):
         self.time_label.setAlignment(Qt.AlignCenter)
 
         self.video_control_hlayout.addWidget(self.time_label)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self.video_control_hlayout.addItem(self.horizontalSpacer)
 
         self.current_frame_label = QLabel(self.layoutWidget)
         self.current_frame_label.setObjectName(u"current_frame_label")
@@ -204,10 +199,11 @@ class Ui_MainWindow(object):
         self.video_layout_comboBox.addItem("")
         self.video_layout_comboBox.addItem("")
         self.video_layout_comboBox.setObjectName(u"video_layout_comboBox")
+        self.video_layout_comboBox.setMinimumSize(QSize(10, 0))
 
         self.video_control_hlayout.addWidget(self.video_layout_comboBox)
 
-        self.video_control_hlayout.setStretch(1, 1)
+        self.video_control_hlayout.setStretch(0, 1)
         self.video_control_hlayout.setStretch(3, 1)
         self.video_control_hlayout.setStretch(8, 1)
         self.video_control_hlayout.setStretch(10, 1)
@@ -514,9 +510,8 @@ class Ui_MainWindow(object):
         self.actionClose_annotation.setText(QCoreApplication.translate("MainWindow", u"Close annotation", None))
         self.actionNew_annotation.setText(QCoreApplication.translate("MainWindow", u"New annotation", None))
         self.actionShuffle_colors.setText(QCoreApplication.translate("MainWindow", u"Shuffle colors", None))
-        self.time_label_txt.setText(QCoreApplication.translate("MainWindow", u"Time", None))
         self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
-        self.current_frame_label.setText(QCoreApplication.translate("MainWindow", u"Current Frame", None))
+        self.current_frame_label.setText(QCoreApplication.translate("MainWindow", u"Frame", None))
         self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
         self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
         self.video_speed_label.setText(QCoreApplication.translate("MainWindow", u"Speed", None))

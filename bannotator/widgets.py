@@ -21,35 +21,39 @@ from typing import Dict
 class PlaySpeedSpinBox(QDoubleSpinBox):
     def __init__(self, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
-        self.cutoff_low = -2.0
-        self.cutoff_high = 2.0
-        self.step_ratio = 10.0
+        self._cutoff_low = -2.0
+        self._cutoff_high = 2.0
+        self._step_ratio = 10.0
+        self.valueChanged.connect(self._verify_value)
 
     def stepBy(self, steps: int) -> None:
         if (
-            np.ceil(self.value()) == self.cutoff_low
+            np.ceil(self.value()) == self._cutoff_low
             and steps > 0
-            and self.value() < self.cutoff_low - 0.00001
+            and self.value() < self._cutoff_low - 0.00001
         ):
-            return super().setValue(self.cutoff_low)
+            return super().setValue(self._cutoff_low)
         if (
-            np.floor(self.value()) == self.cutoff_high
+            np.floor(self.value()) == self._cutoff_high
             and steps < 0
-            and self.value() > self.cutoff_high + 0.00001
+            and self.value() > self._cutoff_high + 0.00001
         ):
-            return super().setValue(self.cutoff_high)
+            return super().setValue(self._cutoff_high)
 
-        if (self.value() >= self.cutoff_high and steps > 0) or (
-            self.value() <= self.cutoff_low and steps < 0
+        if (self.value() >= self._cutoff_high and steps > 0) or (
+            self.value() <= self._cutoff_low and steps < 0
         ):
-            return super().stepBy(steps * self.step_ratio)
-        elif (self.value() >= self.cutoff_high + 1 and steps < 0) or (
-            self.value() <= self.cutoff_low - 1 and steps > 0
+            return super().stepBy(steps * self._step_ratio)
+        elif (self.value() >= self._cutoff_high + 1 and steps < 0) or (
+            self.value() <= self._cutoff_low - 1 and steps > 0
         ):
-            return super().stepBy(steps * self.step_ratio)
+            return super().stepBy(steps * self._step_ratio)
         else:
             return super().stepBy(steps)
-
+    
+    def _verify_value(self, val):
+        if val > self._cutoff_high or val < self._cutoff_low:
+            self.setValue(round(val))
 
 class VideoSlider(QSlider):
     @Slot(int, int)
