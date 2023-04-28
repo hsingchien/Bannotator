@@ -172,15 +172,15 @@ class BehaviorTableModel(GenericTableModel):
             self.state_change.emit(QAbstractItemView.NoState)
         if colum_idx == 2:
             data_item = self.item_list[row_idx]
-            current_key = data_item.get_keybind()
-            all_key_binds = [behav.get_keybind() for behav in self.item_list]
+            current_key = data_item.keybind
+            all_key_binds = [behav.keybind for behav in self.item_list]
             letters = [chr(i) for i in range(ord('a'), ord('z')+1)]
             available_strokes = [current_key] + [l for l in letters if l not in all_key_binds] + [" "]
             self.state_change.emit(QAbstractItemView.EditingState)
             new_keybind, ok = QInputDialog.getItem(None,"Select a new key", "key",available_strokes,0,False)
             if ok and new_keybind:
                 for stream_behav in self.all_behaviors:
-                    stream_behav[row_idx].set_keybind(new_keybind)
+                    stream_behav[row_idx].keybind = new_keybind
             self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
             self.state_change.emit(QAbstractItemView.NoState)
         

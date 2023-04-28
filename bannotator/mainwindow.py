@@ -522,6 +522,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Pops out a new annotation dialog, guide the user to create a new annotation
         if self.state["annot"] is not None:
             annot_closed = self._close_annotation(False)
+        else:
+            annot_closed = True
         if not annot_closed:
             return False
         self._dialog_state = True
@@ -538,7 +540,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         fake_config = []
         for i,n in enumerate(ns):
             fake_config.append(" ".join([n,ks[i]]))
-        annotation.construct_streams(fake_config, fake_annots)
+        annotation._construct_streams(fake_config, fake_annots)
         annotation.assign_behavior_color()
         self.state["annot"] = annotation
         self._dialog_state = False
@@ -896,7 +898,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         self._dialog_state = True
         newdialog = dialog.DeleteStreamDialog(parent=self, annotation=self.state["annot"])
-        del_id = newdialog.exec()
+        del_id = newdialog.get_input()
         if del_id is None:
             self._dialog_state = False
             return False

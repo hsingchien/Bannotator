@@ -36,7 +36,7 @@ class AddBehaviorDialog(QDialog, Ui_AddBehaviorDialog):
         self.annotation = annotation
         behavior_list = annotation.get_behaviors()
         self.all_names = [behav.name for behav in behavior_list[0]]
-        all_key_binds = [behav.get_keybind() for behav in behavior_list[0]]
+        all_key_binds = [behav.keybind for behav in behavior_list[0]]
         letters = [chr(i) for i in range(ord("a"), ord("z") + 1)]
         available_strokes = [l for l in letters if l not in all_key_binds] + [" "]
         self.keybind_comboBox.addItems(available_strokes)
@@ -129,7 +129,6 @@ class DeleteStreamDialog(QDialog, Ui_DeleteStreamDialog):
         self.setupUi(self)
         self.annotation = annotation
         ids = list(annotation.get_streams().keys())
-
         self.stream_combobox.addItems([str(id) for id in ids])
 
     def get_input(self):
