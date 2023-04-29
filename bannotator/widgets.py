@@ -58,35 +58,35 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
 class VideoSlider(QSlider):
     @Slot(int, int)
     def changeBoxRange(self, boxstart, boxend):
-        self.boxstart = boxstart
-        self.boxend = boxend
+        self._boxstart = boxstart
+        self._boxend = boxend
         self.update()
 
     def __init__(self, parent, boxstart=None, boxend=None):
         super().__init__(parent)
         if boxstart is not None and boxend is not None:
-            self.boxstart = boxstart
-            self.boxend = boxend
+            self._boxstart = boxstart
+            self._boxend = boxend
         else:
-            self.boxstart = None
-            self.boxend = None
-        self.track_data = None
-        self.update_track_flag = False
-        self.color_dict = None
-        self.pixmap_bg = None
+            self._boxstart = None
+            self._boxend = None
+        self._track_data = None
+        self._update_track_flag = False
+        self._color_dict = None
+        self._pixmap_bg = None
 
     def paintEvent(self, event):
-        if self.update_track_flag:
-            self.draw_pixmap_bg()
+        if self._update_track_flag:
+            self._draw_pixmap_bg()
 
-        if self.pixmap_bg is not None:
+        if self._pixmap_bg is not None:
             painter = QPainter(self)
             painter.drawPixmap(
-                QRect(3, 0, self.width() - 6, self.height()), self.pixmap_bg
+                QRect(3, 0, self.width() - 6, self.height()), self._pixmap_bg
             )
             painter.end()
 
-        if self.boxend and self.boxstart:
+        if self._boxend and self._boxstart:
             painter = QPainter(self)
             painter.setPen(QPen(Qt.black, 2))
             painter.setRenderHint(QPainter.Antialiasing)
@@ -94,11 +94,11 @@ class VideoSlider(QSlider):
             bar_width = self.width() - 6
             box_width = (
                 bar_width
-                * (self.boxend - self.boxstart)
+                * (self._boxend - self._boxstart)
                 / (self.maximum() - self.minimum())
             )
             box_start = (
-                (self.boxstart - self.minimum())
+                (self._boxstart - self.minimum())
                 / (self.maximum() - self.minimum())
                 * bar_width
             )
@@ -108,56 +108,56 @@ class VideoSlider(QSlider):
         super().paintEvent(event)
 
     def clear_track(self):
-        self.boxstart = None
-        self.boxend = None
-        self.track_data = None
-        self.update_track_flag = False
-        self.color_dict = None
-        self.pixmap_bg = None
+        self._boxstart = None
+        self._boxend = None
+        self._track_data = None
+        self._update_track_flag = False
+        self._color_dict = None
+        self._pixmap_bg = None
         self.update()
 
     def set_track_data(self, new_track_data):
-        self.track_data = new_track_data
-        self.update_track_flag = True
+        self._track_data = new_track_data
+        self._update_track_flag = True
         self.update()
 
     def set_color_dict(self, color_dict):
-        self.color_dict = color_dict
-        self.update_track_flag = True
+        self._color_dict = color_dict
+        self._update_track_flag = True
         self.update()
 
     def set_color_track(self, new_track_data, new_color_dict):
-        self.track_data = new_track_data
-        self.color_dict = new_color_dict
-        self.update_track_flag = True
+        self._track_data = new_track_data
+        self._color_dict = new_color_dict
+        self._update_track_flag = True
         self.update()
 
-    def draw_pixmap_bg(self):
-        if self.update_track_flag and self.track_data is not None:
-            self.pixmap_bg = QPixmap(self.width() - 6, self.height())
-            painter = QPainter(self.pixmap_bg)
+    def _draw_pixmap_bg(self):
+        if self._update_track_flag and self._track_data is not None:
+            self._pixmap_bg = QPixmap(self.width() - 6, self.height())
+            painter = QPainter(self._pixmap_bg)
             painter.setRenderHint(QPainter.Antialiasing)
 
             bar_height = self.height()
-            bar_width = (self.width() - 6) / len(self.track_data)
+            bar_width = (self.width() - 6) / len(self._track_data)
 
-            for i in range(len(self.track_data)):
-                value = self.track_data[i]
-                color = self.color_dict[value]
+            for i in range(len(self._track_data)):
+                value = self._track_data[i]
+                color = self._color_dict[value]
                 painter.setBrush(color)
                 painter.setPen(color)
                 painter.drawRect(i * bar_width, 0, bar_width, bar_height)
 
             painter.end()
-            self.update_track_flag = False
+            self._update_track_flag = False
 
     def update_track_bg(self):
-        self.update_track_flag = True
+        self._update_track_flag = True
         self.update()
 
     def resizeEvent(self, event):
-        if self.track_data is not None:
-            self.update_track_flag = True
+        if self._track_data is not None:
+            self._update_track_flag = True
         return super().resizeEvent(event)
 
 
@@ -175,64 +175,64 @@ class TrackBar(QWidget):
     ):
         super().__init__(parent)
         self.setMinimumHeight(min_height)
-        self.full_data = data
-        self.color_dict = color_dict
-        self.selected = False
-        self.slider_box = slider_box
-        self.frame_mark = frame_mark
-        self.redraw_track_flag = False
-        self.use_pixmap = use_pixmap
-        self.pixmap = None
-        self.full_track_flag = full_track_flag
+        self._full_data = data
+        self._color_dict = color_dict
+        self._selected = False
+        self._slider_box = slider_box
+        self._frame_mark = frame_mark
+        self._redraw_track_flag = False
+        self._use_pixmap = use_pixmap
+        self._pixmap = None
+        self._full_track_flag = full_track_flag
 
-        if not self.full_track_flag and self.slider_box:
+        if not self._full_track_flag and self._slider_box:
             # Only draw the content in the slider box
-            self.data = self.full_data[self.slider_box[0] : self.slider_box[1]]
+            self._data = self._full_data[self._slider_box[0] : self._slider_box[1]]
         else:
             # Draw the whole track
-            self.data = self.full_data
+            self._data = self._full_data
 
         if use_pixmap:
-            self.draw_pixmap_bg()
+            self._draw_pixmap_bg()
 
     def set_data(self, data: np.ndarray):
-        self.full_data = data
-        if not self.full_track_flag and self.slider_box:
-            self.data = self.full_data[self.slider_box[0] : self.slider_box[1]]
+        self._full_data = data
+        if not self._full_track_flag and self._slider_box:
+            self._data = self._full_data[self._slider_box[0] : self._slider_box[1]]
         else:
-            self.data = self.full_data
+            self._data = self._full_data
 
         # Update the widget after data is changed
-        if self.use_pixmap:
+        if self._use_pixmap:
             # Set redraw pixmap flag
-            self.redraw_track_flag = True
+            self._redraw_track_flag = True
         self.update()
 
     def set_color_dict(self, color_dict: Dict = None):
-        self.color_dict = color_dict
-        if self.use_pixmap:
-            self.redraw_track_flag = True
+        self._color_dict = color_dict
+        if self._use_pixmap:
+            self._redraw_track_flag = True
         self.update()
 
     def set_frame_mark(self, new_frame_mark=None):
         # Only update frame mark rect
-        old_frame_mark = self.frame_mark
+        old_frame_mark = self._frame_mark
         if old_frame_mark == new_frame_mark:
             return False
 
-        if self.use_pixmap:
-            self.frame_mark = new_frame_mark
+        if self._use_pixmap:
+            self._frame_mark = new_frame_mark
             self.update()
         else:
             bar_height = self.height()
-            bar_width = self.width() / len(self.data)
-            if not self.full_track_flag:
+            bar_width = self.width() / len(self._data)
+            if not self._full_track_flag:
                 # The position of the frame mark is relative to the beginning of the data
-                old_frame_mark -= self.slider_box[0]
-            self.frame_mark = new_frame_mark
+                old_frame_mark -= self._slider_box[0]
+            self._frame_mark = new_frame_mark
 
-            if not self.full_track_flag:
-                new_frame_mark -= self.slider_box[0]
+            if not self._full_track_flag:
+                new_frame_mark -= self._slider_box[0]
             self.update(
                 max(old_frame_mark * bar_width - 10, 0),
                 0,
@@ -247,59 +247,59 @@ class TrackBar(QWidget):
             )
 
     def set_slider_box(self, new_slider_box=[]):
-        self.slider_box = new_slider_box
-        if not self.full_track_flag:
-            self.data = self.full_data[new_slider_box[0] : new_slider_box[1]]
-            if self.use_pixmap:
-                self.redraw_track_flag = True
+        self._slider_box = new_slider_box
+        if not self._full_track_flag:
+            self._data = self._full_data[new_slider_box[0] : new_slider_box[1]]
+            if self._use_pixmap:
+                self._redraw_track_flag = True
         self.update()
 
-    def draw_pixmap_bg(self):
-        if self.data is not None:
-            self.pixmap = QPixmap(self.width(), self.height())
-            painter = QPainter(self.pixmap)
+    def _draw_pixmap_bg(self):
+        if self._data is not None:
+            self._pixmap = QPixmap(self.width(), self.height())
+            painter = QPainter(self._pixmap)
             painter.setRenderHint(QPainter.Antialiasing)
 
             bar_height = self.height()
-            bar_width = self.width() / len(self.data)
+            bar_width = self.width() / len(self._data)
 
-            for i in range(len(self.data)):
-                value = self.data[i]
-                color = self.color_dict[value]
+            for i in range(len(self._data)):
+                value = self._data[i]
+                color = self._color_dict[value]
                 painter.setBrush(color)
                 painter.setPen(color)
                 painter.drawRect(i * bar_width, 0, bar_width, bar_height)
 
             painter.end()
-            self.redraw_track_flag = False
+            self._redraw_track_flag = False
 
     def paintEvent(self, event):
         bar_height = self.height()
-        bar_width = self.width() / len(self.data)
-        if not self.full_track_flag:
-            frame_mark = self.frame_mark - self.slider_box[0]
+        bar_width = self.width() / len(self._data)
+        if not self._full_track_flag:
+            frame_mark = self._frame_mark - self._slider_box[0]
         else:
-            frame_mark = self.frame_mark
+            frame_mark = self._frame_mark
         # Full length track use pixmap to improve performance
-        if self.redraw_track_flag and self.use_pixmap:
-            self.draw_pixmap_bg()
-        if self.pixmap is not None:
+        if self._redraw_track_flag and self._use_pixmap:
+            self._draw_pixmap_bg()
+        if self._pixmap is not None:
             # Make colored track pixmap
             painter = QPainter(self)
             painter.setRenderHint(QPainter.Antialiasing)
-            painter.drawPixmap(QRect(0, 0, self.width(), self.height()), self.pixmap)
+            painter.drawPixmap(QRect(0, 0, self.width(), self.height()), self._pixmap)
             # Mark the current frame with black line
             painter.setPen(QPen(Qt.black, 2))
             painter.drawRect(frame_mark * bar_width, 0, bar_width, bar_height)
             # Mark the slider box, if full track flag is true
-            if self.full_track_flag:
+            if self._full_track_flag:
                 painter.drawRect(
-                    self.slider_box[0] * bar_width,
+                    self._slider_box[0] * bar_width,
                     0,
-                    (self.slider_box[1] - self.slider_box[0]) * bar_width,
+                    (self._slider_box[1] - self._slider_box[0]) * bar_width,
                     bar_height,
                 )
-            if self.selected:
+            if self._selected:
                 painter.setBrush(Qt.NoBrush)
                 painter.setPen(QPen(QColor("#C7038A"), 2))
                 painter.drawRect(0, 0, self.width(), bar_height)
@@ -313,12 +313,12 @@ class TrackBar(QWidget):
             start_index = int(paint_rect.x() / bar_width)
             end_index = start_index + int(np.ceil(paint_rect.width() / bar_width))
             for i in range(start_index - 1, end_index + 1):
-                if i >= len(self.data):
+                if i >= len(self._data):
                     break
                 if i < 0:
                     continue
-                value = self.data[i]
-                color = self.color_dict[value]
+                value = self._data[i]
+                color = self._color_dict[value]
                 painter.setBrush(color)
                 painter.setPen(color)
 
@@ -328,16 +328,16 @@ class TrackBar(QWidget):
                     painter.drawRect(
                         i * bar_width, 0.2 * bar_height, bar_width, 0.6 * bar_height
                     )
-            if self.full_track_flag:
+            if self._full_track_flag:
                 painter.setBrush(Qt.NoBrush)
                 painter.setPen(QPen(Qt.black, 2))
                 painter.drawRect(
-                    self.slider_box[0] * bar_width,
+                    self._slider_box[0] * bar_width,
                     0,
-                    (self.slider_box[1] - self.slider_box[0]) * bar_width,
+                    (self._slider_box[1] - self._slider_box[0]) * bar_width,
                     bar_height,
                 )
-            if self.selected:
+            if self._selected:
                 painter.setBrush(Qt.NoBrush)
                 painter.setPen(QPen(QColor("#C7038A"), 2))
                 painter.drawRect(0, 0.2 * bar_height, self.width(), 0.6 * bar_height)
@@ -345,12 +345,12 @@ class TrackBar(QWidget):
             painter.end()
 
     def set_selected(self, selected: bool = False):
-        self.selected = selected
+        self._selected = selected
         self.update()
 
     def resizeEvent(self, event):
-        if self.use_pixmap:
-            self.redraw_track_flag = True
+        if self._use_pixmap:
+            self._redraw_track_flag = True
 
         return super().resizeEvent(event)
 
@@ -362,54 +362,6 @@ class DockWidget(QDockWidget):
         super().closeEvent(event)
         self.closed.emit(False)
 
-
-class TabWidget(QTabWidget):
-    # Auto-resizing tab
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.currentChanged.connect(self.updateGeometry)
-
-    def minimumSizeHint(self):
-        # return super().minimumSizeHint()
-        return self.sizeHint()
-
-    def sizeHint(self):
-        lc = QSize(0, 0)
-        rc = QSize(0, 0)
-        opt = QStyleOptionTabWidgetFrame()
-        self.initStyleOption(opt)
-        if self.cornerWidget(Qt.TopLeftCorner):
-            lc = self.cornerWidget(Qt.TopLeftCorner).sizeHint()
-        if self.cornerWidget(Qt.TopRightCorner):
-            rc = self.cornerWidget(Qt.TopRightCorner).sizeHint()
-        layout = self.findChild(QStackedLayout)
-        layoutHint = layout.currentWidget().sizeHint()
-        tabHint = self.tabBar().sizeHint()
-        if self.tabPosition() in (QTabWidget.North, QTabWidget.South):
-            size = QSize(
-                max(layoutHint.width(), tabHint.width() + rc.width() + lc.width()),
-                layoutHint.height()
-                + max(rc.height(), max(lc.height(), tabHint.height())),
-            )
-        else:
-            size = QSize(
-                layoutHint.width() + max(rc.width(), max(lc.width(), tabHint.width())),
-                max(layoutHint.height(), tabHint.height() + rc.height() + lc.height()),
-            )
-        return size
-        # max_width = 0
-        # max_height = 0
-        # opt = QStyleOptionTabWidgetFrame()
-        # self.initStyleOption(opt)
-        # for i in range(self.count()):
-        #     content_width = self.widget(i).sizeHint().width()
-        #     content_height = self.widget(i).sizeHint().height()
-        #     max_width = max(max_width, content_width)
-        #     max_height = max(max_height, content_height)
-        # return QSize(max_width, max_height)
-
-
 class BehavVideoView(QGraphicsView):
     frame_updated = Signal()
 
@@ -420,16 +372,16 @@ class BehavVideoView(QGraphicsView):
         # self.setResizeAnchor(QGraphicsView.ViewportAnchor.AnchorViewCenter)
         self.setScene(QGraphicsScene())
         self.scene().setBackgroundBrush(QColor("#595959"))
-        self.pixItem = QGraphicsPixmapItem()
+        self._pixItem = QGraphicsPixmapItem()
         pixmap = QPixmap()
         pixmap.load(":/bg.png")
-        self.pixItem.setPixmap(pixmap)
-        self.scene().addItem(self.pixItem)
+        self._pixItem.setPixmap(pixmap)
+        self.scene().addItem(self._pixItem)
         # self.scene().sceneRectChanged.connect(self.fitPixItem)
 
     @Slot()
     def updatePixmap(self, new_pixmap):
-        self.pixItem.setPixmap(new_pixmap)
+        self._pixItem.setPixmap(new_pixmap)
         self.frame_updated.emit()
 
     def resizeEvent(self, event):
@@ -437,14 +389,14 @@ class BehavVideoView(QGraphicsView):
         self.fitPixItem()
 
     def fitPixItem(self):
-        self.scene().setSceneRect(self.pixItem.boundingRect())
+        self.scene().setSceneRect(self._pixItem.boundingRect())
         self.setAlignment(Qt.AlignCenter)
         self.fitInView(self.scene().sceneRect(), aspectRadioMode=Qt.KeepAspectRatio)
 
     def clear_pixmap(self):
         pixmap = QPixmap()
         pixmap.load(":/bg.png")
-        self.pixItem.setPixmap(pixmap)
+        self._pixItem.setPixmap(pixmap)
         self.fitPixItem()
 
 
@@ -454,29 +406,29 @@ class BehavLabel(QLabel):
         self.setAlignment(Qt.AlignCenter)
         self.setFont(QFont("Helvetica [Cronyx]", 16, QFont.Bold))
         self._selected = False
-        self.behavior = behav
-        behav.name_changed.connect(self.update_text)
-        behav.color_changed.connect(self.update_text)
-        self.update_text()
+        self._behavior = behav
+        behav.name_changed.connect(self._update_text)
+        behav.color_changed.connect(self._update_text)
+        self._update_text()
 
     @Slot()
     def set_behavior(self, new_behavior):
-        self.behavior = new_behavior
-        new_behavior.name_changed.connect(self.update_text)
-        new_behavior.color_changed.connect(self.update_text)
-        self.update_text()
+        self._behavior = new_behavior
+        new_behavior.name_changed.connect(self._update_text)
+        new_behavior.color_changed.connect(self._update_text)
+        self._update_text()
 
     def set_selected(self, selected):
         self._selected = selected
-        self.update_text()
+        self._update_text()
 
-    def update_text(self):
+    def _update_text(self):
         if self._selected:
-            bname = "[" + self.behavior.name + "]"
+            bname = "[" + self._behavior.name + "]"
         else:
-            bname = self.behavior.name
+            bname = self._behavior.name
         self.setText(bname)
-        self.setStyleSheet("color: {0}".format(self.behavior.color))
+        self.setStyleSheet("color: {0}".format(self._behavior.color))
 
 
 class AnnotatorMainWindow(QMainWindow):

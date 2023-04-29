@@ -394,7 +394,7 @@ QSlider::handle:horizontal {
         <enum>QLayout::SetFixedSize</enum>
        </property>
        <item>
-        <widget class="TabWidget" name="annotation_tabs">
+        <widget class="QTabWidget" name="annotation_tabs">
          <property name="acceptDrops">
           <bool>false</bool>
          </property>
@@ -756,12 +756,6 @@ QSlider::handle:horizontal {
    <class>GenericTableView</class>
    <extends>QTableView</extends>
    <header>bannotator.dataview</header>
-  </customwidget>
-  <customwidget>
-   <class>TabWidget</class>
-   <extends>QTabWidget</extends>
-   <header>bannotator.widgets</header>
-   <container>1</container>
   </customwidget>
   <customwidget>
    <class>VideoSlider</class>
