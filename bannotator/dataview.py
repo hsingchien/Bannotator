@@ -23,27 +23,27 @@ class GenericTableModel(QAbstractTableModel):
         state: GuiState = None,
     ):
         super().__init__()
-        self.properties = properties
+        self._properties = properties
         self.state = state
-        self.item_list = items
+        self._item_list = items
 
-        self.show_row_numbers = False
+        self._show_row_numbers = False
         self._activated_index = None
         self._selected_index = []  # Keep track of entries in the selected cell list
         self._current_selection = []  # Keep track of user's current selections
 
     def rowCount(self, parent=QModelIndex()):
-        return len(self.item_list)
+        return len(self._item_list)
 
     def columnCount(self, parent=QModelIndex()):
-        return len(self.properties)
+        return len(self._properties)
 
     def data(self, index, role):
-        key = self.properties[index.column()]
+        key = self._properties[index.column()]
         idx = index.row()
         if idx >= self.rowCount():
             return None
-        data_item = self.item_list[idx]
+        data_item = self._item_list[idx]
 
         # Display content
         if role == Qt.DisplayRole or role == Qt.EditRole:
@@ -61,7 +61,7 @@ class GenericTableModel(QAbstractTableModel):
         # Display property names for each column
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                col_str = str(self.properties[idx])
+                col_str = str(self._properties[idx])
                 # use title case if key is lowercase
                 if col_str == col_str.lower():
                     return col_str.title()
@@ -69,7 +69,7 @@ class GenericTableModel(QAbstractTableModel):
                 return col_str
             elif orientation == Qt.Vertical:
                 # Add 1 to the row index so that we index from 1 instead of 0
-                if self.show_row_numbers:
+                if self._show_row_numbers:
                     return str(idx + 1)
                 return None
 
@@ -77,7 +77,7 @@ class GenericTableModel(QAbstractTableModel):
 
     def get_item_index(self, target):
         # Return row number of the target item
-        for i, item in enumerate(self.item_list):
+        for i, item in enumerate(self._item_list):
             if item is target:
                 return i
         # Return -1 if not found
@@ -85,36 +85,33 @@ class GenericTableModel(QAbstractTableModel):
     
     def get_property_index(self, target, key):
         # Return row number of the item with the target property
-        for i, item in enumerate(self.item_list):
+        for i, item in enumerate(self._item_list):
             if isinstance(item, dict) and item.get(key,None) == target:
                 return i
             if hasattr(item, key) and getattr(item,key,None) == target:
                 return i
         return -1
-            
     
     def repaint(self):
         self.dataChanged.emit(self.index(0, 0),self.index(self.rowCount(), self.columnCount()))
 
     def change_layout(self):
         self.layoutChanged.emit()
-        
-
 
 class BehaviorTableModel(GenericTableModel):
     activated_behavior_changed = QtCore.Signal(str)
     def __init__(self, annotation=None, *arg, **kwarg):
         super().__init__(*arg, **kwarg)
-        self.annotation = annotation
-        self.all_behaviors = self.annotation.get_behaviors()
-        self.item_list = self.all_behaviors[0]
+        self._annotation = annotation
+        self._all_behaviors = self._annotation.get_behaviors()
+        self._item_list = self._all_behaviors[0]
 
     def data(self, index, role):
-        key = self.properties[index.column()]
+        key = self._properties[index.column()]
         idx = index.row()
         if idx >= self.rowCount():
             return None
-        data_item = self.item_list[idx]
+        data_item = self._item_list[idx]
         # Color background for color column
         if role == Qt.BackgroundRole and key == "color":
             return QtGui.QBrush(data_item.get_color())
@@ -123,18 +120,18 @@ class BehaviorTableModel(GenericTableModel):
         return super().data(index, role)
     
     def refresh_item_list(self):
-        self.all_behaviors = self.annotation.get_behaviors()
-        self.item_list = self.all_behaviors[0]
+        self._all_behaviors = self._annotation.get_behaviors()
+        self._item_list = self._all_behaviors[0]
     
     def change_layout(self):
         self.refresh_item_list()
         return super().change_layout()
 
     def flags(self, index: QModelIndex):
-        if self.properties[index.column()] in ["name"]:
+        if self._properties[index.column()] in ["name"]:
             # Keybind and Color are editable
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
-        elif self.properties[index.column()] in ["ID","color","keybind"]:
+        elif self._properties[index.column()] in ["ID","color","keybind"]:
             flags = Qt.ItemIsEnabled | Qt.ItemIsSelectable
         else:
             flags = Qt.ItemIsEnabled
@@ -143,14 +140,14 @@ class BehaviorTableModel(GenericTableModel):
     def setData(self, index, value, role=Qt.EditRole):
         if role != Qt.EditRole:
             return False
-        if self.properties[index.column()] == "name":
+        if self._properties[index.column()] == "name":
             # Verify if the input is a valid name
             value = value.lower()
-            if value in [behav.name for behav in self.item_list]:
+            if value in [behav.name for behav in self._item_list]:
                 # Reject name that is already used
                 return False
             else:
-                for stream_behav in self.all_behaviors:
+                for stream_behav in self._all_behaviors:
                     stream_behav[index.row()].name = value
                 return True
     
@@ -158,28 +155,28 @@ class BehaviorTableModel(GenericTableModel):
         if colum_idx == 0:
             # Only clicking ID column activates the row, otherwise edit the entry
             self._activated_index = row_idx
-            self.activated_behavior_changed.emit(self.item_list[row_idx].name)
+            self.activated_behavior_changed.emit(self._item_list[row_idx].name)
             self.repaint()
         if colum_idx == 3:
-            data_item = self.item_list[row_idx]
+            data_item = self._item_list[row_idx]
             current_color = data_item.get_color()
             self.state_change.emit(QAbstractItemView.EditingState)
             new_color = QColorDialog.getColor(current_color,None,"Pick a color for this behavior")
             if new_color.isValid():
-                for stream_behav in self.all_behaviors:
+                for stream_behav in self._all_behaviors:
                     stream_behav[row_idx].set_color(new_color)
                 self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
             self.state_change.emit(QAbstractItemView.NoState)
         if colum_idx == 2:
-            data_item = self.item_list[row_idx]
+            data_item = self._item_list[row_idx]
             current_key = data_item.keybind
-            all_key_binds = [behav.keybind for behav in self.item_list]
+            all_key_binds = [behav.keybind for behav in self._item_list]
             letters = [chr(i) for i in range(ord('a'), ord('z')+1)]
             available_strokes = [current_key] + [l for l in letters if l not in all_key_binds] + [" "]
             self.state_change.emit(QAbstractItemView.EditingState)
             new_keybind, ok = QInputDialog.getItem(None,"Select a new key", "key",available_strokes,0,False)
             if ok and new_keybind:
-                for stream_behav in self.all_behaviors:
+                for stream_behav in self._all_behaviors:
                     stream_behav[row_idx].keybind = new_keybind
             self.dataChanged.emit(self.index(row_idx,colum_idx), self.index(row_idx,colum_idx))
             self.state_change.emit(QAbstractItemView.NoState)
@@ -284,7 +281,7 @@ class StreamTableModel(GenericTableModel):
         streamID = self.stream.ID
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                col_str = self.properties[idx]
+                col_str = self._properties[idx]
                 # Add stream ID to the middle column
                 if idx == 1:
                     col_str = "S-" + str(streamID) + "\n" + col_str
@@ -293,7 +290,7 @@ class StreamTableModel(GenericTableModel):
                 return col_str
             elif orientation == Qt.Vertical:
                 # Add 1 to the row index so that we index from 1 instead of 0
-                if self.show_row_numbers:
+                if self._show_row_numbers:
                     return str(idx + 1)
                 return None
         return None
@@ -352,7 +349,7 @@ class BehavEpochTableModel(GenericTableModel):
         streamID = self.stream.ID
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                col_str = self.properties[idx]
+                col_str = self._properties[idx]
                 # Add stream ID to the middle column
                 if idx == 1:
                     col_str = "S-" + str(streamID) + "\n" + col_str
@@ -361,7 +358,7 @@ class BehavEpochTableModel(GenericTableModel):
                 return col_str
             elif orientation == Qt.Vertical:
                 # Add 1 to the row index so that we index from 1 instead of 0
-                if self.show_row_numbers:
+                if self._show_row_numbers:
                     return str(idx + 1)
                 return None
         return None
