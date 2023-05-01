@@ -100,6 +100,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         # Annotation menu
         self.actionOpen_annotation.triggered.connect(self._open_annotation)
         self.actionSave_annotation.triggered.connect(self._save_annotation)
+        self.actionSave_annotation_as_MAT.triggered.connect(self._save_annotation_mat)
         self.actionNew_annotation.triggered.connect(self._new_annotation)
         self.actionOpen_config.triggered.connect(self._open_config)
         self.actionSave_config.triggered.connect(self._save_config)
@@ -223,9 +224,11 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.state["annot"] is not None:
                 # Enable annotation options
                 self.actionSave_annotation.setEnabled(True)
+                self.actionSave_annotation_as_MAT.setEnabled(True)
                 self.actionSave_config.setEnabled(True)
             else:
                 self.actionSave_annotation.setEnabled(False)
+                self.actionSave_annotation_as_MAT.setEnabled(False)
                 self.actionSave_config.setEnabled(False)
             if self.state["video"] > 0:
                 self.actionOpen_config.setEnabled(True)
@@ -731,6 +734,28 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     4000,
                 )
             pass
+
+    def _save_annotation_mat(self):
+        # Save annotation dialog
+        self.state["annot"].saved_in_file.connect(
+            lambda x: self.statusbar.showMessage(x, 5000)
+        )
+        self.statusbar.showMessage("Saving annotation...", 0)
+        if self.state["annot"].get_file_path() is not None:
+            annot_name = self.state["annot"].get_file_path().replace("txt", "mat")
+        elif self._videos:
+            vid_path = self._videos[0].file_name()
+            annot_name = vid_path.replace("." + vid_path.split(".")[-1], "_annot.mat")
+        else:
+            annot_name = "annotation.mat"
+
+        filename, _ = QFileDialog.getSaveFileName(
+            None, "Save Annotation", annot_name, "mat Files (*.mat)"
+        )
+        if not filename:
+            return False
+        self.statusbar.clearMessage()
+        return self.state["annot"].save_to_matfile(filename)
 
     def _save_config(self):
         self.state["annot"].saved_in_file.connect(

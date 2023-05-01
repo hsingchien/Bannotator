@@ -308,6 +308,7 @@ QSlider::handle:horizontal {
     <addaction name="actionOpen_annotation"/>
     <addaction name="actionNew_annotation"/>
     <addaction name="actionSave_annotation"/>
+    <addaction name="actionSave_annotation_as_MAT"/>
     <addaction name="actionClose_annotation"/>
     <addaction name="separator"/>
     <addaction name="actionOpen_config"/>
@@ -317,7 +318,7 @@ QSlider::handle:horizontal {
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>App</string>
     </property>
     <addaction name="actionReset"/>
     <addaction name="separator"/>
@@ -743,6 +744,14 @@ QSlider::handle:horizontal {
   <action name="actionShuffle_colors">
    <property name="text">
     <string>Shuffle colors</string>
+   </property>
+  </action>
+  <action name="actionSave_annotation_as_MAT">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Save annotation as MAT</string>
    </property>
   </action>
  </widget>

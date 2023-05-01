@@ -3,8 +3,8 @@ from PySide6 import QtCore
 from typing import List, Dict
 import re
 import numpy as np
+from scipy.io import savemat
 import distinctipy as distc
-
 
 
 class Epoch(object):
@@ -140,9 +140,9 @@ class Behavior(QtCore.QObject):
     @property
     def keybind(self):
         return self._keybind
-    
+
     @keybind.setter
-    def keybind(self,new_keybind:str=None):
+    def keybind(self, new_keybind: str = None):
         if self._keybind != new_keybind:
             self._keybind = new_keybind
             self.keybind_changed.emit()
@@ -164,7 +164,6 @@ class Behavior(QtCore.QObject):
 
     def __str__(self) -> str:
         return f"stream: {self._stream}, {self.name}, ID: {self.ID}, keybind: {self._keybind}, color: {self.color}"
-
 
     def set_ID(self, new_ID: int = None):
         self.ID = new_ID
@@ -406,7 +405,7 @@ class Stream(QtCore.QObject):
             behavior = self.get_behavior_list()[behav]
         elif behav is None:
             behavior = self.get_behavior_list()[0]
-        if self._epochs and self._epochs[-1].end<length:
+        if self._epochs and self._epochs[-1].end < length:
             self.sort_epoch()
             last_epoch = self._epochs[-1]
             epoch = Epoch(
@@ -601,11 +600,12 @@ class Annotation(QtCore.QObject):
     def change_layout(self):
         self.content_layout_changed.emit()
 
-    def __init__(self, streams: Dict = {}):
+    def __init__(self, streams={}):
         super().__init__()
+        # breakpoint()
         # Use dict to organize streams
         self._streams = streams
-        for _, stream in self._streams:
+        for _, stream in self._streams.items():
             stream.data_changed.connect(self.streams_changed)
             stream.color_changed.connect(self.streams_changed)
             # stream.behavior_name_changed.connect(self.streams_changed)
@@ -622,6 +622,50 @@ class Annotation(QtCore.QObject):
         new_name = names[1]
         if old_name in self._behav_color.keys():
             self._behav_color[new_name] = self._behav_color.pop(old_name)
+
+    def _construct_streams(self, config, annots):
+        for stream_id, annotation_sequence in annots.items():
+            # Create behaviors for the stream
+            self._streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
+            self._streams[stream_id].construct_behavior_from_config(config)
+            self._streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
+            self._streams[stream_id].data_changed.connect(self.streams_changed)
+        return True
+
+    def _validate_stream(self):
+        for _, stream in self._streams.items():
+            if stream.validate_epoch():
+                continue
+            else:
+                return False
+        return True
+
+    def _validate_stream_behavior(self):
+        # Validate the streams have the same behavior setting
+        behav_list = [stream.get_behavior_list() for _, stream in self._streams.items()]
+        for i in range(len(behav_list[0])):
+            bname = behav_list[0][i].name
+            bID = behav_list[0][i].ID
+            bcolor = behav_list[0][i].color
+            bkbind = behav_list[0][i].keybind
+            for j in range(len(behav_list)):
+                cur_behav = behav_list[j][i]
+                if (
+                    cur_behav.name != bname
+                    or cur_behav.ID != bID
+                    or cur_behav.color != bcolor
+                    or cur_behav.keybind != bkbind
+                ):
+                    return False
+        return True
+
+    def get_behaviors(self):
+        if self._validate_stream_behavior():
+            # Return a list of Behavior objects
+            ks = sorted(list(self._streams.keys()))
+            return [self._streams[k].get_behavior_list() for k in ks]
+        else:
+            raise Exception("Inconsisten behaviors across streams")
 
     def read_config_from_file(self, config_path):
         # Called by mainwindow open configuration
@@ -695,49 +739,6 @@ class Annotation(QtCore.QObject):
         else:
             self.construct_from_file.emit("Failed to construct annotation from file")
 
-    def _construct_streams(self, config, annots):
-        for stream_id, annotation_sequence in annots.items():
-            # Create behaviors for the stream
-            self._streams[stream_id] = Stream(ID=stream_id, epochs=[], behaviors={})
-            self._streams[stream_id].construct_behavior_from_config(config)
-            self._streams[stream_id].construct_epochs_from_sequence(annotation_sequence)
-            self._streams[stream_id].data_changed.connect(self.streams_changed)
-        return True
-
-    def _validate_stream_behavior(self):
-        # Validate the streams have the same behavior setting
-        behav_list = [stream.get_behavior_list() for _, stream in self._streams.items()]
-        for i in range(len(behav_list[0])):
-            bname = behav_list[0][i].name
-            bID = behav_list[0][i].ID
-            bcolor = behav_list[0][i].color
-            bkbind = behav_list[0][i].keybind
-            for j in range(len(behav_list)):
-                cur_behav = behav_list[j][i]
-                if (
-                    cur_behav.name != bname
-                    or cur_behav.ID != bID
-                    or cur_behav.color != bcolor
-                    or cur_behav.keybind != bkbind
-                ):
-                    return False
-        return True
-
-    def get_behaviors(self):
-        if self._validate_stream_behavior():
-            # Return a list of Behavior objects
-            ks = sorted(list(self._streams.keys()))
-            return [self._streams[k].get_behavior_list() for k in ks]
-        else:
-            raise Exception("Inconsisten behaviors across streams")
-
-    def _validate_stream(self):
-        for _,stream in self._streams.items():
-            if stream.validate_epoch():
-                continue
-            else:
-                return False
-
     def add_behavior(self, name, keybind):
         for _, stream in self._streams.items():
             stream.add_behavior(name, keybind)
@@ -802,15 +803,23 @@ class Annotation(QtCore.QObject):
         self._behav_color.clear()
         behaviors = self.get_behaviors()
         behavior_names = [i.name for i in behaviors[0]]
-        non_blank_behaviors = [name for name in behavior_names if name not in ("other","blank")]
-        colors = distc.get_colors(len(non_blank_behaviors), exclude_colors=[(0.62,0.62,0.62),(1,1,1),(0,0,0)], n_attempts=500, pastel_factor=0.1,rng=rng)
+        non_blank_behaviors = [
+            name for name in behavior_names if name not in ("other", "blank")
+        ]
+        colors = distc.get_colors(
+            len(non_blank_behaviors),
+            exclude_colors=[(0.62, 0.62, 0.62), (1, 1, 1), (0, 0, 0)],
+            n_attempts=500,
+            pastel_factor=0.1,
+            rng=rng,
+        )
         i = 0
         for behav in behavior_names:
             if behav not in ("other", "blank"):
                 self._behav_color[behav] = QColor.fromRgbF(*colors[i])
-                i+=1
+                i += 1
             else:
-                self._behav_color[behav] = QColor.fromRgbF(0.62,0.62,0.62)
+                self._behav_color[behav] = QColor.fromRgbF(0.62, 0.62, 0.62)
         # Assign colors to the behavior objects for all the streams
         for _, stream in self._streams.items():
             stream.assign_color(self._behav_color)
@@ -834,10 +843,37 @@ class Annotation(QtCore.QObject):
             length = max(i.length, length)
         return length
 
+    def save_to_matfile(self, filename):
+        valid = self._validate_stream()
+        if not valid:
+            Warning(
+                "Annotation might contain blank, overlaping epoches, or repetitive epochs."
+            )
+        # Generate t x nstream vector, save stream vector into it
+        t = self.get_length()
+        vect = np.zeros((t, len(self._streams)))
+        stream_ids = []
+        i = 0
+        for id, stream in self._streams.items():
+            stream_ids.append(id)
+            vect[:, i] = stream.get_stream_vect()
+        behavior_dict = dict()
+        for behavior in self.get_behaviors()[0]:
+            behavior_dict[behavior.name] = behavior.ID
+        mat_file = {"annotation": dict()}
+        mat_file["annotation"]["stream_ID"] = stream_ids
+        mat_file["annotation"]["annotation"] = vect
+        mat_file["annotation"]["behaviors"] = behavior_dict
+        savemat(filename, mat_file)
+        self.saved_in_file.emit(f"Saved annotation to {filename} successfully!")
+        return True
+
     def save_to_file(self, filename, auto_save=False):
         valid = self._validate_stream()
         if not valid:
-            Warning("Annotation might contain blank, overlaping epoches, or repetitive epochs.")
+            Warning(
+                "Annotation might contain blank, overlaping epoches, or repetitive epochs."
+            )
         # try:
         with open(filename, "w") as f:
             f.write("Caltech Behavior Annotator - Annotation File\n")
