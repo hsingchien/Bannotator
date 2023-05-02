@@ -5,7 +5,6 @@ dist/
 build/
 *.spec
 bannotator.egg-info/
-*.txt
 *.DS_Store
 *.mat
 *.pdf
