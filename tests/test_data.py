@@ -117,6 +117,56 @@ def test_add_stream(small_annotation):
     assert len(new_stream.get_epochs()) == 1
     epoch = new_stream.get_epochs()[0]
     assert epoch.name == "other"
+    
+def test_delete_stream(small_annotation):
+    old_id = [s.ID for _,s in small_annotation.get_streams().items()]
+    small_annotation.delete_stream(2)
+    new_id = [s.ID for _,s in small_annotation.get_streams().items()]
+    assert 2 in old_id
+    assert 2 not in new_id
+    assert len(old_id) - len(new_id) == 1
+    
+    
+def test_edit_behavior(small_annotation):
+    streams = small_annotation.get_streams()
+    # Change a middle frame of 'other' epoch to attack
+    # The rest of this epoch should form a new epoch, positioned 3rd in the list
+    epochs_1 = streams[1].get_epochs()
+    assert len(epochs_1) == 3
+    streams[1].set_behavior(400,"a")
+    assert len(epochs_1) == 4
+    assert verify_epochs(epochs_1, True)
+    assert epochs_1[2].name == "attack"
+    assert epochs_1[2].start == 401
+    assert epochs_1[2].end == 589
+    assert epochs_1[1].end == 400
+    # Change a middle frame of an epoch and causing automatic merging with the next epoch
+    # There should not be any new epochs
+    epochs_2 = streams[2].get_epochs()
+    assert len(epochs_2) == 4
+    streams[2].set_behavior(453, "o")
+    assert len(epochs_2) == 4
+    assert epochs_2[3].start == 454
+    assert epochs_2[3].end == 598
+    assert epochs_2[3].name == "other"
+    assert epochs_2[2].end == 453
+    assert epochs_2[2].name == "general-sniffing"
+    assert verify_epochs(epochs_2,True)
+    # Change behavior at the beginning of an epoch and not causing any merge
+    epochs_3 = streams[3].get_epochs()
+    assert len(epochs_3) == 3
+    streams[3].set_behavior(0, "c")
+    assert epochs_3[0].name == "climb"
+    assert epochs_3[0].start == 1
+    assert epochs_3[0].end == 375
+    assert verify_epochs(epochs_3, True)
+    # Change behavior at the first frame of an epoch and causing merge on both sides
+    streams[2].set_behavior(448,"o")
+    assert len(epochs_2) == 2
+    assert epochs_2[1].name == "other"
+    assert epochs_2[1].start == 306
+    assert epochs_2[1].end == 598
+    assert verify_epochs(epochs_2, True)
         
 def verify_epochs(epochs, continuous = False):
     epochs.sort(reverse=False)
