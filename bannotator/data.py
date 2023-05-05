@@ -857,6 +857,7 @@ class Annotation(QtCore.QObject):
         for id, stream in self._streams.items():
             stream_ids.append(id)
             vect[:, i] = stream.get_stream_vect()
+            i+=1
         behavior_dict = dict()
         for behavior in self.get_behaviors()[0]:
             behavior_dict[behavior.name] = behavior.ID
