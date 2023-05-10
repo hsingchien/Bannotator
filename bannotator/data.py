@@ -483,6 +483,7 @@ class Stream(QtCore.QObject):
             self._epochs.append(epoch)
             self._behaviors[behav_name].append_epoch(epoch)
         self._length = self.get_length()
+
         validation = self.validate_epoch()
         if not validation:
             raise ValueError("Invalid annotation. See console for more info!")
@@ -728,7 +729,7 @@ class Annotation(QtCore.QObject):
                         annots[current_anno] = []
                 elif in_config:
                     config.append(k.strip())
-                elif current_anno and "----" not in k:
+                elif current_anno is not None and "----" not in k:
                     annots[current_anno].append(k.strip())
         success = self._construct_streams(config, annots)
         if success:
