@@ -1,5 +1,5 @@
 from bannotator.mainwindow import MainWindow
-import sys
+import sys, os
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 
@@ -13,6 +13,7 @@ def main():
     mainwindow.show()
     print("Happy annotating!")
     app.exec()
+
 
 if __name__ == "__main__":
     main()

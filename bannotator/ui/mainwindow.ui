@@ -291,7 +291,7 @@ QSlider::handle:horizontal {
      <x>0</x>
      <y>0</y>
      <width>1366</width>
-     <height>22</height>
+     <height>37</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuVideo">
@@ -784,7 +784,7 @@ QSlider::handle:horizontal {
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../resource/resource.qrc"/>
+  <include location="../resources/resource.qrc"/>
  </resources>
  <connections/>
 </ui>
