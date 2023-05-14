@@ -554,7 +554,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         for i, n in enumerate(ns):
             fake_config.append(" ".join([n, ks[i]]))
         annotation._construct_streams(fake_config, fake_annots)
-        annotation.assign_behavior_color()
+        annotation.assign_behavior_color(12)
         self.state["annot"] = annotation
         self._dialog_state = False
         return True
@@ -580,7 +580,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             annotation.set_length(self._videos[0].num_frame())
         else:
             annotation.set_length(self.video_slider.maximum())
-        annotation.assign_behavior_color()
+        annotation.assign_behavior_color(12)
         self.state["annot"] = annotation
 
     def _setup_annotation_widgets(self):
@@ -1075,109 +1075,116 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         return True
 
     def eventFilter(self, obj, event):
-        if event.type() != QEvent.KeyPress:
-            return super().eventFilter(obj, event)
-        if self._editing_state():
-            return False
-        if event.key() in range(Qt.Key_A, Qt.Key_Z + 1):
-            # Alphabets
-            self._change_current_behavior(event.text().lower())
-        if event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
-            # Numbers
-            try:
-                self._assign_current_stream(event.key())
-            except Exception:
-                pass
-        elif event.key() == Qt.Key_QuoteLeft:
-            # ` key, rotate current stream
-            # Find where the current stream is
-            try:
-                current_stream_id = self.state["current_stream"].ID
-                skeys = sorted(list(self.state["annot"].get_streams().keys()))
-                for i in range(len(skeys)):
-                    if skeys[i] == current_stream_id:
-                        break
-                if i == len(skeys) - 1:
-                    i = -1
-                i += 50
-                self._assign_current_stream(i)
-            except:
-                pass
+        # if event.type() != QEvent.KeyPress:
+        #     return super().eventFilter(obj, event)
+        if event.type() == QEvent.KeyPress:
+            if self._editing_state():
+                return False
+            if event.key() in range(Qt.Key_A, Qt.Key_Z + 1):
+                # Alphabets
+                self._change_current_behavior(event.text().lower())
+            if event.key() in range(Qt.Key_0, Qt.Key_9 + 1):
+                # Numbers
+                try:
+                    self._assign_current_stream(event.key())
+                except Exception:
+                    pass
+            elif event.key() == Qt.Key_QuoteLeft:
+                # ` key, rotate current stream
+                # Find where the current stream is
+                try:
+                    current_stream_id = self.state["current_stream"].ID
+                    skeys = sorted(list(self.state["annot"].get_streams().keys()))
+                    for i in range(len(skeys)):
+                        if skeys[i] == current_stream_id:
+                            break
+                    if i == len(skeys) - 1:
+                        i = -1
+                    i += 50
+                    self._assign_current_stream(i)
+                except:
+                    pass
 
-        elif event.key() == Qt.Key_Minus and event.modifiers() != Qt.ControlModifier:
-            # - key, move to the previous cut point
-            try:
-                current_stream = self.state["current_stream"]
-                current_frame = self.state["current_frame"]
-                current_epoch = current_stream.get_epoch_by_idx(current_frame)
-                if current_frame != (current_epoch.start - 1):
-                    # Move to the start of the current epoch
-                    self.state["current_frame"] = current_epoch.start - 1
-                else:
-                    # Move to the start of the previous epoch
-                    previous_epoch = current_stream.get_epoch_by_idx(current_frame - 1)
-                    self.state["current_frame"] = previous_epoch.start - 1
-            except Exception:
-                pass
-        elif event.key() == Qt.Key_Minus and event.modifiers() == Qt.ControlModifier:
-            try:
-                current_stream = self.state["current_stream"]
-                current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
-                current_behav_epoch_table.model().jump_to_prev(
-                    self.state["current_frame"]
-                )
-            except Exception:
-                pass
-        elif event.key() == Qt.Key_Equal and event.modifiers() != Qt.ControlModifier:
-            # = key, move to next end
-            try:
-                current_stream = self.state["current_stream"]
-                current_frame = self.state["current_frame"]
-                current_epoch = current_stream.get_epoch_by_idx(current_frame)
-                if current_frame != (current_epoch.end):
-                    # Move to the start of the current epoch
-                    self.state["current_frame"] = current_epoch.end
-                else:
-                    # Move to the end of the next epoch
-                    next_epoch = current_stream.get_epoch_by_idx(current_frame + 1)
-                    self.state["current_frame"] = next_epoch.end
-            except Exception:
-                pass
-        elif event.key() == Qt.Key_Equal and event.modifiers() == Qt.ControlModifier:
-            try:
-                current_stream = self.state["current_stream"]
-                current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
-                current_behav_epoch_table.model().jump_to_next(
-                    self.state["current_frame"]
-                )
-            except Exception:
-                pass
+            elif event.key() == Qt.Key_Minus and event.modifiers() != Qt.ControlModifier:
+                # - key, move to the previous cut point
+                try:
+                    current_stream = self.state["current_stream"]
+                    current_frame = self.state["current_frame"]
+                    current_epoch = current_stream.get_epoch_by_idx(current_frame)
+                    if current_frame != (current_epoch.start - 1):
+                        # Move to the start of the current epoch
+                        self.state["current_frame"] = current_epoch.start - 1
+                    else:
+                        # Move to the start of the previous epoch
+                        previous_epoch = current_stream.get_epoch_by_idx(current_frame - 1)
+                        self.state["current_frame"] = previous_epoch.start - 1
+                except Exception:
+                    pass
+            elif event.key() == Qt.Key_Minus and event.modifiers() == Qt.ControlModifier:
+                try:
+                    current_stream = self.state["current_stream"]
+                    current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
+                    current_behav_epoch_table.model().jump_to_prev(
+                        self.state["current_frame"]
+                    )
+                except Exception:
+                    pass
+            elif event.key() == Qt.Key_Equal and event.modifiers() != Qt.ControlModifier:
+                # = key, move to next end
+                try:
+                    current_stream = self.state["current_stream"]
+                    current_frame = self.state["current_frame"]
+                    current_epoch = current_stream.get_epoch_by_idx(current_frame)
+                    if current_frame != (current_epoch.end):
+                        # Move to the start of the current epoch
+                        self.state["current_frame"] = current_epoch.end
+                    else:
+                        # Move to the end of the next epoch
+                        next_epoch = current_stream.get_epoch_by_idx(current_frame + 1)
+                        self.state["current_frame"] = next_epoch.end
+                except Exception:
+                    pass
+            elif event.key() == Qt.Key_Equal and event.modifiers() == Qt.ControlModifier:
+                try:
+                    current_stream = self.state["current_stream"]
+                    current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
+                    current_behav_epoch_table.model().jump_to_next(
+                        self.state["current_frame"]
+                    )
+                except Exception:
+                    pass
 
-        elif event.key() == Qt.Key_Space:
-            # Spacebar, toggle play/pause
-            try:
-                if not self._play_timer.isActive():
-                    self._play_video()
-                else:
-                    self._play_timer.stop()
-            except:
-                pass
-        elif event.key() == Qt.Key_Up:
-            # UP key, up the playspeed by 1 step
-            self.speed_doubleSpinBox.stepBy(1)
-        elif event.key() == Qt.Key_Down:
-            # DOWN key, down the playspeed by 1 step
-            self.speed_doubleSpinBox.stepBy(-1)
-        elif event.key() == Qt.Key_Left:
-            # LEFT key, previous 1 frame
-            self.state["current_frame"] = max(self.state["current_frame"] - 1, 0)
-        elif event.key() == Qt.Key_Right:
-            # RIGHT key, next 1 frame
-            self.state["current_frame"] = min(
-                self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
-            )
-        else:
-            return super().eventFilter(obj, event)
+            elif event.key() == Qt.Key_Space:
+                # Spacebar, toggle play/pause
+                try:
+                    if not self._play_timer.isActive():
+                        self._play_video()
+                    else:
+                        self._play_timer.stop()
+                except:
+                    pass
+            elif event.key() == Qt.Key_Up:
+                # UP key, up the playspeed by 1 step
+                self.speed_doubleSpinBox.stepBy(1)
+            elif event.key() == Qt.Key_Down:
+                # DOWN key, down the playspeed by 1 step
+                self.speed_doubleSpinBox.stepBy(-1)
+            elif event.key() == Qt.Key_Left:
+                # LEFT key, previous 1 frame
+                self.state["current_frame"] = max(self.state["current_frame"] - 1, 0)
+            elif event.key() == Qt.Key_Right:
+                # RIGHT key, next 1 frame
+                self.state["current_frame"] = min(
+                    self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
+                )
+            else:
+                return super().eventFilter(obj, event)
+        elif event.type() == QEvent.KeyRelease:
+            if event.key() == Qt.Key_Right:
+
+
+            if event.key() == Qt.Key_Left:
+                
         # Stop propagation
         return True
 
