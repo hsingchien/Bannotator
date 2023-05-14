@@ -69,6 +69,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self._update_gui_timer = QTimer(self)
         self._update_gui_timer.timeout.connect(lambda: self._update_gui(["gui"]))
         self._update_gui_timer.start(33)
+        self._key_hold_monitor = QTimer(self)
+        self._key_hold_monitor.setSingleShot(True)
+
         # Set up pushbuttons, spinboxes and other interactable widgets
         self.play_button.clicked.connect(self._play_video)
         self.pause_button.clicked.connect(self._play_timer.stop)
@@ -806,13 +809,15 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         else:
             return False
 
-    def _play_video(self):
+    def _play_video(self, play_speed=None):
+        if play_speed is None:
+            play_speed = self.state["play_speed"]
         # Start play timer based on the value of play speed
-        if abs(self.state["play_speed"] - 0.00) > 2.0001:
+        if abs(play_speed - 0.00) > 2.0001:
             # If playspeed faster than 2.0, then play timer timeout at original FPS
             # Speeding up video by skipping frames
             self._play_timer.start(self.state["FPS"])
-        elif abs(self.state["play_speed"] - 0.00) > 0.0001:
+        elif abs(play_speed - 0.00) > 0.0001:
             # If playspeed slower than 2.0, speeding up by speeding up timer without skipping frames
             self._play_timer.start(
                 1000 / (self.state["FPS"] * abs(self.state["play_speed"]))
@@ -1075,8 +1080,6 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         return True
 
     def eventFilter(self, obj, event):
-        # if event.type() != QEvent.KeyPress:
-        #     return super().eventFilter(obj, event)
         if event.type() == QEvent.KeyPress:
             if self._editing_state():
                 return False
@@ -1172,19 +1175,34 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             elif event.key() == Qt.Key_Left:
                 # LEFT key, previous 1 frame
                 self.state["current_frame"] = max(self.state["current_frame"] - 1, 0)
+                self._key_hold_monitor.timeout.connect(lambda: self._play_video(-1))
+                self._key_hold_monitor.start(100)
             elif event.key() == Qt.Key_Right:
                 # RIGHT key, next 1 frame
                 self.state["current_frame"] = min(
                     self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
                 )
+                self._key_hold_monitor.timeout.connect(lambda: self._play_video(1))
+                self._key_hold_monitor.start(100)
             else:
                 return super().eventFilter(obj, event)
         elif event.type() == QEvent.KeyRelease:
-            if event.key() == Qt.Key_Right:
-
-
+            if self._editing_state():
+                return False
             if event.key() == Qt.Key_Left:
-                
+                self._key_hold_monitor.stop()
+                self._play_timer.stop()
+                # self._key_hold_monitor.timeout.disconnect()
+            if event.key() == Qt.Key_Right:
+                self._key_hold_monitor.stop()
+                self._play_timer.stop()
+                # self._key_hold_monitor.timeout.disconnect()
+            else:
+                return super().eventFilter(obj, event)
+            self._key_hold_monitor.timeout.disconnect()
+            # print(self._key_hold_monitor.receivers())
+        else:
+            return super().eventFilter(obj, event)
         # Stop propagation
         return True
 
