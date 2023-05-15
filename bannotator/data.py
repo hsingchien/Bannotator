@@ -686,7 +686,7 @@ class Annotation(QtCore.QObject):
                     config.append(k.strip())
         # Construct empty streams
         for i in range(n_streams):
-            self._streams[i] = Stream(ID=i, epochs=[], behaviors={})
+            self._streams[i] = Stream(ID=i+1, epochs=[], behaviors={})
             self._streams[i].construct_behavior_from_config(config)
             self._streams[i].data_changed.connect(self.streams_changed)
             self._streams[i].color_changed.connect(self.streams_changed)
