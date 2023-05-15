@@ -809,9 +809,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         else:
             return False
 
-    def _play_video(self, play_speed=None):
-        if play_speed is None:
-            play_speed = self.state["play_speed"]
+    def _play_video(self):
+        play_speed = self.state["play_speed"]
         # Start play timer based on the value of play speed
         if abs(play_speed - 0.00) > 2.0001:
             # If playspeed faster than 2.0, then play timer timeout at original FPS
@@ -819,9 +818,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self._play_timer.start(self.state["FPS"])
         elif abs(play_speed - 0.00) > 0.0001:
             # If playspeed slower than 2.0, speeding up by speeding up timer without skipping frames
-            self._play_timer.start(
-                1000 / (self.state["FPS"] * abs(self.state["play_speed"]))
-            )
+            self._play_timer.start(1000 / (self.state["FPS"] * abs(play_speed)))
         else:
             # If playspeed is 0, stop the play timer
             self._play_timer.stop()
@@ -1108,7 +1105,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 except:
                     pass
 
-            elif event.key() == Qt.Key_Minus and event.modifiers() != Qt.ControlModifier:
+            elif (
+                event.key() == Qt.Key_Minus and event.modifiers() != Qt.ControlModifier
+            ):
                 # - key, move to the previous cut point
                 try:
                     current_stream = self.state["current_stream"]
@@ -1119,20 +1118,28 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                         self.state["current_frame"] = current_epoch.start - 1
                     else:
                         # Move to the start of the previous epoch
-                        previous_epoch = current_stream.get_epoch_by_idx(current_frame - 1)
+                        previous_epoch = current_stream.get_epoch_by_idx(
+                            current_frame - 1
+                        )
                         self.state["current_frame"] = previous_epoch.start - 1
                 except Exception:
                     pass
-            elif event.key() == Qt.Key_Minus and event.modifiers() == Qt.ControlModifier:
+            elif (
+                event.key() == Qt.Key_Minus and event.modifiers() == Qt.ControlModifier
+            ):
                 try:
                     current_stream = self.state["current_stream"]
-                    current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
+                    current_behav_epoch_table = self._behav_epoch_tables[
+                        current_stream.ID
+                    ]
                     current_behav_epoch_table.model().jump_to_prev(
                         self.state["current_frame"]
                     )
                 except Exception:
                     pass
-            elif event.key() == Qt.Key_Equal and event.modifiers() != Qt.ControlModifier:
+            elif (
+                event.key() == Qt.Key_Equal and event.modifiers() != Qt.ControlModifier
+            ):
                 # = key, move to next end
                 try:
                     current_stream = self.state["current_stream"]
@@ -1147,10 +1154,14 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                         self.state["current_frame"] = next_epoch.end
                 except Exception:
                     pass
-            elif event.key() == Qt.Key_Equal and event.modifiers() == Qt.ControlModifier:
+            elif (
+                event.key() == Qt.Key_Equal and event.modifiers() == Qt.ControlModifier
+            ):
                 try:
                     current_stream = self.state["current_stream"]
-                    current_behav_epoch_table = self._behav_epoch_tables[current_stream.ID]
+                    current_behav_epoch_table = self._behav_epoch_tables[
+                        current_stream.ID
+                    ]
                     current_behav_epoch_table.model().jump_to_next(
                         self.state["current_frame"]
                     )
@@ -1175,14 +1186,16 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             elif event.key() == Qt.Key_Left:
                 # LEFT key, previous 1 frame
                 self.state["current_frame"] = max(self.state["current_frame"] - 1, 0)
-                self._key_hold_monitor.timeout.connect(lambda: self._play_video(-1))
+                self.state["play_speed"] = -1.0
+                self._key_hold_monitor.timeout.connect(lambda: self._play_video())
                 self._key_hold_monitor.start(100)
             elif event.key() == Qt.Key_Right:
                 # RIGHT key, next 1 frame
                 self.state["current_frame"] = min(
                     self.state["current_frame"] + 1, self.curframe_spinBox.maximum()
                 )
-                self._key_hold_monitor.timeout.connect(lambda: self._play_video(1))
+                self.state["play_speed"] = 1.0
+                self._key_hold_monitor.timeout.connect(lambda: self._play_video())
                 self._key_hold_monitor.start(100)
             else:
                 return super().eventFilter(obj, event)
@@ -1192,15 +1205,15 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if event.key() == Qt.Key_Left:
                 self._key_hold_monitor.stop()
                 self._play_timer.stop()
-                # self._key_hold_monitor.timeout.disconnect()
-            if event.key() == Qt.Key_Right:
+                self.state["play_speed"] = self.speed_doubleSpinBox.value()
+                self._key_hold_monitor.timeout.disconnect()
+            elif event.key() == Qt.Key_Right:
                 self._key_hold_monitor.stop()
                 self._play_timer.stop()
-                # self._key_hold_monitor.timeout.disconnect()
+                self.state["play_speed"] = self.speed_doubleSpinBox.value()
+                self._key_hold_monitor.timeout.disconnect()
             else:
                 return super().eventFilter(obj, event)
-            self._key_hold_monitor.timeout.disconnect()
-            # print(self._key_hold_monitor.receivers())
         else:
             return super().eventFilter(obj, event)
         # Stop propagation
