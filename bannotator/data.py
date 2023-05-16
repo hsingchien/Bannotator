@@ -3,7 +3,8 @@ from PySide6 import QtCore
 from typing import List, Dict
 import re
 import numpy as np
-from scipy.io import savemat
+from scipy.io import savemat, loadmat
+import pandas as pd
 import distinctipy as distc
 
 
@@ -926,3 +927,23 @@ class Annotation(QtCore.QObject):
 
     def get_file_path(self):
         return self._file_path
+
+class NeuralRecording(QtCore.QObject):
+    def __init__(self, data=None):
+        super().__init__()
+        self._data = data
+    
+    def load_from_file(self, file_path):
+        # Determine the file type and use the correct loading function
+        file_type = file_path.split(".")[-1]
+        if file_type == "csv":
+            self._data = pd.read_csv(file_path)
+        elif file_path == "json":
+            self._data = pd.read_json(file_path)
+        elif file_path == "mat":
+            self._data = loadmat(file_path)
+    
+    def avg_trace(self):
+        pass
+
+    
