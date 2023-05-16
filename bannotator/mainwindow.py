@@ -24,6 +24,7 @@ from bannotator.dataview import (
 import bannotator.dialog as dialog
 from bannotator.widgets import TrackBar, BehavVideoView, BehavLabel, AnnotatorMainWindow
 from bannotator.ui.ui_mainwindow import Ui_MainWindow
+from bannotator.neuralwindow import NeuralWindow
 
 
 class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
@@ -55,6 +56,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self._epoch_tables = dict()
         # Key = ID, item = behavior epoch table model
         self._behav_epoch_tables = dict()
+
+        # Initialize a neural window
+        self.neural_window = NeuralWindow(state=self.state)
 
         # Group video viewers into list
         self._video_views = [self.vid1_view]
@@ -123,9 +127,12 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionEpoch_table.toggled.connect(
             lambda: self._update_gui(["view_options"])
         )
+        self.actionNeural_window.toggled.connect(lambda: self._update_gui(["view_options"]))
+
         self.behav_table_dock.closed.connect(self.actionBehavior_table.setChecked)
         self.epoch_dock.closed.connect(self.actionEpoch_table.setChecked)
         self.tracks_dock.closed.connect(self.actionFull_annotation.setChecked)
+        self.neural_window.closed.connect(self.actionNeural_window.setChecked)
 
         self.actionTrack_epoch.toggled.connect(
             lambda: self._update_gui(["view_options"])
@@ -286,6 +293,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             self.behav_table_dock.setVisible(self.actionBehavior_table.isChecked())
             self.epoch_dock.setVisible(self.actionEpoch_table.isChecked())
             self.tracks_dock.setVisible(self.actionFull_annotation.isChecked())
+            self.neural_window.setVisible(self.actionNeural_window.isChecked())
             # Set the epoch tracking state
             if self.actionTrack_epoch.isChecked() and self._epoch_tables:
                 for ID, stream in self.state["annot"].get_streams().items():

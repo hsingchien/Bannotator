@@ -1,10 +1,7 @@
 from PySide6.QtWidgets import (
     QMainWindow,
     QDoubleSpinBox,
-    QTabWidget,
     QWidget,
-    QStyleOptionTabWidgetFrame,
-    QStackedLayout,
     QSlider,
     QGraphicsPixmapItem,
     QGraphicsView,
@@ -12,8 +9,8 @@ from PySide6.QtWidgets import (
     QDockWidget,
     QLabel,
 )
-from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont, QFontDatabase
-from PySide6.QtCore import Slot, QSize, Qt, Signal, QRect
+from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont
+from PySide6.QtCore import Slot, Qt, Signal, QRect
 import numpy as np
 from typing import Dict
 
