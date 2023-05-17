@@ -7,6 +7,7 @@ from scipy.io import savemat, loadmat
 from scipy.stats import zscore
 import pandas as pd
 import distinctipy as distc
+from sklearn.cluster import KMeans
 
 
 class Epoch(object):
@@ -688,7 +689,7 @@ class Annotation(QtCore.QObject):
                     config.append(k.strip())
         # Construct empty streams
         for i in range(n_streams):
-            self._streams[i] = Stream(ID=i+1, epochs=[], behaviors={})
+            self._streams[i] = Stream(ID=i + 1, epochs=[], behaviors={})
             self._streams[i].construct_behavior_from_config(config)
             self._streams[i].data_changed.connect(self.streams_changed)
             self._streams[i].color_changed.connect(self.streams_changed)
@@ -860,7 +861,7 @@ class Annotation(QtCore.QObject):
         for id, stream in self._streams.items():
             stream_ids.append(id)
             vect[:, i] = stream.get_stream_vect()
-            i+=1
+            i += 1
         behavior_dict = dict()
         for behavior in self.get_behaviors()[0]:
             behavior_dict[behavior.name] = behavior.ID
@@ -929,6 +930,7 @@ class Annotation(QtCore.QObject):
     def get_file_path(self):
         return self._file_path
 
+
 class NeuralRecording(QtCore.QObject):
     def __init__(self, data=None):
         super().__init__()
@@ -943,39 +945,46 @@ class NeuralRecording(QtCore.QObject):
     @data.setter
     def data(self, new_data: pd.DataFrame = None):
         self._data = new_data
-    
+
     @property
     def shape(self):
         return self._data.shape
-   
+
     def load_from_file(self, file_path):
         # Determine the file type and use the correct loading function
         file_type = file_path.split(".")[-1]
         if file_type == "csv":
             raw_data = pd.read_csv(file_path)
             raw_data.reset_index()
-            z_data = raw_data.apply(zscore,axis=0)
+            z_data = raw_data.apply(zscore, axis=0)
             self._data = z_data
 
         elif file_path == "json":
             self._data = pd.read_json(file_path)
         elif file_path == "mat":
             self._data = loadmat(file_path)
-        
-    
+
     def avg_trace(self):
         pass
 
     def add_space(self):
         data_copy = self._data.copy()
-        for mul,i in enumerate(data_copy):
+        for mul, i in enumerate(data_copy):
             data_copy[i] = self.space * mul + data_copy[i]
         return data_copy
-    
-    def update_space(self,value):
+
+    def update_space(self, value):
         self.space = value
 
+    def cluster(self):
+        k = 5
+        kmeans = KMeans(n_clusters=k)
+        data_val = self._data.values
+        kmeans.fit(data_val.T)
 
+        # Get cluster labels
+        labels = kmeans.labels_
 
-
-    
+        # Reorder columns based on cluster labels
+        data_reordered = self._data.iloc[:, labels.argsort()]
+        self._data = data_reordered

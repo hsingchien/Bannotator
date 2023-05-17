@@ -27,6 +27,7 @@ class NeuralWindow(QMainWindow, Ui_NeuralWindow):
         self.space_spinbox.valueChanged.connect(self._update_space)
         self.full_trace_push_button.toggled.connect(self._set_viewbox)
         self.full_trace_push_button.toggled.connect(self._set_view_button_text)
+        self.cluster_button.clicked.connect(self._cluster_neural)
         # Connect state
         self.state.connect("current_frame", self._set_frame_stick)
         self.state.connect("slider_box", self._set_viewbox)
@@ -92,3 +93,9 @@ class NeuralWindow(QMainWindow, Ui_NeuralWindow):
             self.full_trace_push_button.setText("Window")
         else:
             self.full_trace_push_button.setText("Full trace")
+
+    def _cluster_neural(self):
+        current_stream_id = int(self.trace_stream_combobox.currentText())
+        nrecord = self.neural_records[current_stream_id]
+        nrecord.cluster()
+        self.trace_view.set_data(current_stream_id, nrecord.data)

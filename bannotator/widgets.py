@@ -443,44 +443,50 @@ class AnnotatorMainWindow(QMainWindow):
 
 class TraceAxis(pq.PlotWidget):
     def __init__(self, *arg, **kwarg):
-        super().__init__(background="white", *arg, **kwarg)
+        super().__init__(background="white", useOpenGL=True * arg, **kwarg)
         self.enableAutoRange(axis="y")
         self.disableAutoRange(axis="x")
         self.getPlotItem().showAxis("left", show=False)
         self._data_items = dict()
-        self._data_item = pq.PlotDataItem()
         self._frame_stick_item = pq.InfiniteLine(angle=90, pos=0, pen="black")
+        self.addItem(self._frame_stick_item)
         self.getPlotItem().setMouseEnabled(x=False, y=True)
 
     def set_data(self, id, new_data):
         # Regenerate curve items for specified stream
-        self.clear()
         X = np.arange(new_data.shape[0])
         Y = np.transpose(new_data.to_numpy())
         # _data_items is a dict saving a list of curves for each stream
+        if self._data_items.get(id):
+            for item in self._data_items[id]:
+                self.getPlotItem().removeItem(item)
+            self._data_items[id].clear()
+
         self._data_items[id] = self.getPlotItem().multiDataPlot(
             x=X, y=Y, constKwargs={"pen": "#666666"}
         )
-        self.addItem(self._frame_stick_item)
+
         # Set axis
         self.getPlotItem().setLimits(xMin=0, xMax=new_data.shape[0])
-        self.setXRange(0,new_data.shape[0])
+        self.setXRange(0, new_data.shape[0])
 
     def refresh_plot(self, id: str):
         # Refresh plot to specified stream
         id = int(id)
-        self.clear()
+        invisible_ids = [i for i in self._data_items.keys() if i != id]
+        for invisible_id in invisible_ids:
+            for curve in self._data_items.get(invisible_id):
+                curve.setVisible(False)
         curves = self._data_items.get(id)
         if curves:
             for curve in curves:
-                self.addItem(curve)
-        self.addItem(self._frame_stick_item)
+                # self.addItem(curve)
+                curve.setVisible(True)
+
+        # self.addItem(self._frame_stick_item)
 
     def update_frame_stick(self, frame):
         self._frame_stick_item.setValue(frame)
 
     def set_view_box(self):
-        pass
-
-    def switch_trace(self, key):
         pass

@@ -57,10 +57,10 @@ class Ui_NeuralWindow(object):
 
         self.horizontalLayout.addWidget(self.reset_recording)
 
-        self.pushButton_2 = QPushButton(self.centralwidget)
-        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.cluster_button = QPushButton(self.centralwidget)
+        self.cluster_button.setObjectName(u"cluster_button")
 
-        self.horizontalLayout.addWidget(self.pushButton_2)
+        self.horizontalLayout.addWidget(self.cluster_button)
 
         self.full_trace_push_button = QPushButton(self.centralwidget)
         self.full_trace_push_button.setObjectName(u"full_trace_push_button")
@@ -137,7 +137,7 @@ class Ui_NeuralWindow(object):
         self.label.setText(QCoreApplication.translate("NeuralWindow", u"Stream", None))
         self.import_recording.setText(QCoreApplication.translate("NeuralWindow", u"Import", None))
         self.reset_recording.setText(QCoreApplication.translate("NeuralWindow", u"Reset", None))
-        self.pushButton_2.setText(QCoreApplication.translate("NeuralWindow", u"Sort/Cluster", None))
+        self.cluster_button.setText(QCoreApplication.translate("NeuralWindow", u"Sort/Cluster", None))
         self.full_trace_push_button.setText(QCoreApplication.translate("NeuralWindow", u"Full trace", None))
         self.label_2.setText(QCoreApplication.translate("NeuralWindow", u"Space", None))
         self.behavior_groupbox.setTitle(QCoreApplication.translate("NeuralWindow", u"Behaviors", None))
