@@ -259,6 +259,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.state["video_layout"] != "Grid":
                 for view in self._video_views:
                     self.video_layout.setStretchFactor(view, 1)
+            # Update neural window 
+            self.neural_window.update_streams()
 
         if "video_layout" in topics:
             # Convert video layout
@@ -1257,6 +1259,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if reply == QMessageBox.Yes:
             for video in self._videos:
                 video.stop_worker()
+            self.neural_window.close()
             event.accept()
         else:
             event.ignore()

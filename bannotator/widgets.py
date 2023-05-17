@@ -11,7 +11,9 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont
 from PySide6.QtCore import Slot, Qt, Signal, QRect
+import pandas as pd
 import numpy as np
+import pyqtgraph as pq
 from typing import Dict
 
 
@@ -47,10 +49,11 @@ class PlaySpeedSpinBox(QDoubleSpinBox):
             return super().stepBy(steps * self._step_ratio)
         else:
             return super().stepBy(steps)
-    
+
     def _verify_value(self, val):
         if val > self._cutoff_high or val < self._cutoff_low:
             self.setValue(round(val))
+
 
 class VideoSlider(QSlider):
     @Slot(int, int)
@@ -165,7 +168,7 @@ class TrackBar(QWidget):
         color_dict: Dict = None,
         frame_mark: int = None,
         slider_box=[],
-        min_height = 8,
+        min_height=8,
         use_pixmap=False,
         full_track_flag=False,
         parent=None,
@@ -359,6 +362,7 @@ class DockWidget(QDockWidget):
         super().closeEvent(event)
         self.closed.emit(False)
 
+
 class BehavVideoView(QGraphicsView):
     frame_updated = Signal()
 
@@ -435,3 +439,48 @@ class AnnotatorMainWindow(QMainWindow):
         self.setCorner(Qt.TopRightCorner, Qt.RightDockWidgetArea)
         self.setCorner(Qt.BottomLeftCorner, Qt.LeftDockWidgetArea)
         self.setCorner(Qt.BottomRightCorner, Qt.RightDockWidgetArea)
+
+
+class TraceAxis(pq.PlotWidget):
+    def __init__(self, *arg, **kwarg):
+        super().__init__(background="white", *arg, **kwarg)
+        self.enableAutoRange(axis="y")
+        self.disableAutoRange(axis="x")
+        self.getPlotItem().showAxis("left", show=False)
+        self._data_items = dict()
+        self._data_item = pq.PlotDataItem()
+        self._frame_stick_item = pq.InfiniteLine(angle=90, pos=0, pen="black")
+        self.getPlotItem().setMouseEnabled(x=False, y=True)
+
+    def set_data(self, id, new_data):
+        # Regenerate curve items for specified stream
+        self.clear()
+        X = np.arange(new_data.shape[0])
+        Y = np.transpose(new_data.to_numpy())
+        # _data_items is a dict saving a list of curves for each stream
+        self._data_items[id] = self.getPlotItem().multiDataPlot(
+            x=X, y=Y, constKwargs={"pen": "#666666"}
+        )
+        self.addItem(self._frame_stick_item)
+        # Set axis
+        self.getPlotItem().setLimits(xMin=0, xMax=new_data.shape[0])
+        self.setXRange(0,new_data.shape[0])
+
+    def refresh_plot(self, id: str):
+        # Refresh plot to specified stream
+        id = int(id)
+        self.clear()
+        curves = self._data_items.get(id)
+        if curves:
+            for curve in curves:
+                self.addItem(curve)
+        self.addItem(self._frame_stick_item)
+
+    def update_frame_stick(self, frame):
+        self._frame_stick_item.setValue(frame)
+
+    def set_view_box(self):
+        pass
+
+    def switch_trace(self, key):
+        pass

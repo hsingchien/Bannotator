@@ -4,6 +4,7 @@ from typing import List, Dict
 import re
 import numpy as np
 from scipy.io import savemat, loadmat
+from scipy.stats import zscore
 import pandas as pd
 import distinctipy as distc
 
@@ -931,19 +932,50 @@ class Annotation(QtCore.QObject):
 class NeuralRecording(QtCore.QObject):
     def __init__(self, data=None):
         super().__init__()
+        # _data is a pandas DataFrame
         self._data = data
+        self.space = 6
+
+    @property
+    def data(self):
+        return self.add_space()
+
+    @data.setter
+    def data(self, new_data: pd.DataFrame = None):
+        self._data = new_data
     
+    @property
+    def shape(self):
+        return self._data.shape
+   
     def load_from_file(self, file_path):
         # Determine the file type and use the correct loading function
         file_type = file_path.split(".")[-1]
         if file_type == "csv":
-            self._data = pd.read_csv(file_path)
+            raw_data = pd.read_csv(file_path)
+            raw_data.reset_index()
+            z_data = raw_data.apply(zscore,axis=0)
+            self._data = z_data
+
         elif file_path == "json":
             self._data = pd.read_json(file_path)
         elif file_path == "mat":
             self._data = loadmat(file_path)
+        
     
     def avg_trace(self):
         pass
+
+    def add_space(self):
+        data_copy = self._data.copy()
+        for mul,i in enumerate(data_copy):
+            data_copy[i] = self.space * mul + data_copy[i]
+        return data_copy
+    
+    def update_space(self,value):
+        self.space = value
+
+
+
 
     

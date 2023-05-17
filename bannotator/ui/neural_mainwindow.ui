@@ -28,6 +28,20 @@
        <widget class="QComboBox" name="trace_stream_combobox"/>
       </item>
       <item>
+       <widget class="QPushButton" name="import_recording">
+        <property name="text">
+         <string>Import</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="reset_recording">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButton_2">
         <property name="text">
          <string>Sort/Cluster</string>
@@ -52,7 +66,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="spinBox"/>
+       <widget class="QSpinBox" name="space_spinbox">
+        <property name="value">
+         <number>2</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -61,10 +79,10 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout" stretch="10,1">
         <item>
-         <widget class="QGraphicsView" name="trace_view"/>
+         <widget class="TraceAxis" name="trace_view"/>
         </item>
         <item>
-         <widget class="QGraphicsView" name="avg_trace_view"/>
+         <widget class="TraceAxis" name="avg_trace_view"/>
         </item>
        </layout>
       </item>
@@ -73,31 +91,31 @@
         <property name="title">
          <string>Behaviors</string>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QScrollArea" name="behavior_scrollarea">
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>105</width>
+              <height>510</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>912</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFile">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionImportNeuralRecord"/>
-    <addaction name="actionResetNeuralRecording"/>
-   </widget>
-   <addaction name="menuFile"/>
-  </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionImportNeuralRecord">
    <property name="text">
     <string>Import neural recording</string>
@@ -109,6 +127,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TraceAxis</class>
+   <extends>QGraphicsView</extends>
+   <header>bannotator.widgets</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
