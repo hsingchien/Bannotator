@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QGraphicsItem,
     QDockWidget,
     QLabel,
+    QGraphicsItemGroup,
 )
 from PySide6.QtGui import QPainter, QPen, QPixmap, QColor, QFont
 from PySide6.QtCore import Slot, Qt, Signal, QRect
@@ -463,11 +464,16 @@ class TraceAxis(pq.PlotWidget):
             #     self.getPlotItem().removeItem(item)
             # self._data_items[id].clear()
             # self.getPlotItem().removeItem(self._data_items[id])
-            item_group = self._data_items[id]
-            for item_to_delete in item_group.childItems():
-                item_group.removeFromGroup(item_to_delete)
-                self.getPlotItem().removeItem(item_to_delete)
-                item_to_delete.deleteLater()
+            items = self._data_items[id]
+            if isinstance(items, QGraphicsItemGroup):
+                for item_to_delete in items.childItems():
+                    items.removeFromGroup(item_to_delete)
+                    self.getPlotItem().removeItem(item_to_delete)
+                    item_to_delete.deleteLater()
+            else:
+                self.getPlotItem().removeItem(items)
+                items.deleteLater()
+
         if Y.ndim > 1:
             curves = self.getPlotItem().multiDataPlot(
                 x=X, y=Y, constKwargs={"pen": "#666666"}
@@ -478,7 +484,7 @@ class TraceAxis(pq.PlotWidget):
         else:
             curve = self.plot(x=X, y=Y, pen="#666666")
             self._data_items[id] = curve
-        
+
         # Set axis
         self.getPlotItem().setLimits(xMin=0, xMax=new_data.shape[0])
         self.setXRange(0, new_data.shape[0])
