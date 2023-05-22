@@ -965,7 +965,7 @@ class NeuralRecording(QtCore.QObject):
             self._data = loadmat(file_path)
 
     def avg_trace(self):
-        pass
+        return self._data.mean(axis=1)
 
     def add_space(self):
         data_copy = self._data.copy()

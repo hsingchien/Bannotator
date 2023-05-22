@@ -6,6 +6,7 @@ from PySide6.QtWidgets import (
     QGraphicsPixmapItem,
     QGraphicsView,
     QGraphicsScene,
+    QGraphicsItem,
     QDockWidget,
     QLabel,
 )
@@ -458,14 +459,26 @@ class TraceAxis(pq.PlotWidget):
         Y = np.transpose(new_data.to_numpy())
         # _data_items is a dict saving a list of curves for each stream
         if self._data_items.get(id):
-            for item in self._data_items[id]:
-                self.getPlotItem().removeItem(item)
-            self._data_items[id].clear()
-
-        self._data_items[id] = self.getPlotItem().multiDataPlot(
-            x=X, y=Y, constKwargs={"pen": "#666666"}
-        )
-
+            # for item in self._data_items[id]:
+            #     self.getPlotItem().removeItem(item)
+            # self._data_items[id].clear()
+            # self.getPlotItem().removeItem(self._data_items[id])
+            item_group = self._data_items[id]
+            for item_to_delete in item_group.childItems():
+                item_group.removeFromGroup(item_to_delete)
+                self.getPlotItem().removeItem(item_to_delete)
+                item_to_delete.deleteLater()
+        if Y.ndim > 1:
+            curves = self.getPlotItem().multiDataPlot(
+                x=X, y=Y, constKwargs={"pen": "#666666"}
+            )
+            for curve in curves:
+                curve.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+                self._data_items[id] = self.scene().createItemGroup(curves)
+        else:
+            curve = self.plot(x=X, y=Y, pen="#666666")
+            self._data_items[id] = curve
+        
         # Set axis
         self.getPlotItem().setLimits(xMin=0, xMax=new_data.shape[0])
         self.setXRange(0, new_data.shape[0])
@@ -475,13 +488,10 @@ class TraceAxis(pq.PlotWidget):
         id = int(id)
         invisible_ids = [i for i in self._data_items.keys() if i != id]
         for invisible_id in invisible_ids:
-            for curve in self._data_items.get(invisible_id):
-                curve.setVisible(False)
+            self._data_items.get(invisible_id).setVisible(False)
         curves = self._data_items.get(id)
         if curves:
-            for curve in curves:
-                # self.addItem(curve)
-                curve.setVisible(True)
+            curves.setVisible(True)
 
         # self.addItem(self._frame_stick_item)
 

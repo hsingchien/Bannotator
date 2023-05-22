@@ -127,7 +127,9 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.actionEpoch_table.toggled.connect(
             lambda: self._update_gui(["view_options"])
         )
-        self.actionNeural_window.toggled.connect(lambda: self._update_gui(["view_options"]))
+        self.actionNeural_window.toggled.connect(
+            lambda: self._update_gui(["view_options"])
+        )
 
         self.behav_table_dock.closed.connect(self.actionBehavior_table.setChecked)
         self.epoch_dock.closed.connect(self.actionEpoch_table.setChecked)
@@ -259,8 +261,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.state["video_layout"] != "Grid":
                 for view in self._video_views:
                     self.video_layout.setStretchFactor(view, 1)
-            # Update neural window 
-            self.neural_window.update_streams()
+            # Update neural window
+            self.neural_window.update_stream_combobox()
 
         if "video_layout" in topics:
             # Convert video layout
