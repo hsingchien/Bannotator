@@ -7,7 +7,9 @@ path_to_app = os.path.join(path_to_file, "app.py")
 pc_path_to_icon = os.path.join(path_to_file, "resources", "icon.ico")
 mac_path_to_icon = os.path.join(path_to_file, "resources", "icon.icns")
 if platform.system() == "Windows":
-    subprocess.run(["pyinstaller", "--noconfirm", "-i", pc_path_to_icon, path_to_app])
+    subprocess.run(
+        ["pyinstaller", "--noconfirm", "--onefile", "-i", pc_path_to_icon, path_to_app]
+    )
 elif platform.system() == "Darwin":
     subprocess.run(
         [
