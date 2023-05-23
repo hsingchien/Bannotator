@@ -51,7 +51,7 @@ annotate-behavior
 
 ### GUI
 
-![Alt text](bannotator/resource/app_illustration.png)
+![Alt text](bannotator/resources/app_illustration.png)
 
 The GUI layout has 5 major areas.
 
@@ -77,7 +77,7 @@ The annotator is compatible with the format of annotation txt file of [Piotr's M
 
 If you do not have configuration files to start with, you can create an new annotation from scratch using `New annotaion` dialog in the `Annotation` menu. To enable this option you need to add a video first so that the annotator knows the length of the annotation.
 
-![Alt text](bannotator/resource/new_annotation_dialog.png)
+![Alt text](bannotator/resources/new_annotation_dialog.png)
 
 First, set the number of streams. In the text editor, input behavior - keystroke pair in each line, parsed by '-' or space. The dialog actively checks the input to ensure the behavior-keystroke pairs are unique. Once created, all the streams will be initialized with the first behavior in your list. Usually the first behavior label is reserved for the blank label of name "other" or "blank", which will be assigned grey color.
 
