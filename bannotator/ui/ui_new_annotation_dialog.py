@@ -24,6 +24,7 @@ class Ui_NewAnnotationDialog(object):
         if not NewAnnotationDialog.objectName():
             NewAnnotationDialog.setObjectName(u"NewAnnotationDialog")
         NewAnnotationDialog.resize(267, 417)
+        NewAnnotationDialog.setStyleSheet(u"QWidget { background-color: rgb(89, 89, 89); color: white }")
         self.verticalLayout = QVBoxLayout(NewAnnotationDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()
