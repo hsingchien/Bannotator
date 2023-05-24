@@ -686,7 +686,7 @@ class Annotation(QtCore.QObject):
                     config.append(k.strip())
         # Construct empty streams
         for i in range(n_streams):
-            self._streams[i] = Stream(ID=i+1, epochs=[], behaviors={})
+            self._streams[i] = Stream(ID=i + 1, epochs=[], behaviors={})
             self._streams[i].construct_behavior_from_config(config)
             self._streams[i].data_changed.connect(self.streams_changed)
             self._streams[i].color_changed.connect(self.streams_changed)
@@ -809,7 +809,7 @@ class Annotation(QtCore.QObject):
         ]
         colors = distc.get_colors(
             len(non_blank_behaviors),
-            exclude_colors=[(0.62, 0.62, 0.62), (1, 1, 1), (0, 0, 0)],
+            exclude_colors=[(0.47, 0.47, 0.47), (1, 1, 1), (0, 0, 0)],
             n_attempts=500,
             pastel_factor=0.1,
             rng=rng,
@@ -820,7 +820,7 @@ class Annotation(QtCore.QObject):
                 self._behav_color[behav] = QColor.fromRgbF(*colors[i])
                 i += 1
             else:
-                self._behav_color[behav] = QColor.fromRgbF(0.62, 0.62, 0.62)
+                self._behav_color[behav] = QColor.fromRgbF(0.47, 0.47, 0.47)
         # Assign colors to the behavior objects for all the streams
         for _, stream in self._streams.items():
             stream.assign_color(self._behav_color)
@@ -858,7 +858,7 @@ class Annotation(QtCore.QObject):
         for id, stream in self._streams.items():
             stream_ids.append(id)
             vect[:, i] = stream.get_stream_vect()
-            i+=1
+            i += 1
         behavior_dict = dict()
         for behavior in self.get_behaviors()[0]:
             behavior_dict[behavior.name] = behavior.ID

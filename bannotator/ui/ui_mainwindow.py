@@ -75,6 +75,21 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1366, 768)
+        MainWindow.setStyleSheet(
+            "QWidget { background-color: rgb(89, 89, 89); color: white }\n"
+            "QPushButton{background-color: rgb(124, 124, 124)}\n"
+            "QTabBar{background-color:rgb(184, 184, 184); color:rgb(89,89,89)}\n"
+            "QMenuBar::item:selected{background-color:rgb(140, 140, 140)}\n"
+            "QMenu::item:selected{background-color:rgb(140, 140, 140)}\n"
+            "QTableView{\n"
+            "selection-background-color:rgb(7, 156, 255);\n"
+            "background-color:white;\n"
+            "color:black\n"
+            "}\n"
+            "QHeaderView{color:black}\n"
+            "\n"
+            ""
+        )
         self.actionOpen_video = QAction(MainWindow)
         self.actionOpen_video.setObjectName("actionOpen_video")
         self.actionOpen_config = QAction(MainWindow)
@@ -279,20 +294,21 @@ class Ui_MainWindow(object):
         self.video_slider = VideoSlider(self.layoutWidget)
         self.video_slider.setObjectName("video_slider")
         self.video_slider.setStyleSheet(
+            "QSlider{background-color:transparent}\n"
             "QSlider::groove:horizontal {\n"
-            "    border: 0px solid #999999;\n"
-            "    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
-            "    margin-left: 3px;\n"
-            "	margin-right: 3px;\n"
+            "border: 0px solid #999999;\n"
+            "height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
+            "margin-left: 3px;\n"
+            "margin-right: 3px;\n"
             "}\n"
             "QSlider::handle:horizontal {\n"
-            "    background: #ffffff;\n"
-            "    border: 1px solid #5c5c5c;\n"
-            "    width: 6px;\n"
-            "    margin-left: -3px;\n"
-            "	margin-right:-3px;\n"
-            "    border-radius: 3px;\n"
-            "	subcontrol-origin: content;\n"
+            "background-color: #ffffff;\n"
+            "border: 1px solid #5c5c5c;\n"
+            "width: 6px;\n"
+            "margin-left: -3px;\n"
+            "margin-right:-3px;\n"
+            "border-radius: 3px;\n"
+            "subcontrol-origin: content;\n"
             "}"
         )
         self.video_slider.setMinimum(1)
@@ -330,7 +346,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1366, 37))
+        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
         self.menuVideo = QMenu(self.menubar)
         self.menuVideo.setObjectName("menuVideo")
         self.menuAnnotation = QMenu(self.menubar)
@@ -543,7 +559,7 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.annotation_tabs.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
 
         QMetaObject.connectSlotsByName(MainWindow)
 
