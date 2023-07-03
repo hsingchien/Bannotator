@@ -372,7 +372,13 @@ class Stream(QtCore.QObject):
         behav_names = []
         keybinds = []
         for i, behav in enumerate(config):
-            behav_name, keybind = behav.split()
+            behav = behav.strip()
+            if not behav:
+                break
+            try:
+                behav_name, keybind = behav.split()
+            except Exception:
+                raise ValueError("Invalid behavior - keybind pair. Check your config file!")
             if behav_name in behav_names or keybind in keybinds:
                 raise ValueError("conflict behavior name/keybind assignment")
             behav_names.append(behav_name)
