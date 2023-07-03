@@ -24,6 +24,7 @@ class Ui_DeleteStreamDialog(object):
         if not DeleteStreamDialog.objectName():
             DeleteStreamDialog.setObjectName(u"DeleteStreamDialog")
         DeleteStreamDialog.resize(199, 96)
+        DeleteStreamDialog.setStyleSheet(u"QWidget { background-color: rgb(89, 89, 89); color: white }")
         self.verticalLayout = QVBoxLayout(DeleteStreamDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.horizontalLayout = QHBoxLayout()

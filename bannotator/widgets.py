@@ -90,7 +90,7 @@ class VideoSlider(QSlider):
 
         if self._boxend and self._boxstart:
             painter = QPainter(self)
-            painter.setPen(QPen(Qt.black, 2))
+            painter.setPen(QPen(Qt.white, 2))
             painter.setRenderHint(QPainter.Antialiasing)
             box_height = self.height()
             bar_width = self.width() - 6
@@ -291,7 +291,7 @@ class TrackBar(QWidget):
             painter.setRenderHint(QPainter.Antialiasing)
             painter.drawPixmap(QRect(0, 0, self.width(), self.height()), self._pixmap)
             # Mark the current frame with black line
-            painter.setPen(QPen(Qt.black, 2))
+            painter.setPen(QPen(Qt.white, 2))
             painter.drawRect(frame_mark * bar_width, 0, bar_width, bar_height)
             # Mark the slider box, if full track flag is true
             if self._full_track_flag:
@@ -332,7 +332,7 @@ class TrackBar(QWidget):
                     )
             if self._full_track_flag:
                 painter.setBrush(Qt.NoBrush)
-                painter.setPen(QPen(Qt.black, 2))
+                painter.setPen(QPen(Qt.white, 2))
                 painter.drawRect(
                     self._slider_box[0] * bar_width,
                     0,

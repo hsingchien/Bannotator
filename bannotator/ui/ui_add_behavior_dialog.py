@@ -24,6 +24,7 @@ class Ui_AddBehaviorDialog(object):
         if not AddBehaviorDialog.objectName():
             AddBehaviorDialog.setObjectName(u"AddBehaviorDialog")
         AddBehaviorDialog.resize(206, 161)
+        AddBehaviorDialog.setStyleSheet(u"QWidget { background-color: rgb(89, 89, 89); color: white }")
         self.verticalLayout = QVBoxLayout(AddBehaviorDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()

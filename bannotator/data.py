@@ -375,7 +375,13 @@ class Stream(QtCore.QObject):
         behav_names = []
         keybinds = []
         for i, behav in enumerate(config):
-            behav_name, keybind = behav.split()
+            behav = behav.strip()
+            if not behav:
+                break
+            try:
+                behav_name, keybind = behav.split()
+            except Exception:
+                raise ValueError("Invalid behavior - keybind pair. Check your config file!")
             if behav_name in behav_names or keybind in keybinds:
                 raise ValueError("conflict behavior name/keybind assignment")
             behav_names.append(behav_name)
@@ -689,11 +695,11 @@ class Annotation(QtCore.QObject):
                     config.append(k.strip())
         # Construct empty streams
         for i in range(n_streams):
-            self._streams[i] = Stream(ID=i + 1, epochs=[], behaviors={})
-            self._streams[i].construct_behavior_from_config(config)
-            self._streams[i].data_changed.connect(self.streams_changed)
-            self._streams[i].color_changed.connect(self.streams_changed)
-            self._streams[i].behavior_name_changed.connect(self._rename_color_dict_key)
+            self._streams[i+1] = Stream(ID=i + 1, epochs=[], behaviors={})
+            self._streams[i+1].construct_behavior_from_config(config)
+            self._streams[i+1].data_changed.connect(self.streams_changed)
+            self._streams[i+1].color_changed.connect(self.streams_changed)
+            self._streams[i+1].behavior_name_changed.connect(self._rename_color_dict_key)
 
     def set_length(self, length):
         for _, stream in self._streams.items():
@@ -812,7 +818,7 @@ class Annotation(QtCore.QObject):
         ]
         colors = distc.get_colors(
             len(non_blank_behaviors),
-            exclude_colors=[(0.62, 0.62, 0.62), (1, 1, 1), (0, 0, 0)],
+            exclude_colors=[(0.47, 0.47, 0.47), (1, 1, 1), (0, 0, 0)],
             n_attempts=500,
             pastel_factor=0.1,
             rng=rng,
@@ -823,7 +829,7 @@ class Annotation(QtCore.QObject):
                 self._behav_color[behav] = QColor.fromRgbF(*colors[i])
                 i += 1
             else:
-                self._behav_color[behav] = QColor.fromRgbF(0.62, 0.62, 0.62)
+                self._behav_color[behav] = QColor.fromRgbF(0.47, 0.47, 0.47)
         # Assign colors to the behavior objects for all the streams
         for _, stream in self._streams.items():
             stream.assign_color(self._behav_color)

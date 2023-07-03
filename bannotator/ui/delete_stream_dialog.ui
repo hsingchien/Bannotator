@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>Delete stream</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget { background-color: rgb(89, 89, 89); color: white }</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">

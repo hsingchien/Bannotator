@@ -13,6 +13,22 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget { background-color: rgb(89, 89, 89); color: white }
+QPushButton{background-color: rgb(124, 124, 124)}
+QTabBar{background-color:rgb(184, 184, 184); color:rgb(50,50,50)}
+QMenuBar::item:selected{background-color:rgb(140, 140, 140)}
+QMenu::item:selected{background-color:rgb(140, 140, 140)}
+QMenu::item:disabled{color:rgb(170, 170, 170)}
+QTableView{
+selection-background-color:rgb(7, 156, 255);
+background-color:white;
+color:black
+}
+QHeaderView{color:black}
+
+</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -217,20 +233,21 @@
         <item>
          <widget class="VideoSlider" name="video_slider">
           <property name="styleSheet">
-           <string notr="true">QSlider::groove:horizontal {
-    border: 0px solid #999999;
-    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
-    margin-left: 3px;
-	margin-right: 3px;
+           <string notr="true">QSlider{background-color:transparent}
+QSlider::groove:horizontal {
+border: 0px solid #999999;
+height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+margin-left: 3px;
+margin-right: 3px;
 }
 QSlider::handle:horizontal {
-    background: #ffffff;
-    border: 1px solid #5c5c5c;
-    width: 6px;
-    margin-left: -3px;
-	margin-right:-3px;
-    border-radius: 3px;
-	subcontrol-origin: content;
+background-color: #ffffff;
+border: 1px solid #5c5c5c;
+width: 6px;
+margin-left: -3px;
+margin-right:-3px;
+border-radius: 3px;
+subcontrol-origin: content;
 }</string>
           </property>
           <property name="minimum">
@@ -492,7 +509,7 @@ QSlider::handle:horizontal {
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="elideMode">
         <enum>Qt::ElideLeft</enum>

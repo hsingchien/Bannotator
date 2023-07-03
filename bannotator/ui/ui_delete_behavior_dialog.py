@@ -24,6 +24,7 @@ class Ui_DeleteBehaviorDialog(object):
         if not DeleteBehaviorDialog.objectName():
             DeleteBehaviorDialog.setObjectName(u"DeleteBehaviorDialog")
         DeleteBehaviorDialog.resize(304, 136)
+        DeleteBehaviorDialog.setStyleSheet(u"QWidget { background-color: rgb(89, 89, 89); color: white }")
         self.verticalLayout = QVBoxLayout(DeleteBehaviorDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()

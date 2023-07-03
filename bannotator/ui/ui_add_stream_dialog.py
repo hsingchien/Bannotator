@@ -24,6 +24,7 @@ class Ui_AddStreamDialog(object):
         if not AddStreamDialog.objectName():
             AddStreamDialog.setObjectName(u"AddStreamDialog")
         AddStreamDialog.resize(225, 132)
+        AddStreamDialog.setStyleSheet(u"QWidget { background-color: rgb(89, 89, 89); color: white }")
         self.verticalLayout = QVBoxLayout(AddStreamDialog)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.gridLayout = QGridLayout()

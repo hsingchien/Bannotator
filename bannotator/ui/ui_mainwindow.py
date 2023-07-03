@@ -24,14 +24,28 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDockWidget, QFrame,
     QWidget)
 
 from bannotator.dataview import GenericTableView
-from bannotator.widgets import (BehavVideoView, DockWidget, PlaySpeedSpinBox, VideoSlider)
-from bannotator.resources import resource_rc
+from bannotator.widgets import BehavVideoView, DockWidget, PlaySpeedSpinBox, VideoSlider
+import bannotator.resources.resource_rc
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1366, 768)
+        MainWindow.setStyleSheet(u"QWidget { background-color: rgb(89, 89, 89); color: white }\n"
+"QPushButton{background-color: rgb(124, 124, 124)}\n"
+"QTabBar{background-color:rgb(184, 184, 184); color:rgb(50,50,50)}\n"
+"QMenuBar::item:selected{background-color:rgb(140, 140, 140)}\n"
+"QMenu::item:selected{background-color:rgb(140, 140, 140)}\n"
+"QMenu::item:disabled{color:rgb(170, 170, 170)}\n"
+"QTableView{\n"
+"selection-background-color:rgb(7, 156, 255);\n"
+"background-color:white;\n"
+"color:black\n"
+"}\n"
+"QHeaderView{color:black}\n"
+"\n"
+"")
         self.actionOpen_video = QAction(MainWindow)
         self.actionOpen_video.setObjectName(u"actionOpen_video")
         self.actionOpen_config = QAction(MainWindow)
@@ -230,22 +244,24 @@ class Ui_MainWindow(object):
         self.display_layout.addLayout(self.video_layout)
 
         self.video_slider = VideoSlider(self.layoutWidget)
-        self.video_slider.setObjectName(u"video_slider")
-        self.video_slider.setStyleSheet(u"QSlider::groove:horizontal {\n"
-"    border: 0px solid #999999;\n"
-"    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
-"    margin-left: 3px;\n"
-"	margin-right: 3px;\n"
-"}\n"
-"QSlider::handle:horizontal {\n"
-"    background: #ffffff;\n"
-"    border: 1px solid #5c5c5c;\n"
-"    width: 6px;\n"
-"    margin-left: -3px;\n"
-"	margin-right:-3px;\n"
-"    border-radius: 3px;\n"
-"	subcontrol-origin: content;\n"
-"}")
+        self.video_slider.setObjectName("video_slider")
+        self.video_slider.setStyleSheet(
+            "QSlider::groove:horizontal {\n"
+            "    border: 0px solid #999999;\n"
+            "    height: 20px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */\n"
+            "    margin-left: 3px;\n"
+            "	margin-right: 3px;\n"
+            "}\n"
+            "QSlider::handle:horizontal {\n"
+            "    background: #ffffff;\n"
+            "    border: 1px solid #5c5c5c;\n"
+            "    width: 6px;\n"
+            "    margin-left: -3px;\n"
+            "	margin-right:-3px;\n"
+            "    border-radius: 3px;\n"
+            "	subcontrol-origin: content;\n"
+            "}"
+        )
         self.video_slider.setMinimum(1)
         self.video_slider.setMaximum(1000)
         self.video_slider.setValue(1)
@@ -487,48 +503,110 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
 
         self.annotation_tabs.setCurrentIndex(0)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
+
 
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
-        self.actionOpen_video.setText(QCoreApplication.translate("MainWindow", u"Add video", None))
-        self.actionOpen_config.setText(QCoreApplication.translate("MainWindow", u"Open config", None))
-        self.actionSave_config.setText(QCoreApplication.translate("MainWindow", u"Save config", None))
-        self.actionOpen_annotation.setText(QCoreApplication.translate("MainWindow", u"Open annotation", None))
-        self.actionSave_annotation.setText(QCoreApplication.translate("MainWindow", u"Save annotation", None))
-        self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"About", None))
-        self.actionNew_config.setText(QCoreApplication.translate("MainWindow", u"New config", None))
-        self.actionFull_annotation.setText(QCoreApplication.translate("MainWindow", u"Full annotation", None))
-        self.actionBehavior_table.setText(QCoreApplication.translate("MainWindow", u"Behavior table", None))
-        self.actionEpoch_table.setText(QCoreApplication.translate("MainWindow", u"Epoch table", None))
-        self.actionRemove_video.setText(QCoreApplication.translate("MainWindow", u"Remove video/seq", None))
-        self.actionQuit.setText(QCoreApplication.translate("MainWindow", u"Quit", None))
-        self.actionReset.setText(QCoreApplication.translate("MainWindow", u"Reset", None))
-        self.actionTips.setText(QCoreApplication.translate("MainWindow", u"Tips", None))
-        self.actionAdd_seq.setText(QCoreApplication.translate("MainWindow", u"Add seq", None))
-        self.actionTrack_epoch.setText(QCoreApplication.translate("MainWindow", u"Track epoch", None))
-        self.actionHelp.setText(QCoreApplication.translate("MainWindow", u"Hot keys", None))
-        self.actionMerge_behaviors.setText(QCoreApplication.translate("MainWindow", u"Merge behaviors", None))
-        self.actionAuto_save_annotation.setText(QCoreApplication.translate("MainWindow", u"Auto save annotation", None))
-        self.actionMerge_behavior.setText(QCoreApplication.translate("MainWindow", u"Merge behavior", None))
-        self.actionClose_annotation.setText(QCoreApplication.translate("MainWindow", u"Close annotation", None))
-        self.actionNew_annotation.setText(QCoreApplication.translate("MainWindow", u"New annotation", None))
-        self.actionShuffle_colors.setText(QCoreApplication.translate("MainWindow", u"Shuffle colors", None))
-        self.actionSave_annotation_as_MAT.setText(QCoreApplication.translate("MainWindow", u"Save annotation as MAT", None))
-        self.actionNeural_window.setText(QCoreApplication.translate("MainWindow", u"Neural window", None))
-        self.time_label.setText(QCoreApplication.translate("MainWindow", u"00:00:00", None))
-        self.current_frame_label.setText(QCoreApplication.translate("MainWindow", u"Frame", None))
-        self.play_button.setText(QCoreApplication.translate("MainWindow", u"Play", None))
-        self.pause_button.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
-        self.video_speed_label.setText(QCoreApplication.translate("MainWindow", u"Speed", None))
-        self.track_window_label.setText(QCoreApplication.translate("MainWindow", u"Track Window", None))
-        self.video_layout_label.setText(QCoreApplication.translate("MainWindow", u"Video Layout", None))
-        self.video_layout_comboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Side by Side", None))
-        self.video_layout_comboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Stacked", None))
+        MainWindow.setWindowTitle(
+            QCoreApplication.translate("MainWindow", "MainWindow", None)
+        )
+        self.actionOpen_video.setText(
+            QCoreApplication.translate("MainWindow", "Add video", None)
+        )
+        self.actionOpen_config.setText(
+            QCoreApplication.translate("MainWindow", "Open config", None)
+        )
+        self.actionSave_config.setText(
+            QCoreApplication.translate("MainWindow", "Save config", None)
+        )
+        self.actionOpen_annotation.setText(
+            QCoreApplication.translate("MainWindow", "Open annotation", None)
+        )
+        self.actionSave_annotation.setText(
+            QCoreApplication.translate("MainWindow", "Save annotation", None)
+        )
+        self.actionAbout.setText(
+            QCoreApplication.translate("MainWindow", "About", None)
+        )
+        self.actionNew_config.setText(
+            QCoreApplication.translate("MainWindow", "New config", None)
+        )
+        self.actionFull_annotation.setText(
+            QCoreApplication.translate("MainWindow", "Full annotation", None)
+        )
+        self.actionBehavior_table.setText(
+            QCoreApplication.translate("MainWindow", "Behavior table", None)
+        )
+        self.actionEpoch_table.setText(
+            QCoreApplication.translate("MainWindow", "Epoch table", None)
+        )
+        self.actionRemove_video.setText(
+            QCoreApplication.translate("MainWindow", "Remove video/seq", None)
+        )
+        self.actionQuit.setText(QCoreApplication.translate("MainWindow", "Quit", None))
+        self.actionReset.setText(
+            QCoreApplication.translate("MainWindow", "Reset", None)
+        )
+        self.actionTips.setText(QCoreApplication.translate("MainWindow", "Tips", None))
+        self.actionAdd_seq.setText(
+            QCoreApplication.translate("MainWindow", "Add seq", None)
+        )
+        self.actionTrack_epoch.setText(
+            QCoreApplication.translate("MainWindow", "Track epoch", None)
+        )
+        self.actionHelp.setText(
+            QCoreApplication.translate("MainWindow", "Hot keys", None)
+        )
+        self.actionMerge_behaviors.setText(
+            QCoreApplication.translate("MainWindow", "Merge behaviors", None)
+        )
+        self.actionAuto_save_annotation.setText(
+            QCoreApplication.translate("MainWindow", "Auto save annotation", None)
+        )
+        self.actionMerge_behavior.setText(
+            QCoreApplication.translate("MainWindow", "Merge behavior", None)
+        )
+        self.actionClose_annotation.setText(
+            QCoreApplication.translate("MainWindow", "Close annotation", None)
+        )
+        self.actionNew_annotation.setText(
+            QCoreApplication.translate("MainWindow", "New annotation", None)
+        )
+        self.actionShuffle_colors.setText(
+            QCoreApplication.translate("MainWindow", "Shuffle colors", None)
+        )
+        self.actionSave_annotation_as_MAT.setText(
+            QCoreApplication.translate("MainWindow", "Save annotation as MAT", None)
+        )
+        self.time_label.setText(
+            QCoreApplication.translate("MainWindow", "00:00:00", None)
+        )
+        self.current_frame_label.setText(
+            QCoreApplication.translate("MainWindow", "Frame", None)
+        )
+        self.play_button.setText(QCoreApplication.translate("MainWindow", "Play", None))
+        self.pause_button.setText(
+            QCoreApplication.translate("MainWindow", "Pause", None)
+        )
+        self.video_speed_label.setText(
+            QCoreApplication.translate("MainWindow", "Speed", None)
+        )
+        self.track_window_label.setText(
+            QCoreApplication.translate("MainWindow", "Track Window", None)
+        )
+        self.video_layout_label.setText(
+            QCoreApplication.translate("MainWindow", "Video Layout", None)
+        )
+        self.video_layout_comboBox.setItemText(
+            0, QCoreApplication.translate("MainWindow", "Side by Side", None)
+        )
+        self.video_layout_comboBox.setItemText(
+            1, QCoreApplication.translate("MainWindow", "Stacked", None)
+        )
 
         self.menuVideo.setTitle(QCoreApplication.translate("MainWindow", u"Video", None))
         self.menuAnnotation.setTitle(QCoreApplication.translate("MainWindow", u"Annotation", None))
