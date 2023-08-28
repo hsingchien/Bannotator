@@ -14,20 +14,7 @@
    <string>MainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget { background-color: rgb(89, 89, 89); color: white }
-QPushButton{background-color: rgb(124, 124, 124)}
-QTabBar{background-color:rgb(184, 184, 184); color:rgb(50,50,50)}
-QMenuBar::item:selected{background-color:rgb(140, 140, 140)}
-QMenu::item:selected{background-color:rgb(140, 140, 140)}
-QMenu::item:disabled{color:rgb(170, 170, 170)}
-QTableView{
-selection-background-color:rgb(7, 156, 255);
-background-color:white;
-color:black
-}
-QHeaderView{color:black}
-
-</string>
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
