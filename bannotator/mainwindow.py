@@ -135,6 +135,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             if self.state["annot"] is not None
             else None
         )
+        self.actionDark_mode.toggled.connect(lambda: self._update_gui(["view_options"]))
         # Connect state change
         self._connect_states()
 
@@ -296,6 +297,24 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                 for ID in self.state["annot"].get_streams():
                     self._epoch_tables[ID].disconnect_scroll()
                     self._behav_epoch_tables[ID].disconnect_scroll()
+            # Set the style
+            if self.actionDark_mode.isChecked():
+                self.setStyleSheet(
+                    "QWidget { background-color: rgb(89, 89, 89); color: white }\n"
+                    "QPushButton{background-color: rgb(124, 124, 124)}\n"
+                    "QTabBar{background-color:rgb(184, 184, 184); color:rgb(50,50,50)}\n"
+                    "QMenuBar::item:selected{background-color:rgb(140, 140, 140)}\n"
+                    "QMenu::item:selected{background-color:rgb(140, 140, 140)}\n"
+                    "QMenu::item:disabled{color:rgb(170, 170, 170)}\n"
+                    "QTableView{\n"
+                    "selection-background-color:rgb(7, 156, 255);\n"
+                    "background-color:white;\n"
+                    "color:black\n"
+                    "}\n"
+                    "QHeaderView{color:black}\n"
+                )
+            else:
+                self.setStyleSheet("")
 
     def _update_slider_box(self):
         try:

@@ -138,6 +138,9 @@ class Ui_MainWindow(object):
         self.actionSave_annotation_as_MAT = QAction(MainWindow)
         self.actionSave_annotation_as_MAT.setObjectName("actionSave_annotation_as_MAT")
         self.actionSave_annotation_as_MAT.setEnabled(False)
+        self.actionDark_mode = QAction(MainWindow)
+        self.actionDark_mode.setObjectName("actionDark_mode")
+        self.actionDark_mode.setCheckable(True)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -330,7 +333,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1366, 37))
+        self.menubar.setGeometry(QRect(0, 0, 1366, 22))
         self.menuVideo = QMenu(self.menubar)
         self.menuVideo.setObjectName("menuVideo")
         self.menuAnnotation = QMenu(self.menubar)
@@ -539,6 +542,7 @@ class Ui_MainWindow(object):
         self.menuWindows.addAction(self.actionTrack_epoch)
         self.menuWindows.addSeparator()
         self.menuWindows.addAction(self.actionShuffle_colors)
+        self.menuWindows.addAction(self.actionDark_mode)
 
         self.retranslateUi(MainWindow)
 
@@ -620,6 +624,9 @@ class Ui_MainWindow(object):
         )
         self.actionSave_annotation_as_MAT.setText(
             QCoreApplication.translate("MainWindow", "Save annotation as MAT", None)
+        )
+        self.actionDark_mode.setText(
+            QCoreApplication.translate("MainWindow", "Dark mode", None)
         )
         self.time_label.setText(
             QCoreApplication.translate("MainWindow", "00:00:00", None)
