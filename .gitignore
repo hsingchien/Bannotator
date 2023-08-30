@@ -9,3 +9,4 @@ bannotator.egg-info/
 *.mat
 *.pdf
 .vscode/
+*.csv
