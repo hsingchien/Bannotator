@@ -1,6 +1,6 @@
 # Behavior Annotator
 
-<img src="bannotator/resource/bg_readme.png" height="300">
+<img src="bannotator/resources/bg_readme.png" height="300">
 
 # Table of contents
 
