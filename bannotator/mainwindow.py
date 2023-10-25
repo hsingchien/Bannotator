@@ -44,6 +44,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         self.state["slider_box"] = [None, None]
         self.state["current_stream"] = None
         self._dialog_state = False
+        self._style_state = ""
 
         # Container for dynamically generated widgets
         # Key = stream ID, item = TrackBar widget
@@ -299,22 +300,24 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
                     self._behav_epoch_tables[ID].disconnect_scroll()
             # Set the style
             if self.actionDark_mode.isChecked():
-                self.setStyleSheet(
-                    "QWidget { background-color: rgb(89, 89, 89); color: white }\n"
-                    "QPushButton{background-color: rgb(124, 124, 124)}\n"
-                    "QTabBar{background-color:rgb(184, 184, 184); color:rgb(50,50,50)}\n"
-                    "QMenuBar::item:selected{background-color:rgb(140, 140, 140)}\n"
-                    "QMenu::item:selected{background-color:rgb(140, 140, 140)}\n"
-                    "QMenu::item:disabled{color:rgb(170, 170, 170)}\n"
-                    "QTableView{\n"
-                    "selection-background-color:rgb(7, 156, 255);\n"
-                    "background-color:white;\n"
-                    "color:black\n"
-                    "}\n"
-                    "QHeaderView{color:black}\n"
-                )
+                self._style_state = [
+                    "QWidget { background-color: rgb(89, 89, 89); color: white }\n",
+                    "QPushButton{background-color: rgb(124, 124, 124)}\n",
+                    "QTabBar{background-color:rgb(184, 184, 184); color:rgb(50,50,50)}\n",
+                    "QMenuBar::item:selected{background-color:rgb(140, 140, 140)}\n",
+                    "QMenu::item:selected{background-color:rgb(140, 140, 140)}\n",
+                    "QMenu::item:disabled{color:rgb(170, 170, 170)}\n",
+                    "QTableView{\n",
+                    "selection-background-color:rgb(7, 156, 255);\n",
+                    "background-color:white;\n",
+                    "color:black\n",
+                    "}\n",
+                    "QHeaderView{color:black}\n",
+                ]
+                self.setStyleSheet("".join(self._style_state))
             else:
-                self.setStyleSheet("")
+                self._style_state = ""
+                self.setStyleSheet("".join(self._style_state))
 
     def _update_slider_box(self):
         try:
@@ -342,7 +345,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     def _open_video(self):
         # Add a mainstream video file.
         # Also create and start a frame fetching worker in a separate thread, emitting frames at 60Hz
-        fileDialog = QFileDialog()
+        fileDialog = QFileDialog(parent=self)
         fileDialog.setFileMode(QFileDialog.ExistingFile)
         video_path, _ = fileDialog.getOpenFileName(
             self,
@@ -423,7 +426,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             "Opening .seq file. If this file is compressed (jpeg), it may take a few minutes...",
             0,
         )
-        fileDialog = QFileDialog()
+        fileDialog = QFileDialog(parent=self)
         fileDialog.setFileMode(QFileDialog.ExistingFile)
         video_path, _ = fileDialog.getOpenFileName(
             self,
@@ -560,7 +563,7 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
         if not annot_closed:
             return False
         self._dialog_state = True
-        new_dialog = dialog.NewAnnotationDialog()
+        new_dialog = dialog.NewAnnotationDialog(parent=self)
         (nstream, ns, ks) = new_dialog.get_input()
         if nstream is None:
             self._dialog_state = False
@@ -720,8 +723,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             annot_name = vid_path.replace("." + vid_path.split(".")[-1], "_annot.txt")
         else:
             annot_name = "annotation.txt"
-
-        filename, _ = QFileDialog.getSaveFileName(
+        savingdialog = QFileDialog(parent=self)
+        filename, _ = savingdialog.getSaveFileName(
             None, "Save Annotation", annot_name, "text Files (*.txt)"
         )
         if not filename:
@@ -770,8 +773,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             annot_name = vid_path.replace("." + vid_path.split(".")[-1], "_annot.mat")
         else:
             annot_name = "annotation.mat"
-
-        filename, _ = QFileDialog.getSaveFileName(
+        savingdialog = QFileDialog(parent=self)
+        filename, _ = savingdialog.getSaveFileName(
             None, "Save Annotation", annot_name, "mat Files (*.mat)"
         )
         if not filename:
@@ -784,7 +787,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             lambda x: self.statusbar.showMessage(x, 5000)
         )
         self.statusbar.showMessage("Saving annotation...", 0)
-        filename, _ = QFileDialog.getSaveFileName(
+        savingdialog = QFileDialog(parent=self)
+        filename, _ = savingdialog.getSaveFileName(
             None, "Save Configuration", "config.txt", "text Files (*.txt)"
         )
         if not filename:
@@ -1026,7 +1030,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
             return False
         self._play_timer.stop()
         if not suppress_warning:
-            warning_dialog = QMessageBox.warning(
+            dialog = QMessageBox(parent=self)
+            warning_dialog = dialog.warning(
                 self,
                 "Do you want to close annotation?",
                 "Make sure to save before closing!",
@@ -1065,7 +1070,8 @@ class MainWindow(AnnotatorMainWindow, Ui_MainWindow):
     def _reset_app(self):
         # Close annotation and remove all videos.
         self._play_timer.stop()
-        warning_dialog = QMessageBox.warning(
+        dialog = QMessageBox(parent=self)
+        warning_dialog = dialog.warning(
             self,
             "Do you want to reset the app",
             "Make sure to save unsaved work!",
