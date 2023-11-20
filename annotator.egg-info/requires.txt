@@ -1,0 +1,11 @@
+numpy>=1.23.0
+scipy>=1.10
+opencv-python>=4.7.0
+pyside6>=6.4.2
+distinctipy>=1.2.2
+
+[dev]
+black
+bumpver
+pytest
+scikit-learn
