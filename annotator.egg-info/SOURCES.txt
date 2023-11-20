@@ -1,0 +1,12 @@
+LICENSE
+MANIFEST.in
+README.md
+pyproject.toml
+setup.py
+annotator.egg-info/PKG-INFO
+annotator.egg-info/SOURCES.txt
+annotator.egg-info/dependency_links.txt
+annotator.egg-info/entry_points.txt
+annotator.egg-info/requires.txt
+annotator.egg-info/top_level.txt
+tests/test_data.py
