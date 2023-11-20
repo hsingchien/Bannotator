@@ -7,4 +7,4 @@ except ModuleNotFoundError:
     import tomli as tomllib
 
 # Version of the realpython-reader package
-__version__ = "1.0.2"
+__version__ = "1.0.3"
