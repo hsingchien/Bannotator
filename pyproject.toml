@@ -50,7 +50,7 @@ push = true
 
 [tool.bumpver.file_patterns]
 "pyproject.toml" = [
-    'version = "{version}"',
     'current_version = "{version}"',
+    'version = "{version}"',
 ]
 "src/bannotator/__init__.py" = ["{version}"]
