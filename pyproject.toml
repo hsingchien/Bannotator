@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bannotator"
-version = "1.0.3"
+version = "1.0.4"
 description = "Anntotate episodic events of videos"
 readme = "README.md"
 authors = [{name = "Xingjian Zhang", email = "hsingchien.zhang@gmail.com"}]
@@ -37,7 +37,7 @@ Homepage = "https://github.com/hsingchien/Bannotator"
 [project.scripts]
 annotate-behavior = "bannotator.app:main"
 [tool.bumpver]
-current_version = "1.0.3"
+current_version = "1.0.4"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 tag_message = "{new_version}"
