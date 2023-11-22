@@ -1,0 +1,6 @@
+# MANIFEST.in
+
+include src/bannotator/resources/icon.ico
+include src/bannotator/resources/icon.icns
+include src/bannotator/resources/*.png
+include src/bannotator/resources/*.qrc

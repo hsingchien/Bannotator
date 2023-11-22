@@ -1,0 +1,2 @@
+[console_scripts]
+annotate-behavior = bannotator.app:main
