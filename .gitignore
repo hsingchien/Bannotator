@@ -10,3 +10,4 @@ bannotator.egg-info/
 *.pdf
 .vscode/
 *.csv
+annotator.egg-info/
