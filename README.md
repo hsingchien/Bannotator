@@ -2,6 +2,9 @@
 
 ![Alt text](https://github.com/hsingchien/Bannotator/blob/main/src/bannotator/resources/bg_readme.png?raw=true)
 
+Please cite this work if it helped with your project! Thank you!  
+`Xingjian Zhang. (2024). hsingchien/Bannotator: 1.0 stable version (1.0.0). Zenodo. https://doi.org/10.5281/zenodo.10957095`
+
 # Table of contents
 
 - [Installation](#installation)
